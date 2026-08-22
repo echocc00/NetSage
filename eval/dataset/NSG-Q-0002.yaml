@@ -1,0 +1,34 @@
+id: NSG-Q-0002
+title: "eBGP peering 配置生成（华为 VRP，上海-广州专线）"
+category: config
+vendor: huawei
+version: VRP-8.180
+difficulty: 2
+tags: [bgp, ebgp, peering]
+
+input:
+  symptom: "为上海-广州专线新建 eBGP peering。本地 AS 65001，peer AS 65002，互联地址 10.1.1.0/30 /30，本地占 10.1.1.1。"
+  device_info:
+    model: NE40E-X16
+    version: VRP-8.180
+  question: "生成完整 BGP peering 配置（含 router-id 与 peer 描述）"
+
+expected_output:
+  config: |
+    bgp 65001
+      router-id 1.1.1.1
+      peer 10.1.1.2 as-number 65002
+      peer 10.1.1.2 description Shanghai-Guangzhou-LEASED-LINE
+      ipv4-family unicast
+        peer 10.1.1.2 enable
+  references:
+    - type: vendor_doc
+      url: https://support.huawei.com/bgp
+      version: VRP-8.180
+
+anti_examples: ["peer 配置在全局而不在 ipv4-family 下 enable（华为 VRP 常见错）"]
+
+grading_rubric:
+  must_have:      ["bgp 进程存在", "peer as-number 正确", "peer enable 在 ipv4-family 下", "router-id 存在"]
+  nice_to_have:   ["peer description", "更新源/下一跳处理"]
+  penalty:        ["AS 号写反", "漏 ipv4-family enable"]

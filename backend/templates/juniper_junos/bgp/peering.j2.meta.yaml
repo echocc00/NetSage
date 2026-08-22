@@ -1,0 +1,17 @@
+template_id: juniper_junos_bgp_peering
+vendor: juniper
+os: junos
+version_min: "21.0"
+version_max: "23.999"
+protocol: bgp
+feature: peering
+input_schema:
+  - { name: group_name, type: string, required: true }
+  - { name: remote_asn, type: int, required: true }
+  - { name: peers, type: array, required: true,
+      items: { address: string, description: string } }
+output_format: cli
+validated_against: []
+author: ""
+reviewers: []
+last_reviewed: ""

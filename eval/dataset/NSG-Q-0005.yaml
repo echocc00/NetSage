@@ -1,0 +1,48 @@
+id: NSG-Q-0005
+title: "BGP 邻居卡 Idle 状态（AS 号不匹配）"
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 2
+tags: [bgp, idle, as-mismatch]
+
+input:
+  symptom: "BGP 邻居一直 Idle 状态，无法建立。本地 AS 65001，配置 peer 10.1.1.2 as-number 65002，但对端实际 AS 65003。"
+  device_info:
+    model: NE40E-X8
+    version: VRP-8.180
+  evidence:
+    - log_lines:
+      - "BGP_PEER/5/STATECHG: Peer 10.1.1.2 changed state from Idle to Idle"
+      - "show bgp summary: 10.1.1.2 State = Idle"
+  question: "给出根因假设 + 验证步骤 + 修复方案"
+
+expected_output:
+  root_causes:
+    - rank: 1
+      cause: "BGP remote-as 配置与对端实际 AS 不一致（本端配 65002，对端实际 65003）"
+      probability: 0.85
+      evidence: ["Idle 状态表示 TCP 未建立或 Open 报文 AS 不匹配"]
+      verify: "display bgp peer 10.1.1.2 | include AS"
+      fix: "peer 10.1.1.2 as-number 65003（与对端实际 AS 对齐）"
+    - rank: 2
+      cause: "TCP 连接被防火墙阻断（179 端口）"
+      probability: 0.1
+      verify: "ping 10.1.1.2 + display tcp status"
+      fix: "放行 TCP 179"
+    - rank: 3
+      cause: "对端 BGP 进程未启动"
+      probability: 0.05
+      verify: "对端 display bgp"
+      fix: "对端启动 bgp 进程"
+  references:
+    - type: vendor_doc
+      url: https://support.huawei.com/bgp-troubleshoot
+      version: VRP-8.180
+
+anti_examples: ["直接重启 BGP 进程（治标不治本）", "删除 peer 重配（未定位根因）"]
+
+grading_rubric:
+  must_have: ["≥1 候选根因", "≥1 验证命令", "≥1 修复命令", "AS 不匹配为 top 根因"]
+  nice_to_have: ["≥3 候选根因", "引用手册", "含回滚命令"]
+  penalty: ["重启设备", "无证据瞎猜", "未提及 AS 校验"]

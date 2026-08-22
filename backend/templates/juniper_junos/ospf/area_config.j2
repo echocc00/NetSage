@@ -1,0 +1,13 @@
+protocols {
+    ospf {
+        area {{ area_id }} {
+{% for iface in interfaces %}
+            interface {{ iface.name }} {
+{% if iface.passive is defined and iface.passive %}
+                passive;
+{% endif %}
+            }
+{% endfor %}
+        }
+    }
+}

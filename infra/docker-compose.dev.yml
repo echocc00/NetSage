@@ -1,0 +1,62 @@
+# NetSage 开发环境依赖服务
+# 用法：docker compose -f infra/docker-compose.dev.yml up -d
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: netsage-pg
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-netsage}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme_dev_only}
+      POSTGRES_DB: ${POSTGRES_DB:-netsage}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-netsage}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: netsage-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  vault:
+    image: hashicorp/vault:1.15
+    container_name: netsage-vault
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: devroot
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+    ports:
+      - "8200:8200"
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - vault_data:/vault/file
+    command: server -dev
+
+  batfish:
+    image: batfish/batfish:latest
+    container_name: netsage-batfish
+    ports:
+      - "9996:9996"   # REST API
+      - "9997:9997"   # workmgr
+    volumes:
+      - batfish_data:/data
+    # 生产规格 ≥8GB RAM（v2.0 17.4），开发态用默认
+
+volumes:
+  pg_data:
+  redis_data:
+  vault_data:
+  batfish_data:

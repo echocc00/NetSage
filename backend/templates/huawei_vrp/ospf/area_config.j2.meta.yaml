@@ -1,0 +1,21 @@
+# huawei_vrp/ospf/area_config 模板元数据（v2.0 27.2 必带字段）
+template_id: huawei_vrp_ospf_area_config
+vendor: huawei
+os: vrp
+version_min: "8.0"
+version_max: "8.999"
+protocol: ospf
+feature: area_config
+input_schema:        # Jinja2 入参 JSON Schema
+  - { name: router_id, type: string, required: true }
+  - { name: network_areas, type: array, required: true,
+      items: { area_id: int, network: string, wildcard: string } }
+  - { name: authentication, type: bool, required: false, default: false }
+  - { name: authentication_key_id, type: int, required: false }
+  - { name: authentication_key, type: string, required: false }
+  - { name: silent_interfaces, type: array, required: false }
+output_format: cli
+validated_against: []
+author: ""            # 待网络工程师填写
+reviewers: []
+last_reviewed: ""

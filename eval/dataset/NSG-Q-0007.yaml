@@ -1,0 +1,48 @@
+id: NSG-Q-0007
+title: "OSPF 邻居卡 ExStart 状态（MTU 不一致）"
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 3
+tags: [ospf, exstart, mtu]
+
+input:
+  symptom: "OSPF 邻居一直 ExStart 状态，无法到 Exchange。两端直连，Hello 正常但 DD 交换失败。"
+  device_info:
+    model: CE12800
+    version: VRP-8.180
+  evidence:
+    - log_lines:
+      - "OSPF: Neighbor 10.1.1.2 changed state from ExStart to ExStart"
+      - "display ospf peer: State = ExStart"
+  question: "给出根因假设 + 验证步骤 + 修复方案"
+
+expected_output:
+  root_causes:
+    - rank: 1
+      cause: "两端接口 MTU 不一致（本端 1500，对端 1490），DD 大包无法交换"
+      probability: 0.75
+      evidence: ["ExStart 表示 DD 交换失败，MTU 不一致最常见"]
+      verify: "display interface | include MTU（两端对比）"
+      fix: "对齐两端 MTU（或配置 ospf mtu-ignore 临时绕过）"
+    - rank: 2
+      cause: "Router-ID 重复（两端 RID 相同）"
+      probability: 0.15
+      verify: "display ospf brief | include Router-ID"
+      fix: "修改一端 Router-ID"
+    - rank: 3
+      cause: "接口优先级均为 0（DR/BDR 选举异常）"
+      probability: 0.05
+      verify: "display ospf interface | include Priority"
+      fix: "调整优先级"
+  references:
+    - type: vendor_doc
+      url: https://support.huawei.com/ospf-troubleshoot
+      version: VRP-8.180
+
+anti_examples: ["删除 OSPF 进程重配", "重启设备", "关闭 OSPF 重启"]
+
+grading_rubric:
+  must_have: ["MTU 不一致为 top 候选", "含 MTU 对齐修复", "≥1 验证命令"]
+  nice_to_have: ["提及 mtu-ignore 临时方案", "≥3 候选根因"]
+  penalty: ["推荐重启", "未验证 MTU"]

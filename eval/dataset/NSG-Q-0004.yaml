@@ -1,0 +1,42 @@
+id: NSG-Q-0004
+title: "配置审计：BGP 路由黑洞检测（华为 VRP）"
+category: audit
+vendor: huawei
+version: VRP-8.180
+difficulty: 3
+tags: [bgp, audit, blackhole]
+
+input:
+  symptom: "审计以下 BGP 配置是否存在路由黑洞风险：peer 10.1.1.2 无 GTSM、无最大前缀限制、import 策略放行全部路由。"
+  device_info:
+    model: NE40E-X8
+    version: VRP-8.180
+  config_snippet: |
+    bgp 65001
+      peer 10.1.1.2 as-number 65002
+      ipv4-family unicast
+        peer 10.1.1.2 enable
+  question: "列出风险点 + 加固建议"
+
+expected_output:
+  risks:
+    - risk: "无 GTSM（TTL security）"
+      severity: high
+      fix: "peer 10.1.1.2 ttl-security hops 1"
+    - risk: "无最大前缀数限制"
+      severity: medium
+      fix: "peer 10.1.1.2 maximum-routes 10000"
+    - risk: "import 无过滤，存在黑洞/路由污染风险"
+      severity: high
+      fix: "配置 route-policy 过滤前缀"
+  references:
+    - type: vendor_doc
+      url: https://support.huawei.com/bgp-hardening
+      version: VRP-8.180
+
+anti_examples: ['只报"无风险"（明显缺加固项）', "建议删除 BGP 进程"]
+
+grading_rubric:
+  must_have:      ["≥3 风险点", "每项带 fix", "severity 分级"]
+  nice_to_have:   ["引用手册章节", "给出 route-policy 示例"]
+  penalty:        ["温和辞令不列具体修复", "风险分级错误"]

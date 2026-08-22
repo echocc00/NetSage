@@ -1,0 +1,48 @@
+id: NSG-Q-0010
+title: "VXLAN Anycast Gateway 冲突导致 ARP 异常"
+category: troubleshoot
+vendor: cisco
+version: NX-OS-9
+difficulty: 4
+tags: [vxlan, anycast-gateway, arp, duplicate]
+
+input:
+  symptom: "跨 Leaf 虚机网关通信异常，ARP 表抖动，部分流量丢包。检测到多个 Leaf 同时响应网关 ARP 请求。"
+  device_info:
+    model: Nexus 9300
+    version: NX-OS 9.3
+  evidence:
+    - log_lines:
+      - "%ARP-3-DUP_ADDR: Duplicate address 10.10.10.1 on Vlan10"
+      - "show ip arp: MAC 振荡"
+  question: "给出根因假设 + 验证步骤 + 修复方案"
+
+expected_output:
+  root_causes:
+    - rank: 1
+      cause: "Anycast Gateway MAC/IP 配置不一致（各 Leaf 的 anycast-gateway MAC 不同）"
+      probability: 0.6
+      evidence: ["ARP 振荡 + 重复地址告警 → anycast-gateway 不一致"]
+      verify: "show running-config | include fabric forwarding anycast-gateway + display interface vlan | include MAC"
+      fix: "对齐所有 Leaf 的 anycast-gateway MAC（fabric forwarding anycast-gateway mac <统一 MAC>）"
+    - rank: 2
+      cause: "ARP suppression 配置不一致，部分 Leaf 未启用"
+      probability: 0.2
+      verify: "show running-config | include arp suppression"
+      fix: "统一启用 ARP suppression"
+    - rank: 3
+      cause: "EVPN Type-2 路由通告策略不一致"
+      probability: 0.15
+      verify: "show bgp evpn type-2"
+      fix: "调整 Type-2 通告策略"
+  references:
+    - type: vendor_doc
+      url: https://www.cisco.com/c/en/us/support/docs/switches/nexus-9000
+      version: NX-OS-9
+
+anti_examples: ["关闭 anycast-gateway", "改为单点网关（违背 fabric 设计）", "重启设备"]
+
+grading_rubric:
+  must_have: ["anycast-gateway 不一致为 top", "含 MAC 对齐修复", "≥1 验证命令"]
+  nice_to_have: ["提及 ARP suppression", "≥3 候选根因"]
+  penalty: ["关闭 anycast-gateway", "推荐重启"]

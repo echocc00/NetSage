@@ -1,0 +1,48 @@
+id: NSG-Q-0006
+title: "BGP 邻居 Established 但无路由学习（next-hop 不可达）"
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17
+difficulty: 3
+tags: [bgp, next-hop, ebgp, ibgp]
+
+input:
+  symptom: "BGP 邻居 Established，但路由表无对端通告的前缀。show bgp summary 显示邻居正常，show ip route bgp 为空。"
+  device_info:
+    model: Catalyst 9500
+    version: IOS-XE 17.12
+  evidence:
+    - log_lines:
+      - "BGP: 10.1.1.2 went from OpenConfirm to Established"
+      - "show ip route bgp: 空"
+  question: "给出根因假设 + 验证步骤 + 修复方案"
+
+expected_output:
+  root_causes:
+    - rank: 1
+      cause: "eBGP next-hop 不可达（对端通告前缀的 next-hop 为其 loopback，本端无路由）"
+      probability: 0.6
+      evidence: ["Established 但无路由 → next-hop 不可达最常见"]
+      verify: "show ip route <next-hop> + ping <next-hop>"
+      fix: "配置 next-hop-self 或确保 IGP 有 next-hop 路由"
+    - rank: 2
+      cause: "route-map/inbound 策略 deny 所有前缀"
+      probability: 0.2
+      verify: "show route-map + show bgp neighbors 10.1.1.2 received-routes"
+      fix: "调整 inbound route-map"
+    - rank: 3
+      cause: "iBGP 未全互联且无 RR（iBGP 不转发学到的 iBGP 路由）"
+      probability: 0.15
+      verify: "show bgp ipv4 unicast summary（判断 iBGP 拓扑）"
+      fix: "配置 RR 或全互联"
+  references:
+    - type: vendor_doc
+      url: https://www.cisco.com/c/en/us/support/docs/ip/bgp
+      version: IOS-XE-17
+
+anti_examples: ["重启 BGP", "删除邻居重配", "直接加静态路由绕过"]
+
+grading_rubric:
+  must_have: ["≥1 候选根因", "next-hop 不可达为 top 候选", "含 next-hop-self 修复"]
+  nice_to_have: ["≥3 候选根因", "区分 eBGP/iBGP next-hop 行为"]
+  penalty: ["推荐重启", "未验证 next-hop 可达性"]

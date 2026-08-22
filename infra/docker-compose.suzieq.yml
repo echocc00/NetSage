@@ -1,0 +1,19 @@
+# SUZIEQ 可观测性（Phase 2 P2-6）
+# 用法：docker compose -f infra/docker-compose.dev.yml -f infra/docker-compose.suzieq.yml --profile suzieq up suzieq
+services:
+  suzieq:
+    image: netenglabs/suzieq:latest
+    container_name: netsage-suzieq
+    environment:
+      SUZIEQ_NET_PASSPHRASE: ${SUZIEQ_PASSPHRASE:-devpass}
+    volumes:
+      - suzieq_data:/home/suzieq/data
+      - ./suzieq/suzieq-inventory.yaml:/home/suzieq/inventory.yaml:ro
+    ports:
+      - "8888:8888"   # suzieq web UI（可选）
+    networks:
+      - default
+    profiles: ["suzieq"]
+
+volumes:
+  suzieq_data:

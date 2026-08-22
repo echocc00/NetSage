@@ -1,0 +1,19 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "netsage-backend",
+      "runtimeExecutable": "F:\\claudepc\\NetSage\\backend\\.venv\\Scripts\\python.exe",
+      "runtimeArgs": ["-m", "uvicorn", "app.main:app", "--port", "8000"],
+      "cwd": "F:\\claudepc\\NetSage\\backend",
+      "port": 8000
+    },
+    {
+      "name": "netsage-frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "F:\\claudepc\\NetSage\\frontend",
+      "port": 5173
+    }
+  ]
+}

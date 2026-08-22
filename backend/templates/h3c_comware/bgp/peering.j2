@@ -1,0 +1,16 @@
+bgp {{ local_asn }}
+ router-id {{ router_id }}
+{% for peer in peers %}
+ peer {{ peer.address }} as-number {{ peer.remote_asn }}
+{% if peer.description is defined and peer.description %}
+ peer {{ peer.address }} description {{ peer.description }}
+{% endif %}
+{% endfor %}
+!
+ address-family ipv4 unicast
+{% for peer in peers %}
+  peer {{ peer.address }} enable
+{% endfor %}
+{% if import_strategy is defined and import_strategy %}
+  import-route {{ import_strategy }}
+{% endif %}

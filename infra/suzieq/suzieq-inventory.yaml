@@ -1,0 +1,17 @@
+# SUZIEQ 采集清单（Phase 2 P2-6）
+# 采集 containerlab 仿真设备 + NetBox 设备
+# 凭证走 Vault（Phase 2 占位用明文，生产态替换）
+namespace: netsage-sim
+devices:
+  - name: spine01
+    username: admin
+    password: admin
+    transport: ssh
+    address: 172.20.20.2  # clab-bgp-2node-spine01
+    devtype: frr
+  - name: leaf01
+    username: admin
+    password: admin
+    transport: ssh
+    address: 172.20.20.3  # clab-bgp-2node-leaf01
+    devtype: frr

@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.env
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.lock
+
+# Node
+node_modules/
+frontend/dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Docker
+infra/vault/data/
+
+# 仿真产物
+*.clab.yml.bak
+clab-*/
+
+# 评测报告
+eval/reports/*.html
+
+# OS
+.DS_Store
+Thumbs.db

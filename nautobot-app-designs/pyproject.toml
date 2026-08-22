@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nautobot-app-designs"
+version = "0.1.0"
+description = "NetSage 自研 Nautobot App — AI 网络设计方案持久化"
+requires-python = ">=3.11"
+dependencies = ["nautobot>=2.0"]
+
+[tool.setuptools.packages.find]
+where = ["."]

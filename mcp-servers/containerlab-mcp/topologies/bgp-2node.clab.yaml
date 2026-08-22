@@ -1,0 +1,26 @@
+# W2 超最小演示 · 2 节点 BGP 拓扑
+# containerlab 声明式 YAML（v2.0 开发计划十六章）
+# 验证：deploy → 两节点 BGP 邻居 Established → destroy
+name: bgp-2node
+
+topology:
+  nodes:
+    spine01:
+      kind: linux
+      image: frrouting/frr:latest
+      exec:
+        - "bash -c 'ip addr add 10.0.0.1/30 dev eth1'"
+      binds:
+        - "$PWD/bgp-2node/spine01.conf:/etc/frr/frr.conf:ro"
+        - "$PWD/bgp-2node/daemons:/etc/frr/daemons:ro"
+    leaf01:
+      kind: linux
+      image: frrouting/frr:latest
+      exec:
+        - "bash -c 'ip addr add 20.0.0.1/24 dev lo && ip addr add 10.0.0.2/30 dev eth1 && sleep 3 && vtysh -c \"clear ip bgp *\"'"
+      binds:
+        - "$PWD/bgp-2node/leaf01.conf:/etc/frr/frr.conf:ro"
+        - "$PWD/bgp-2node/daemons:/etc/frr/daemons:ro"
+
+  links:
+    - endpoints: ["spine01:eth1", "leaf01:eth1"]

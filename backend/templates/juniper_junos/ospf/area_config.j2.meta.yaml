@@ -1,0 +1,16 @@
+template_id: juniper_junos_ospf_area_config
+vendor: juniper
+os: junos
+version_min: "21.0"
+version_max: "23.999"
+protocol: ospf
+feature: area_config
+input_schema:
+  - { name: area_id, type: string, required: true }
+  - { name: interfaces, type: array, required: true,
+      items: { name: string, passive: bool } }
+output_format: cli
+validated_against: []
+author: ""
+reviewers: []
+last_reviewed: ""

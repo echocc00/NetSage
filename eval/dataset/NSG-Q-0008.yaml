@@ -1,0 +1,48 @@
+id: NSG-Q-0008
+title: "OSPF 邻居反复震荡（Hello 计时器不一致）"
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17
+difficulty: 2
+tags: [ospf, hello, timer, flap]
+
+input:
+  symptom: "OSPF 邻居反复 Up/Down，日志频繁打印 ADJCHG。show ospf interface 发现本端 Hello 10s Dead 40s，对端 Hello 30s Dead 120s。"
+  device_info:
+    model: Catalyst 9300
+    version: IOS-XE 17.10
+  evidence:
+    - log_lines:
+      - "%OSPF-5-ADJCHG: Process 1, Nbr 10.1.1.2 from GigabitEthernet0/1 went from Full to Down"
+      - "Dead timer expired"
+  question: "给出根因假设 + 验证步骤 + 修复方案"
+
+expected_output:
+  root_causes:
+    - rank: 1
+      cause: "OSPF Hello/Dead 计时器两端不一致（本端 10/40，对端 30/120）"
+      probability: 0.9
+      evidence: ["Dead timer expired + 计时器不一致"]
+      verify: "show ip ospf interface | include Timer"
+      fix: "对齐两端 Hello/Dead（ip ospf hello-interval 10 + ip ospf dead-interval 40）"
+    - rank: 2
+      cause: "网络类型不一致导致 Hello 默认值不同（broadcast 10s vs p2p 30s）"
+      probability: 0.05
+      verify: "show ip ospf interface | include Network Type"
+      fix: "对齐 network type"
+    - rank: 3
+      cause: "物理链路丢包导致 Hello 丢失"
+      probability: 0.03
+      verify: "show interface | include error"
+      fix: "排查物理层"
+  references:
+    - type: vendor_doc
+      url: https://www.cisco.com/c/en/us/support/docs/ip/ospf
+      version: IOS-XE-17
+
+anti_examples: ["重启 OSPF 进程", "调整 Dead timer 到很大值掩盖问题"]
+
+grading_rubric:
+  must_have: ["计时器不一致为 top", "含对齐修复", "≥1 验证命令"]
+  nice_to_have: ["提及网络类型影响", "≥3 候选根因"]
+  penalty: ["掩盖问题不修根因", "重启"]

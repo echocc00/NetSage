@@ -1,0 +1,17 @@
+bgp {{ local_asn }}
+{% if router_id is defined and router_id %}
+  router-id {{ router_id }}
+{% endif %}
+{% for peer in peers %}
+  peer {{ peer.address }} as-number {{ peer.remote_asn }}
+{% if peer.description is defined and peer.description %}
+  peer {{ peer.address }} description {{ peer.description }}
+{% endif %}
+{% endfor %}
+{% if ebgp_multihop is defined and ebgp_multihop %}
+  peer {{ peers[0].address }} ebgp-max-hop {{ ebgp_multihop }}
+{% endif %}
+{% if import_strategy is defined and import_strategy %}
+  ipv4-family unicast
+    import-route {{ import_strategy }}   # static / direct / ospf
+{% endif %}

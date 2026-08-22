@@ -1,0 +1,11 @@
+ospf 1 router-id {{ router_id }}
+{% for nbr in network_areas %}
+area {{ nbr.area_id }}
+  network {{ nbr.network }} {{ nbr.wildcard }}
+{% endfor %}
+{% if authentication is defined and authentication %}
+ospf authentication-mode md5 {{ authentication_key_id }} cipher {{ authentication_key }}
+{% endif %}
+{% if silent_interfaces is defined and silent_interfaces %}
+silent-interface {{ silent_interfaces | join(',') }}
+{% endif %}

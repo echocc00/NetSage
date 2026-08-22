@@ -1,0 +1,19 @@
+template_id: h3c_comware_bgp_peering
+vendor: h3c
+os: comware
+version_min: "7.0"
+version_max: "7.999"
+protocol: bgp
+feature: peering
+input_schema:
+  - { name: local_asn, type: int, required: true }
+  - { name: router_id, type: string, required: true }
+  - { name: peers, type: array, required: true,
+      items: { address: string, remote_asn: int, description: string } }
+  - { name: import_strategy, type: string, required: false,
+      enum: [static, direct, ospf] }
+output_format: cli
+validated_against: []
+author: ""
+reviewers: []
+last_reviewed: ""

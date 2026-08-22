@@ -1,0 +1,48 @@
+id: NSG-Q-0009
+title: "VXLAN EVPN Type-2 路由不通（BGP EVPN 邻居未建立）"
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 3
+tags: [vxlan, evpn, type-2, bgp]
+
+input:
+  symptom: "跨 Leaf 虚机通信失败，display bgp evpn peer 显示 EVPN 邻居 Idle，Type-2 MAC/IP 路由未学习。"
+  device_info:
+    model: CE6881
+    version: VRP-8.180
+  evidence:
+    - log_lines:
+      - "display bgp evpn peer: 10.2.2.2 State = Idle"
+      - "display evpn vni: 无 Type-2 路由"
+  question: "给出根因假设 + 验证步骤 + 修复方案"
+
+expected_output:
+  root_causes:
+    - rank: 1
+      cause: "BGP EVPN address-family 未启用或邻居未在 EVPN family 下 enable"
+      probability: 0.6
+      evidence: ["EVPN 邻居 Idle → EVPN family 配置缺失"]
+      verify: "display bgp evpn peer + display current-config | include evpn"
+      fix: "在 BGP EVPN address-family 下 peer enable"
+    - rank: 2
+      cause: "EVPN 邻居 loopback 不可达（underlay 路由缺失）"
+      probability: 0.25
+      verify: "ping -a <loopback> <对端 loopback>"
+      fix: "补 underlay 路由"
+    - rank: 3
+      cause: "VNI 与 VLAN 映射不一致，本地不生成 Type-2"
+      probability: 0.1
+      verify: "display vxlan vni"
+      fix: "对齐 VNI-VLAN 映射"
+  references:
+    - type: vendor_doc
+      url: https://support.huawei.com/evpn-vxlan
+      version: VRP-8.180
+
+anti_examples: ["重启设备", "删除 EVPN 配置重配", "改用静态 MAC"]
+
+grading_rubric:
+  must_have: ["EVPN family 为 top 候选", "含 peer enable 修复", "≥1 验证命令"]
+  nice_to_have: ["区分 underlay/overlay", "≥3 候选根因"]
+  penalty: ["推荐重启", "未验证 EVPN 邻居状态"]

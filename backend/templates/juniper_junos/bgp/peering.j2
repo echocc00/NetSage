@@ -1,0 +1,15 @@
+protocols {
+    bgp {
+        group {{ group_name }} {
+            type external;
+            peer-as {{ remote_asn }};
+{% for peer in peers %}
+            neighbor {{ peer.address }} {
+{% if peer.description is defined and peer.description %}
+                description "{{ peer.description }}";
+{% endif %}
+            }
+{% endfor %}
+        }
+    }
+}

@@ -1,0 +1,53 @@
+id: NSG-Q-0001
+title: "示例：OSPF 邻居反复震荡（VRP-8.180）"
+# 评测集题目 schema 示例，供出题参考（v2.0 二十二章 22.2）
+category: troubleshoot  # / config / design / audit / perf
+vendor: huawei
+version: VRP-8.180
+difficulty: 3           # 1-5
+tags: [ospf, hello, crc, optical]
+
+input:
+  symptom: "OSPF-5-ADJCHG: Neighbor 10.1.1.2 Down, Hello expired"
+  device_info:
+    model: ME60-X8
+    version: VRP-8.180
+    interfaces: [GigabitEthernet0/2/0]
+  evidence:
+    - config_snippet: "[已脱敏]"
+    - log_lines:
+        - "OSPF-5-ADJCHG: Neighbor 10.1.1.2 Down, Hello expired"
+        - "IFNET-4-LINKFAULT: GigabitEthernet0/2/0 CRC error"
+  question: "请给出根因假设 + 验证步骤 + 修复方案"
+
+expected_output:
+  root_causes:  # ≥3 个，按概率排序
+    - rank: 1
+      cause: "光模块 CRC 错误导致 hello 包丢失"
+      probability: 0.7
+      evidence: ["IFNET-4-LINKFAULT"]
+      verify: "display interface GigabitEthernet0/2/0 | include CRC"
+      fix: "更换光模块"
+    - rank: 2
+      cause: "hello/dead 计时器不一致"
+      probability: 0.2
+      verify: "display ospf peer"
+      fix: "对齐两端 timer"
+    - rank: 3
+      cause: "MTU 不一致导致 DD 重传"
+      probability: 0.1
+      verify: "display interface | include MTU"
+      fix: "对齐 MTU"
+  references:
+    - type: vendor_doc
+      url: https://support.huawei.com/vrp-ospf
+      version: VRP-8.180
+
+anti_examples:  # 反例：必须识别的错误回答
+  - "诊断为配置错误，请删除 OSPF 进程"
+  - "请重启设备"
+
+grading_rubric:
+  must_have:      ["≥1 候选根因", "≥1 验证命令", "≥1 修复命令"]
+  nice_to_have:   ["引用 RAG 文档", "≥3 候选根因", "含回滚命令"]
+  penalty:        ["推荐重启设备", "删除进程", "无证据瞎猜"]

@@ -1,0 +1,58 @@
+# NetBox Source of Truth（Phase 2 P2-2）
+# 用法：docker compose -f infra/docker-compose.dev.yml -f infra/docker-compose.netbox.yml up netbox
+# 首次启动需初始化（见 infra/netbox/init.sh）
+services:
+  netbox:
+    image: netboxcommunity/netbox:latest
+    container_name: netsage-netbox
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_NAME: netbox
+      DB_USER: ${POSTGRES_USER:-netsage}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-changeme_dev_only}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      SECRET_KEY: ${NETBOX_SECRET_KEY:-devsecretkeyonlymin25chars!!}
+      SUPERUSER_NAME: admin
+      SUPERUSER_PASSWORD: ${NETBOX_ADMIN_PASSWORD:-admin}
+      SUPERUSER_EMAIL: admin@netsage.local
+      ALLOWED_HOSTS: "*"
+    ports:
+      - "8001:8000"   # NetBox Web（8000 被后端占用，用 8001）
+    volumes:
+      - netbox_media:/opt/netbox/netbox/media
+      - netbox_reports:/opt/netbox/netbox/reports
+      - netbox_scripts:/opt/netbox/netbox/scripts
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/api/status/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    profiles: ["netbox"]   # 可选服务，默认不起
+
+  netbox-worker:
+    image: netboxcommunity/netbox:latest
+    container_name: netsage-netbox-worker
+    depends_on:
+      netbox:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_NAME: netbox
+      DB_USER: ${POSTGRES_USER:-netsage}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-changeme_dev_only}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      SECRET_KEY: ${NETBOX_SECRET_KEY:-devsecretkeyonlymin25chars!!}
+    command: /opt/netbox/venv/bin/python /opt/netbox/netbox/manage.py rqworker
+    profiles: ["netbox"]
+
+volumes:
+  netbox_media:
+  netbox_reports:
+  netbox_scripts:

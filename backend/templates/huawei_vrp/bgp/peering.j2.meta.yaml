@@ -1,0 +1,21 @@
+# huawei_vrp/bgp/peering 模板元数据（v2.0 27.2 必带字段）
+template_id: huawei_vrp_bgp_peering
+vendor: huawei
+os: vrp
+version_min: "8.0"
+version_max: "8.999"
+protocol: bgp
+feature: peering
+input_schema:        # Jinja2 入参 JSON Schema
+  - { name: local_asn, type: int, required: true }
+  - { name: router_id, type: string, required: false }
+  - { name: peers, type: array, required: true,
+      items: { address: string, remote_asn: int, description: string } }
+  - { name: ebgp_multihop, type: int, required: false }
+  - { name: import_strategy, type: string, required: false,
+      enum: [static, direct, ospf] }
+output_format: cli
+validated_against: []
+author: ""            # 待网络工程师填写
+reviewers: []
+last_reviewed: ""

@@ -1,0 +1,19 @@
+template_id: cisco_iosxe_bgp_peering
+vendor: cisco
+os: iosxe
+version_min: "17.0"
+version_max: "17.999"
+protocol: bgp
+feature: peering
+input_schema:
+  - { name: local_asn, type: int, required: true }
+  - { name: router_id, type: string, required: true }
+  - { name: peers, type: array, required: true,
+      items: { address: string, remote_asn: int, description: string } }
+  - { name: import_strategy, type: string, required: false,
+      enum: [static, connected, ospf] }
+output_format: cli
+validated_against: []
+author: ""
+reviewers: []
+last_reviewed: ""
