@@ -1,0 +1,30 @@
+# cisco_iosxe/vxlan/anycast_gateway 模板元数据（v2.0 27.2 必带字段）
+template_id: cisco_iosxe_vxlan_anycast_gateway
+vendor: cisco
+os: iosxe
+version_min: "17.06"
+version_max: "17.999"
+protocol: vxlan
+feature: anycast_gateway
+input_schema:
+  - { name: anycast_gw_mac, type: string, required: true,
+      desc: "统一任意网关 MAC，格式 HHHH.HHHH.HHHH" }
+  - { name: vlan_id, type: int, required: true,
+      desc: "SVI/VLAN ID" }
+  - { name: vni, type: int, required: true,
+      desc: "VXLAN VNI" }
+  - { name: vlanif_ip, type: string, required: true,
+      desc: "SVI IP/掩码，格式 x.x.x.x/yy" }
+  - { name: evpn_instance_id, type: int, required: true,
+      desc: "EVPN instance ID" }
+  - { name: rd, type: string, required: true,
+      desc: "Route Distinguisher" }
+  - { name: route_target, type: string, required: true,
+      desc: "Route Target" }
+  - { name: local_asn, type: int, required: true,
+      desc: "本端 BGP AS" }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Cisco IOS-XE 17.x Configuration Guide - Anycast Gateway"
+reviewers: []
+last_reviewed: "2026-08-23"

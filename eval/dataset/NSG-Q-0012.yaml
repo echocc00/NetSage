@@ -1,0 +1,107 @@
+id: NSG-Q-0012
+title: "OSPF 邻居反复震荡（华为 VRP-8.180，network-type 不一致 + hello 错配）"
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 4
+tags: [ospf, hello, dead, network-type, p2p, broadcast, flap]
+
+input:
+  symptom: "OSPF-5-ADJCHG: Neighbor 10.1.1.2 Down, HelloExpired"
+  device_info:
+    model: CE6880-48S8CQ
+    version: VRP-8.180
+    interfaces: [40GE1/0/1]
+  evidence:
+    - config_snippet: |
+        # spine01 侧 - 已脱敏
+        ospf 1 router-id 10.0.0.1
+          area 0.0.0.0
+            network-type broadcast
+            network 10.1.1.0 0.0.0.255
+    - config_snippet: |
+        # leaf01 侧（对端）
+        ospf 1 router-id 10.0.0.2
+          area 0.0.0.0
+            network-type p2p
+            network 10.1.1.0 0.0.0.255
+            # 注：该厂商 P2P 默认 hello 10s/dead 40s，Broadcast 默认 hello 10s/dead 40s，但版本一致性 hidden issue
+    - log_lines:
+        - "%%01OSPF/5/ADJCHG(l): Neighbor 10.1.1.2 Down, HelloExpired"
+        - "%%01OSPF/5/ADJCHG(l): Neighbor 10.1.1.2 Up"
+        - "display ospf peer brief: state 抖动频次 ~10 次/分钟"
+        - "收到 OSPF packet: Type=1 (Hello), length=44, length mismatch"
+  question: "给出根因假设 + 验证步骤 + 修复方案；说明为何 broadcast 与 p2p 之间应统一 network-type，避免长期隐患。"
+
+expected_output:
+  root_causes:
+    - rank: 1
+      cause: "OSPF 网络类型不一致（spine broadcast vs leaf p2p）+ 隐藏的字段兼容性问题"
+      probability: 0.55
+      evidence:
+        - "OSPF Hello 报文中 Network Mask 字段在 broadcast 必须携带，在 p2p 不携带"
+        - "新版本 VRP 8.180 严格校验 Hello 长度，发现 p2p 端不发 mask 导致长度不匹配，丢弃"
+      verify: |
+        # 1. 看本端 network-type
+        display ospf interface 40GE1/0/1 | include Network
+        # 2. 看邻居状态
+        display ospf peer 10.1.1.2
+        # 3. 抓包对端 network-type
+        display ospf peer brief verbose
+      fix: |
+        # 方案 A：两端统一为 broadcast（推荐，因为有 DR/BDR 选举，便于扩展）
+        interface 40GE1/0/1
+          ospf network-type broadcast
+        # 方案 B：两端统一为 p2p（简化，省 DR 选举，但只能两台设备一条链路）
+        interface 40GE1/0/1
+          ospf network-type p2p
+        # Spine/Leaf 互联建议 broadcast，更利于加节点
+      rollback: |
+        interface 40GE1/0/1
+          undo ospf network-type
+    - rank: 2
+      cause: "OSPF hello/dead 计时器不一致"
+      probability: 0.2
+      verify: "display ospf interface 40GE1/0/1 verbose | include 'Hello Timer' 'Dead Timer'"
+      fix: "两端接口下同步 ospf timer hello 10 dead 40"
+    - rank: 3
+      cause: "MTU 不一致导致 DD/LSU 大包丢弃（DD 包超过 1500B）"
+      probability: 0.15
+      verify: "display interface 40GE1/0/1 | include MTU + display ospf peer brief verbose | include 'MTU'"
+      fix: "两端 MTU 对齐（默认 1500），可在接口下 ospf mtu-enable 禁用 MTU 校验"
+    - rank: 4
+      cause: "链路质量差（CRC/光衰）导致 Hello 丢包"
+      probability: 0.1
+      verify: "display interface 40GE1/0/1 | include CRC + display transceiver diagnosis"
+      fix: "更换光模块/光纤"
+  references:
+    - type: vendor_doc
+      url: https://support.huawei.com/enterprise/zh/doc/EDOC1100188312
+      version: VRP-8.180
+      title: "VRP 8.180 OSPF 配置指南 - 网络类型章节"
+    - type: rfc
+      url: https://datatracker.ietf.org/doc/html/rfc2328
+      title: "OSPFv2 RFC (network type field)"
+
+anti_examples:
+  - "OSPF 邻居反复震荡是因为 OSPF 进程太多，删除全部实例重建"
+  - "直接 shutdown 再 undo shutdown 接口"
+  - "重启设备"
+  - "把 area 改成 0.0.0.1 试试"
+
+grading_rubric:
+  must_have:
+    - "top 根因为 network-type broadcast vs p2p 不一致"
+    - "≥1 修复方案（统一为 broadcast 或 p2p）"
+    - "≥1 验证命令"
+    - "提及 Spine/Leaf 互联推荐 broadcast"
+  nice_to_have:
+    - "≥3 候选根因并附概率"
+    - "解释 VRP 8.180 严格 Hello 长度校验是新版本隐含变更"
+    - "方案 A/B 给出（broadcast vs p2p 选型理由）"
+    - "含 rollback 命令"
+  penalty:
+    - "推荐重启设备"
+    - "删除 OSPF 进程"
+    - "把 area 改成 0.0.0.1"
+    - "无证据瞎猜"

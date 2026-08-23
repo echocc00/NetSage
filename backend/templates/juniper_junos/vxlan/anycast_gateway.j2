@@ -1,0 +1,9 @@
+set routing-instances {{ instance_name }} instance-type virtual-switch
+set routing-instances {{ instance_name }} vlan-id {{ vlan_id }}
+set routing-instances {{ instance_name }} vxlan vni {{ vni }}
+set routing-instances {{ instance_name }} routing-interface irb.{{ irb_unit }}
+set routing-instances {{ instance_name }} protocols evpn encapsulation vxlan
+set routing-instances {{ instance_name }} protocols evpn default-gateway do-esi-switching
+!
+set interfaces irb unit {{ irb_unit }} family inet address {{ irb_ip }}
+set interfaces irb unit {{ irb_unit }} mac {{ anycast_gw_mac }}

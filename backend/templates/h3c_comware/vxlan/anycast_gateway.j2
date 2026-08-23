@@ -1,0 +1,12 @@
+evpn-overlay enable
+!
+vsi {{ vsi_name }}
+  evpn encapsulation vxlan
+  vxlan vni {{ vni }}
+  gateway vsi-interface {{ vsi_interface_id }}
+  #
+  evpn default-gateway anycast
+  evpn gw-mac {{ anycast_gw_mac }}
+!
+interface Vsi-interface{{ vsi_interface_id }}
+  ip address {{ vsi_interface_ip }}

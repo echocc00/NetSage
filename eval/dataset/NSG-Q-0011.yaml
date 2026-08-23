@@ -1,0 +1,98 @@
+id: NSG-Q-0011
+title: "BGP 邻居抖动（华为 VRP-8.180，hello/hold 计时器不一致）"
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 3
+tags: [bgp, hello, timer, flap, hold-time]
+
+input:
+  symptom: "BGP-5-ADJCHG: Neighbor 10.1.1.2 Down, Hello expired"
+  device_info:
+    model: CE12808
+    version: VRP-8.180
+    interfaces: [10GE1/0/1, 10GE1/0/2]
+  evidence:
+    - config_snippet: |
+        # spine01 侧
+        bgp 65001
+          peer 10.1.1.2 as-number 65002
+          peer 10.1.1.2 timer 10 30       # 本端 hold-time=30s
+          peer 10.1.1.2 password cipher %$%$xxx%$%$
+    - config_snippet: |
+        # leaf01 侧（对端，已脱敏）
+        bgp 65002
+          peer 10.1.1.1 as-number 65001
+          peer 10.1.1.1 timer 20 60       # 对端 hold-time=60s
+    - log_lines:
+        - "%%01BGP/5/ADJCHG(l): Neighbor 10.1.1.2 (AS 65002) Down, Hello expired"
+        - "%%01BGP/5/ADJCHG(l): Neighbor 10.1.1.2 (AS 65002) Up"
+        - "重复 flap 50 次/分钟"
+  question: "请给出根因假设、验证步骤与修复方案；说明为何两端 timer 不一致会导致反复 Up/Down，并给出统一计时器的最佳实践。"
+
+expected_output:
+  root_causes:
+    - rank: 1
+      cause: "BGP hold-time 计时器两端不一致（本端 30s / 对端 60s）"
+      probability: 0.7
+      evidence:
+        - "本端 timer 10 30 vs 对端 20 60"
+        - "BGP hold-time 取两端较小值（30s），对端以 20s 间隔发 hello，本端按 10s 期望收包 → 过 30s 仍丢 1 包即 Down"
+      verify: "display bgp peer 10.1.1.2 verbose | include 'Configured timer'"
+      fix: |
+        # 任选一端对齐。建议统一 hold-time=180s（生产环境常用）
+        bgp 65001
+          peer 10.1.1.2 timer 10 180
+        # 对端同步改
+        bgp 65002
+          peer 10.1.1.1 timer 10 180
+      rollback: |
+        bgp 65001
+          undo peer 10.1.1.2 timer
+    - rank: 2
+      cause: "MTU 不一致导致 BGP Update 报文（大包 4096B+）丢弃"
+      probability: 0.15
+      verify: "display interface 10GE1/0/1 | include MTU && display ip interface 10GE1/0/1 | include MTU"
+      fix: "两端接口 MTU 对齐（默认 1500，生产可调 9216 jumbo）"
+    - rank: 3
+      cause: "链路质量差（CRC/光衰）导致丢包，BGP 重传 3 次后丢邻居"
+      probability: 0.1
+      verify: "display interface 10GE1/0/1 | include CRC"
+      fix: "查 display transceiver diagnosis → 更换光模块/光纤"
+    - rank: 4
+      cause: "路由策略抖动（import/export 路由被反复撤回）"
+      probability: 0.05
+      verify: "display bgp peer 10.1.1.2 verbose | include 'Last flap reason'"
+      fix: "display ip ip-prefix 查看是否反复撤回路由"
+  references:
+    - type: vendor_doc
+      url: https://support.huawei.com/enterprise/zh/doc/EDOC1100188293
+      version: VRP-8.180
+      title: "VRP 8.180 BGP 配置指南 - 邻居 timer 参数"
+    - type: vendor_kb
+      url: https://support.huawei.com/enterprise/zh/knowledge/KB100012345
+      title: "BGP-5-ADJCHG Hello expired 常见根因"
+
+anti_examples:
+  - "诊断为配置错误，请直接删除 BGP 进程"
+  - "请重启设备"
+  - "无需验证，直接修改对端 IP"
+  - "所有 BGP 邻居都必须改为 hold-time 60s"
+
+grading_rubric:
+  must_have:
+    - "≥1 候选根因聚焦 hold-time 不一致"
+    - "≥1 验证命令（display bgp peer timer）"
+    - "≥1 修复命令（timer 修改示例）"
+    - "提醒两端 timer 必须一致"
+  nice_to_have:
+    - "≥3 候选根因并附概率"
+    - "给出统一 hold-time 推荐值（180s）"
+    - "含回滚命令"
+    - "解释 hold-time 取 min(min_a, min_b) 算法"
+    - "引用 RAG 手册章节"
+  penalty:
+    - "推荐重启设备"
+    - "删除 BGP 进程"
+    - "无证据瞎猜"
+    - "忽略对端配置，直接盲改本端"

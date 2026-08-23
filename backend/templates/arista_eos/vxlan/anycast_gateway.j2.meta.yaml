@@ -1,0 +1,28 @@
+# arista_eos/vxlan/anycast_gateway 模板元数据（v2.0 27.2 必带字段）
+template_id: arista_eos_vxlan_anycast_gateway
+vendor: arista
+os: eos
+version_min: "4.24"
+version_max: "4.999"
+protocol: vxlan
+feature: anycast_gateway
+input_schema:
+  - { name: anycast_gw_mac, type: string, required: true,
+      desc: "全局统一 VR MAC，格式 HH:HH:HH:HH:HH:HH" }
+  - { name: vlan_id, type: int, required: true,
+      desc: "SVI VLAN ID" }
+  - { name: vni, type: int, required: true,
+      desc: "VXLAN VNI" }
+  - { name: vlanif_ip, type: string, required: true,
+      desc: "SVI IP/掩码，格式 x.x.x.x/yy" }
+  - { name: vxlan_interface, type: string, required: true,
+      desc: "Vxlan 接口名，一般 Vxlan1" }
+  - { name: local_asn, type: int, required: true,
+      desc: "本端 BGP AS" }
+  - { name: vtep_peers, type: array, required: true,
+      items: { address: string, remote_asn: int } }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Arista EOS 4.24 Virtual-Router 章节"
+reviewers: []
+last_reviewed: "2026-08-23"

@@ -1,0 +1,116 @@
+id: NSG-Q-0013
+title: "VXLAN EVPN Type-2 路由不通（思科 IOS-XE 17.09，RT 配置错误）"
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 5
+tags: [vxlan, evpn, type-2, route-target, rd, l2vpn]
+
+input:
+  symptom: "同 VNI 10010 跨 Leaf 通信异常，Leaf-A 上 VM1 (10.1.10.11) ping Leaf-B 上 VM2 (10.1.10.12) 100% 丢包；同 Leaf 内同 VLAN 通信正常。"
+  device_info:
+    model: Catalyst 9500-40Y4C
+    version: IOS-XE 17.09.04a
+    interfaces: [FortyGigabitEthernet1/1/1, Loopback0]
+  evidence:
+    - config_snippet: |
+        # Leaf-A（已脱敏）
+        router bgp 65000
+          l2vpn evpn instance 10 point-to-point
+            rd 10.0.0.1:10
+            route-target import 65000:10010
+            route-target export 65000:10010
+        # Leaf-B
+        router bgp 65000
+          l2vpn evpn instance 10 point-to-point
+            rd 10.0.0.2:10
+            route-target import 65000:10010       # 这里
+            route-target export 65000:10000       # ⚠️ 写成 10000 而非 10010！
+    - log_lines:
+        - "show bgp l2vpn evpn: Leaf-B only exports Type-2 routes with RT 65000:10000"
+        - "show bgp l2vpn evpn on Leaf-A: 不接收任何 Type-2 from 10.0.0.2"
+        - "show nve peer: 10.0.0.2 state=Up（VTEP 互通正常）"
+        - "display nve vni: vni 10010 state=Up"
+  question: "请给出根因假设、完整的验证步骤、修复方案，并说明为什么单端 RT 错配会让 EVPN Type-2 路由被静默丢弃。"
+
+expected_output:
+  root_causes:
+    - rank: 1
+      cause: "Leaf-B 的 route-target export 写错（10000 而非 10010），Type-2 路由携带 RT 65000:10010 但导出的是 65000:10000"
+      probability: 0.75
+      evidence:
+        - "show bgp l2vpn evpn route-type 2 → Leaf-B 上无 [65000:10010] 导出记录"
+        - "Leaf-A 看不到任何 Type-2 from Leaf-B"
+        - "VTEP 链路本身 Up（nve peer state=Up），所以底层网络没问题，问题在 EVPN 控制平面"
+      verify: |
+        # 1. 看 Leaf-B 的实际导出 RT
+        show bgp l2vpn evpn
+        # 2. 看 RT 是否被 import 命中
+        show bgp l2vpn evpn rd 10.0.0.2:10
+        # 3. 看 vrf-target 是否生效
+        show running-config | section l2vpn evpn instance
+        # 4. 看 vni 状态
+        show nve vni 10010
+      fix: |
+        # Leaf-B 修复（统一 export RT 与 import RT）
+        conf t
+          router bgp 65000
+          l2vpn evpn instance 10 point-to-point
+            route-target export 65000:10010    # 改为正确值
+        end
+        # 验证：show bgp l2vpn evpn 应能看到携带 [65000:10010] 的 Type-2 路由
+      rollback: |
+        # 保存原配置（备份），修改出错立即 revert
+        show running-config | redirect tftp://backup/route-target-err.cfg
+        # 回滚
+        router bgp 65000
+          l2vpn evpn instance 10 point-to-point
+            route-target export 65000:10000
+    - rank: 2
+      cause: "RD 写法不规范，导致 EVPN 路由 RD 不匹配"
+      probability: 0.1
+      verify: "show bgp l2vpn evpn | include RD；Leaf-A 和 Leaf-B 的 RD 必须不同但格式合法 (ip:nn)"
+      fix: "统一 RD 格式：每个 Leaf 用本地 Loopback IP 作 RD 前缀"
+    - rank: 3
+      cause: "ARP suppression 启用不一致，部分 Leaf 仍泛洪 ARP"
+      probability: 0.1
+      verify: "show running-config | include arp suppression ; show nve vni 10010 detail"
+      fix: "所有 Leaf 统一启用 ARP suppression"
+    - rank: 4
+      cause: "BGP EVPN address-family 漏配 neighbor activate"
+      probability: 0.05
+      verify: "show bgp l2vpn evpn summary；show ip bgp neighbors 10.0.0.2 | include EVPN"
+      fix: "router bgp 65000 → address-family l2vpn evpn → neighbor 10.0.0.2 activate"
+  references:
+    - type: vendor_doc
+      url: https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9500/software/17-09/configuration/guide/vxlan/b_1709_bgp_evpn_vxlan.html
+      version: IOS-XE-17.09
+      title: "Catalyst 9500 - BGP EVPN VXLAN Configuration Guide, Route Target section"
+    - type: rfcdraft
+      url: https://datatracker.ietf.org/doc/html/draft-ietf-bess-evpn-overlay
+      title: "EVPN Overlay: Route-Target Constraints"
+
+anti_examples:
+  - "重启 Leaf-B"
+  - "删除 l2vpn evpn instance 重建"
+  - "改 VNI 号"
+  - "改 VTEP IP"
+  - "重启 EVPN 进程"
+
+grading_rubric:
+  must_have:
+    - "top 根因为 RT export 写错（10000 vs 10010）"
+    - "修复 Leaf-B 的 route-target export"
+    - "提供完整验证命令链路（show bgp l2vpn evpn → show running-config → show nve vni）"
+    - "强调 VTEP 链路 Up 但 EVPN 控制平面故障的排查思路"
+  nice_to_have:
+    - "解释 EVPN RT 不匹配如何静默丢路由（不报错）"
+    - "附 rollback 命令"
+    - "≥3 候选根因"
+    - "引用厂商文档"
+    - "提及 RD/ARP suppression 等补充排查项"
+  penalty:
+    - "推荐重启设备"
+    - "删除 l2vpn evpn instance"
+    - "改 VNI 或 VTEP IP（与本故障无关）"
+    - "无证据瞎猜"

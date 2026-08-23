@@ -1,0 +1,28 @@
+# huawei_vrp/vxlan/evpn_l2vpn 模板元数据（v2.0 27.2 必带字段）
+template_id: huawei_vrp_vxlan_evpn_l2vpn
+vendor: huawei
+os: vrp
+version_min: "8.180"
+version_max: "8.999"
+protocol: vxlan
+feature: evpn_l2vpn
+input_schema:
+  - { name: local_asn, type: int, required: true }
+  - { name: rd_ip, type: string, required: true,
+      desc: "本端 Loopback IP（作为 BGP update-source）" }
+  - { name: vtep_peers, type: array, required: true,
+      items: { address: string, remote_asn: int },
+      desc: "远端 VTEP peer 列表（BGP EVPN 邻居）" }
+  - { name: bridge_domain_id, type: int, required: true,
+      desc: "BD ID" }
+  - { name: vni, type: int, required: true,
+      desc: "VXLAN VNI" }
+  - { name: vbdif_ip, type: string, required: true,
+      desc: "VBD 接口 IP/掩码（任意网关），格式 x.x.x.x/yy" }
+  - { name: advertise_arp, type: bool, required: false,
+      desc: "是否启用 ARP collect（抑制 ARP 泛洪）" }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：华为 VRP 8.180 配置指南 VXLAN/EVPN 章节"
+reviewers: []
+last_reviewed: "2026-08-23"

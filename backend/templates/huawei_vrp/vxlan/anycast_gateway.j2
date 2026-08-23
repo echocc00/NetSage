@@ -1,0 +1,11 @@
+evpn-overlay enable
+#
+bridge-domain {{ bridge_domain_id }}
+  vxlan vni {{ vni }}
+#
+interface Vbdif{{ bridge_domain_id }}
+  ip address {{ vbdif_ip }}
+  arp collect host
+  vxlan anycast-gateway enable
+  #
+  evpn anycast-gateway local-mac {{ anycast_gw_mac }}

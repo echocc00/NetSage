@@ -1,0 +1,18 @@
+fabric forwarding anycast-gateway-mac {{ anycast_gw_mac }}
+!
+vlan {{ vlan_id }}
+  vn-segment {{ vni }}
+!
+interface nve1
+  member vni {{ vni }}
+    ingress-replication protocol bgp
+!
+interface Vlan{{ vlan_id }}
+  ip address {{ vlanif_ip }}
+  fabric forwarding mode anycast-gateway
+!
+router bgp {{ local_asn }}
+  l2vpn evpn instance {{ evpn_instance_id }} point-to-point
+    rd {{ rd }}
+    route-target import {{ route_target }}
+    route-target export {{ route_target }}

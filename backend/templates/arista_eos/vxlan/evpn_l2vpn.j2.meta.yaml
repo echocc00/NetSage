@@ -1,0 +1,25 @@
+# arista_eos/vxlan/evpn_l2vpn 模板元数据（v2.0 27.2 必带字段）
+template_id: arista_eos_vxlan_evpn_l2vpn
+vendor: arista
+os: eos
+version_min: "4.24"
+version_max: "4.999"
+protocol: vxlan
+feature: evpn_l2vpn
+input_schema:
+  - { name: local_asn, type: int, required: true }
+  - { name: router_id, type: string, required: true,
+      desc: "BGP Router ID = Loopback IP" }
+  - { name: vtep_peers, type: array, required: true,
+      items: { address: string, remote_asn: int } }
+  - { name: vlan_id, type: int, required: true,
+      desc: "VLAN ID" }
+  - { name: vni, type: int, required: true,
+      desc: "VXLAN VNI" }
+  - { name: vxlan_interface, type: string, required: true,
+      desc: "Vxlan 接口名，一般 Vxlan1" }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Arista EOS 4.24 VXLAN/EVPN Manual"
+reviewers: []
+last_reviewed: "2026-08-23"

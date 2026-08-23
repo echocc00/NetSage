@@ -1,0 +1,27 @@
+ip routing
+!
+interface Loopback0
+  ip address {{ router_id }}/32
+!
+router bgp {{ local_asn }}
+  router-id {{ router_id }}
+{% for peer in vtep_peers %}
+  neighbor {{ peer.address }} remote-as {{ peer.remote_asn }}
+  neighbor {{ peer.address }} update-source Loopback0
+{% endfor %}
+  !
+  address-family evpn
+{% for peer in vtep_peers %}
+    neighbor {{ peer.address }} activate
+{% endfor %}
+!
+vlan {{ vlan_id }}
+  vn-segment {{ vni }}
+!
+interface {{ vxlan_interface }}
+  no shutdown
+  source-interface Loopback0
+{% for peer in vtep_peers %}
+  vxlan-unicast-group {{ peer.address }}
+{% endfor %}
+  vxlan vlan {{ vlan_id }} vni {{ vni }}

@@ -1,0 +1,17 @@
+ip virtual-router mac-address {{ anycast_gw_mac }}
+!
+vlan {{ vlan_id }}
+  vn-segment {{ vni }}
+!
+interface {{ vxlan_interface }}
+  vxlan vlan {{ vlan_id }} vni {{ vni }}
+!
+interface Vlan{{ vlan_id }}
+  ip address {{ vlanif_ip }}
+  ip virtual-router address {{ vlanif_ip }}
+!
+router bgp {{ local_asn }}
+  address-family evpn
+{% for peer in vtep_peers %}
+    neighbor {{ peer.address }} activate
+{% endfor %}
