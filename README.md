@@ -1,7 +1,9 @@
 # NetSage · AI 网络工程师智能平台
 
-> **v0.1.0** · AI 辅助网络工程平台：让 AI 承担设计、配置生成、故障排查、安全审计等专业工作。
+> **v0.1.1** · AI 辅助网络工程平台：让 AI 承担设计、配置生成、故障排查、安全审计等专业工作。
 >
+
+[![Latest Release](https://img.shields.io/github/v/release/echocc00/NetSage?display_name=tag&style=flat-square)](https://github.com/echocc00/NetSage/releases/latest)
 
 > 💼 **商业授权 / Commercial licensing**
 >
@@ -24,7 +26,7 @@
 
 > 基线文档：[最终技术方案 v2.0](doc/NetSage-最终技术方案-v2.0.md) · [开发计划](doc/NetSage-开发计划与详细设计-v1.0.md) · [Phase 2 规划](doc/NetSage-Phase2-规划-v1.0.md) · [Phase 3 规划](doc/NetSage-Phase3-规划-v1.0.md)
 
-## 能力总览（v0.1.0）
+## 能力总览（v0.1.1）
 
 | 模块 | 状态 | 说明 |
 |---|---|---|
