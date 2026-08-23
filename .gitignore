@@ -37,6 +37,9 @@ eval/reports/*.html
 # 厂商手册原文（版权属厂商，不提交仓库，仅本地 ingest）
 doc/vendor-manuals/
 
+# 中途开发文档（仅本地保留，不入仓库）
+doc/NetSage-遗留内容交付规范-v1.0.md
+
 # OS
 .DS_Store
 Thumbs.db
