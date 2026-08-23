@@ -1,0 +1,94 @@
+id: NSG-Q-0031
+title: OSPFv3 邻居反复震荡（华为 VRP-8.180，instance-id 与 hello 计时器不一致）
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 4
+tags:
+- ospfv3
+- ipv6
+- hello
+- instance-id
+- link-local
+input:
+  symptom: OSPFv3 邻居 10.1.1.2 Down - Hello expired / 邻居反复 EXSTART 转 Down
+  device_info:
+    model: NE40E-X8A
+    version: VRP-8.180
+    interfaces:
+    - 10GE1/0/2
+  evidence:
+  - config_snippet: "# spine01 侧 - 已脱敏\nospfv3 1\n  router-id 10.0.0.1\n  area 0.0.0.0\n    network 10.1.1.0 0.0.0.255\ninterface 10GE1/0/2\n  ipv6 enable\n  ipv6 address 2001:db8:1::1/64\n  ospfv3 1 area\
+      \ 0.0.0.0 instance 17\n# 注：两端 instance-id 一致（17）,但 timer 不同\ninterface 10GE1/0/2\n  ospfv3 timer hello 10 dead 40\n"
+  - config_snippet: "# leaf01 侧（对端）\ninterface 10GE1/0/2\n  ipv6 address 2001:db8:1::2/64\n  ospfv3 1 area 0.0.0.0 instance 17\nospfv3 timer hello 20 dead 80\n"
+  - log_lines:
+    - '%%01OSPFv3/5/ADJCHG(l): Neighbor 10.0.0.2 Down, HelloExpired'
+    - 'display ospfv3 peer brief: 反复 EXSTART <-> Down'
+    - 'display ospfv3 interface 10GE1/0/2: 本端 hello 10s/dead 40s, 对端 hello 20s/dead 80s'
+  question: 请给出根因假设 + 验证步骤 + 修复方案；说明 OSPFv3 与 OSPFv2 在 hello 计时器协商规则上的差异、instance-id 与 Router ID 的关系。
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: OSPFv3 hello/dead 计时器两端不一致（本端 10s/40s vs 对端 20s/80s）
+    probability: 0.65
+    evidence:
+    - 本端 timer hello 10 dead 40
+    - 对端 timer hello 20 dead 80
+    - OSPFv3 跑在 IPv6 上，但 Hello 包内 ttl=1 / opts 与 OSPFv2 略不同
+    - 'display ospfv3 peer: state 抖动频次高，反复 HelloExpired'
+    verify: '# 1. 看本端接口计时器
+
+      display ospfv3 interface 10GE1/0/2 | include Timer
+
+      # 2. 看邻居状态
+
+      display ospfv3 peer 10.0.0.2
+
+      # 3. 抓 hello 包
+
+      display ospfv3 statistics | include hello'
+    fix: "# 方案 A：对齐 timer（推荐 10/40，保持所有 Layer 3 一致）\ninterface 10GE1/0/2\n  ospfv3 timer hello 10 dead 40\n# 方案 B：删除重配让两端用默认\ninterface 10GE1/0/2\n  undo ospfv3 timer hello\n  undo ospfv3 timer dead"
+    rollback: "# 恢复原 20/80 即可\ninterface 10GE1/0/2\n  ospfv3 timer hello 20 dead 80"
+  - rank: 2
+    cause: OSPFv3 instance-id 字段错配（虽然两端都配 17，但若接口重配后 enabled/disabled 不同，实例可能被隔开）
+    probability: 0.15
+    verify: display ospfv3 instance；display ospfv3 interface verbose
+    fix: 两端 interface 同步 instance-id
+  - rank: 3
+    cause: IPv6 link-local 地址未启用 / 接口地址冲突
+    probability: 0.1
+    verify: display ipv6 interface | include link-local
+    fix: ipv6 enable；接口 IPv6 global 重新规划
+  - rank: 4
+    cause: OSPFv3 network-type 不匹配（broadcast vs p2p）
+    probability: 0.1
+    verify: display ospfv3 interface | include Network
+    fix: ospfv3 network-type p2p 或 broadcast 两端对齐
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/enterprise/zh/doc/EDOC1100188312
+    version: VRP-8.180
+    title: VRP 8.180 OSPFv3 配置指南 - 接口参数章节
+  - type: rfc
+    url: https://datatracker.ietf.org/doc/html/rfc5340
+    title: 'OSPF for IPv6 (RFC 5340) - Appendix A: Differences from OSPFv2'
+anti_examples:
+- 请重启设备
+- 删除 OSPFv3 进程重建
+- IPv6 OSPFv3 是新协议可能有 bug，更换 IOS 版本
+- 把 instance-id 改成 0
+grading_rubric:
+  must_have:
+  - top 根因为 hello/dead 计时器不一致
+  - 提供 timer 对齐修复命令
+  - ≥1 验证命令
+  - 提醒 OSPFv3 与 OSPFv2 在 Hello 计时器协商规则上的差异（OSPFv2 取 min,OSPFv3 必须严格一致或大退化）
+  nice_to_have:
+  - ≥3 候选根因并附概率
+  - 提到 RFC 5340 与 OSPFv2 的差异（IPv6 instance-id / link-local 来源 / RFC 2328 兼容）
+  - 含 rollback
+  - 引用 RAG 文档
+  penalty:
+  - 推荐整机重启
+  - 删除 OSPFv3 进程
+  - 无证据瞎猜

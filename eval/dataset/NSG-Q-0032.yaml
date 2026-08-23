@@ -1,0 +1,112 @@
+id: NSG-Q-0032
+title: IPv6 BGP peer 卡 Active（华为 VRP-8.180，link-local 地址被选为 neighbor + IPv4 AFI 不匹配）
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 5
+tags:
+- bgp
+- ipv6
+- link-local
+- neighbor
+- active
+- afi
+input:
+  symptom: BGP IPv6 peer fe80::2 卡在 Active 状态反复 TCP 重连；同一 AS 内 IPv4 peer 正常
+  device_info:
+    model: CE12808
+    version: VRP-8.180
+  evidence:
+  - config_snippet: "# spine01 - 已脱敏\nbgp 65000\n  peer fe80::2 as-number 65000\n# 出错点：IPv6 BGP 默认会用 link-local（fe80::）建立连接，\n# 但若未配 next-hop-local-update-source，链路震荡后 link-local 失效\n  peer fe80::2 connect-interface\
+      \ 10GE1/0/2\n  ipv6-family unicast\n    peer fe80::2 enable\n# 出错点 2：没有 advertise-ipv4-family，可能触发 AFI 不一致告警\n"
+  - config_snippet: "# leaf01 (对端)\nbgp 65000\n  peer fe80::1 as-number 65000\n  peer fe80::1 connect-interface 10GE1/0/2\n  ipv6-family unicast\n    peer fe80::1 enable\n"
+  - log_lines:
+    - '%%01BGP/3/STATE_CHG: Peer fe80::2 -> Active, Active reason: TCP connect fail'
+    - 'display bgp ipv6 peer fe80::2 verbose: state=Active'
+    - 'log: link-local address fe80::2 collision detected (本地 link-local 也 fe80::2)'
+    - 'show ipv6 neighbors: fe80::2 在 Global 表冲突（实际是另一设备）'
+  question: 请给出根因假设 + 验证步骤 + 修复方案；说明 IPv6 BGP 用 link-local 建立连接的前提与坑，以及为何 IPv4 family 状态会影响 IPv6 peer。
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: IPv6 BGP peer 配置使用 link-local 地址 fe80::2，且链路震荡后发生 link-local 冲突（本身链路与对端不可达或地址冲突）
+    probability: 0.55
+    evidence:
+    - Link-local 必须配 connect-interface 指明出口，否则自动选择第一个 IPv6 接口的 link-local
+    - 本端 interface fe80::2 是 link-local 易变，链路震荡后即使地址没重启但接口 index 改变
+    - 对端 link-local 也是 fe80::2（不同前缀），但 IPv6 BGP 必须 peer 全 128-bit 匹配
+    verify: '# 1. 看 IPv6 BGP 邻居状态
+
+      display bgp ipv6 peer fe80::2 verbose
+
+      # 2. 看 link-local 是否变更
+
+      display ipv6 interface 10GE1/0/2 | include link-local
+
+      # 3. 看 IPv6 neighbors 表
+
+      display ipv6 neighbors
+
+      # 4. 抓 BGP 报文
+
+      display bgp ipv6 peer fe80::2 verbose | include Established
+
+      # 5. 看 IPv6 路由表是否有对端地址
+
+      display ipv6 routing-table'
+    fix: "# 方案 A：改用 IPv6 global 地址作 peer（推荐）\nbgp 65000\n  undo peer fe80::2\n  peer 2001:db8:1::2 as-number 65000\n  peer 2001:db8:1::2 connect-interface 10GE1/0/2\n  ipv6-family unicast\n    peer 2001:db8:1::2\
+      \ enable\n# 方案 B：若一定要用 link-local，配 next-hop-local-ipv6 + connect-interface 严格\nbgp 65000\n  peer fe80::2 connect-interface 10GE1/0/2\n  ipv6-family unicast\n    peer fe80::2 next-hop-local\n"
+    rollback: "# A 方案回滚\nbgp 65000\n  undo peer 2001:db8:1::2\n  peer fe80::2 as-number 65000\n"
+  - rank: 2
+    cause: BGP IPv4 family 未 enable 但 IPv6 family 开启，导致 AFI mismatch
+    probability: 0.15
+    verify: display bgp ipv6 peer | include family; display bgp ipv4-family unicast
+    fix: ipv4-family unicast 默认 OK，无需动；检查 ipv6-family peer fe80::2 enable 是否配
+  - rank: 3
+    cause: BGP MD5/TLS 认证错配（IPv6 peer 上若有 keychain）
+    probability: 0.1
+    verify: display bgp ipv6 peer fe80::2 verbose | include MD5
+    fix: 对齐两端 keychain 或暂时 disable auth
+  - rank: 4
+    cause: PE-CE VPNv6 模式下，区分业务 IPv6 VPN + 公网 IPv6 BGP，两者容易混用
+    probability: 0.1
+    verify: display bgp vpnv6 all
+    fix: 从公网 IPv6 BGP peer 中分离 PE 端 vpnv6
+  - rank: 5
+    cause: 中间 ACL 阻断 TCP 179 (IPv6 path)
+    probability: 0.1
+    verify: ipv6 access-list 应用策略
+    fix: permit tcp any eq bgp any
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/enterprise/zh/doc/EDOC1100188293
+    version: VRP-8.180
+    title: VRP 8.180 BGP IPv6 peer link-local 章节
+  - type: rfc
+    url: https://datatracker.ietf.org/doc/html/rfc2545
+    title: Use of BGP-4 Multiprotocol Extensions for IPv6 Inter-Domain Routing
+  - type: rfc
+    url: https://datatracker.ietf.org/doc/html/rfc4271
+    title: BGP-4 Connect-Retry handling for IPv6
+anti_examples:
+- 请重启设备
+- 删除 BGP 进程重建
+- 关闭 IPv6
+- 把所有 link-local 改成 fe80::1
+grading_rubric:
+  must_have:
+  - top 根因为 link-local 不可靠 + connect-interface 错配
+  - 修复方案首选 IPv6 global 代替 link-local
+  - ≥1 验证命令
+  - 提到 link-local 必须配合 connect-interface 才能稳定
+  - 提及 AFI 不一致的排查（ipv4 vs ipv6 family 是否互斥）
+  nice_to_have:
+  - ≥3 候选根因并附概率
+  - 解释 RFC 2545 多协议扩展
+  - 含 rollback
+  - 提及 IPv6 VPNv6 模式与公网 BGP peer 的隔离
+  penalty:
+  - 推荐重启设备
+  - 删除 BGP 进程
+  - 关闭 IPv6
+  - 无证据瞎猜

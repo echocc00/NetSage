@@ -1,0 +1,103 @@
+id: NSG-Q-0033
+title: H3C IRF 链路 2 端口 down 导致 IRF 拆分为 2 个成员反复 Up/Down
+category: troubleshoot
+vendor: h3c
+version: Comware-7.1.070
+difficulty: 5
+tags:
+- irf
+- mad
+- lldp
+- split
+- m-lag
+input:
+  symptom: IRF 堆叠链路 IRF-Port 1 上的 40GE 一端 shutdown 后，IRF 发生 split → 两台设备单独启动 Master → 一台检测到 split 触发 reboot → IRF 重新 merge → 反复 10 次/小时
+  device_info:
+    model: S12504X-AF
+    version: Comware 7.1.070 R7625
+    interfaces:
+    - FortyGigE1/0/25
+    - FortyGigE2/0/25
+  evidence:
+  - config_snippet: "# Device A\nirf member 1 priority 32\nirf-port 1/2\n  port group interface FortyGigE1/0/25\nirf-port 2/1\n  port group interface FortyGigE2/0/25 mode irf\nirf domain 100\nirf auto-merge\
+      \ enable\nmad enable\nmad lldp enable\nmad detection-mode lldp\n# 注：IRF 链路只有 1 条（40GE 1/0/25），单链路不推荐\n"
+  - log_lines:
+    - '%%20IRF/4/PHYLINK_DOWN: IRF port 1 link is down (FortyGigE1/0/25)'
+    - '%%20IRF/5/IRF_SPLIT: IRF system split into two IRF systems'
+    - '%%20IRF/5/IRF_REBOOT: Member 2 rebooted due to MAD loss recovery'
+    - '%%20IRF/5/IRF_MERGE: IRF system merge completed'
+    - 'display irf topology: 反复 1+1 split → merge'
+  question: 请给出根因假设 + 验证步骤 + 修复方案；说明 IRF 单链路风险和 MAD 检测机制（LACP/LLDP/ARP/BFD），以及为何设备 2 反复 reboot。
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: IRF 堆叠链路单条（FortyGigE1/0/25），物理 down 后 IRF split
+    probability: 0.7
+    evidence:
+    - display irf link：只有 IRF-Port 1 单条物理链路
+    - 40GE 1/0/25 linkDown 告警 50 次/小时，对应模块抖动或线缆松动
+    - IRF split 后设备 2 因为 MAD 检测到 split → recovery mode 触发自动 reboot
+    verify: '# 1. 看 IRF 链路状态
+
+      display irf link
+
+      display irf topology
+
+      # 2. 看 MAD 状态
+
+      display mad verbose
+
+      # 3. 看端口状态与光模块
+
+      display transceiver diagnosis interface FortyGigE1/0/25
+
+      # 4. 看 link-down 历史
+
+      display logbuffer | include PHY'
+    fix: "# 方案 A：加备用 IRF 链路（推荐），如 40GE 1/0/26\n# 在 Master Member 1 上\nirf-port 1/1\n  port group interface FortyGigE1/0/26\n# 然后成员 2 重启生效\nsave\nirf auto-update enable\n# 方案 B：检查光模块 / 更换光纤\n# 在 H3C 同一交换机柜，更换\
+      \ 1/0/25 端口对应的光纤/模块\n"
+    rollback: "irf-port 1/1\n  undo port group interface FortyGigE1/0/26"
+  - rank: 2
+    cause: MAD 检测机制配错（lldp detection 但上游接入设备不支持 lldp），导致检测窗口内 false positive
+    probability: 0.15
+    verify: display mad verbose；display lldp neighbor brief
+    fix: 改用 BFD 或 ARP MAD 模式（需独立的 mad 接口），更可靠
+  - rank: 3
+    cause: 光模块老化 / 线缆接触不良
+    probability: 0.1
+    verify: display transceiver diagnosis | include RxPower
+    fix: 更换光模块/光纤（参考 vendor diag 阈值 -7dBm ~ -2dBm）
+  - rank: 4
+    cause: IRF 优先级配置错误（priority 1 vs 32 切换时冲突）
+    probability: 0.05
+    verify: display irf
+    fix: 统一设备 1 priority 32 + device 2 priority 16
+  references:
+  - type: vendor_doc
+    url: https://www.h3c.com/cn/d_202206/1506893_483005_0.htm
+    version: Comware 7.1.070
+    title: H3C Comware 7 IRF 配置指导-MAD 章节
+  - type: vendor_doc
+    url: https://www.h3c.com/cn/d_202206/1506893_483005_0.htm
+    version: Comware 7.1.070
+    title: H3C IRF 链路多链路冗余建议
+anti_examples:
+- 请整机重启并重新配 IRF
+- 关掉 MAD
+- 删除 IRF 改用堆叠协议
+- 禁用 Split 检测
+grading_rubric:
+  must_have:
+  - top 根因为 IRF 单链路隐患
+  - 修复方案加备用 IRF 链路
+  - ≥1 验证命令
+  - 提醒生产环境必须双 IRF 链路
+  - 解释 MAD 检测机制（lldp/lacp/arp/bfd）
+  nice_to_have:
+  - ≥3 候选根因并附概率
+  - 解释 Split 后设备 reboot 顺序（priority 低的先 reboot）
+  - 含 rollback
+  penalty:
+  - 推荐整机重启
+  - 关闭 MAD
+  - 无证据瞎猜
