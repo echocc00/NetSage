@@ -30,7 +30,7 @@ REQUIRED_META_FIELDS = {
     "input_schema",
 }
 
-VALID_PROTOCOLS = {"ospf", "bgp", "vxlan", "vpn", "wireless", "roce"}
+VALID_PROTOCOLS = {"ospf", "bgp", "vxlan", "vpn", "wireless", "roce", "interface", "static_route"}
 VALID_VENDORS = {"huawei", "cisco", "h3c", "juniper", "arista", "nokia", "mellanox"}
 
 
@@ -90,18 +90,36 @@ def load_template(template_id: str) -> tuple[str, dict]:
 
 
 def render(template_id: str, params: dict) -> str:
-    """按参数渲染模板。缺参/多余不可用字段即报错（StrictUndefined）。"""
+    """按参数渲染模板。必填缺参报错；可选未传按类型注入默认值（防 StrictUndefined 误报）。"""
     rel, meta = load_template(template_id)
-    # 校验必传入参
     required = [f["name"] for f in meta["input_schema"] if f.get("required")]
     missing = [r for r in required if r not in params]
     if missing:
         raise TemplateError(f"模板 [{template_id}] 缺必传入参: {missing}")
+    # 可选参数未传 → 按类型注入默认值（让模板 {% if x %} 可正常求值）
+    full = {}
+    for f in meta["input_schema"]:
+        name = f["name"]
+        if name in params:
+            full[name] = params[name]
+        elif not f.get("required"):
+            full[name] = _default_for(f.get("type", "string"))
     try:
         template = _env().get_template(rel)
-        return template.render(**params)
+        return template.render(**full)
     except Exception as e:
         raise TemplateError(f"模板 [{template_id}] 渲染失败: {e}") from e
+
+
+def _default_for(type_name: str):
+    """可选参数的默认值（按类型，让模板条件判断可求值）。"""
+    if type_name == "int":
+        return 0
+    if type_name == "bool":
+        return False
+    if type_name == "array":
+        return []
+    return ""
 
 
 def list_by_vendor(vendor: str, protocol: str | None = None) -> list[dict]:

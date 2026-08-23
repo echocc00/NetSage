@@ -22,6 +22,7 @@ input_schema:
   - { name: pre_shared_key, type: string, required: true }
   - { name: profile_name, type: string, required: true }
   - { name: remote_subnet, type: string, required: true }
+  - { name: remote_mask, type: string, required: false }
   - { name: transform_set, type: string, required: true }
   - { name: esp_encrypt, type: string, required: true }
   - { name: esp_auth, type: string, required: true }

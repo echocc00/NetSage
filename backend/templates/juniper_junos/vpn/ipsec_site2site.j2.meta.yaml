@@ -28,6 +28,7 @@ input_schema:
   - { name: service_domain, type: string, required: false,
       default: any }
   - { name: remote_subnet, type: string, required: true }
+  - { name: remote_mask, type: string, required: false, desc: "远端前缀长度（如 24）" }
   - { name: next_hop, type: string, required: true }
 output_format: cli
 validated_against: []
