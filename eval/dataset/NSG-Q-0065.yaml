@@ -1,0 +1,68 @@
+id: NSG-Q-0065
+title: SNMP trap 收不到（思科 IOS-XE 17，trap-source 配错）
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 3
+tags:
+- snmp
+- trap
+- trap-source
+input:
+  symptom: NMS 收不到链路 flap 的 trap，但 snmpwalk 能返回数据
+  device_info:
+    model: ASR 1001-X
+    version: IOS-XE 17.09.04a
+  evidence:
+  - config_snippet: 'snmp-server host 10.1.1.100 traps public udp-port 162
+
+      snmp-server trap-source Loopback0  # ⚠️ 实际 NMS 接收不到 source IP 不可达的包
+
+      snmp-server community public RO'
+  - log_lines:
+    - 'debug snmp packet: 收到 ICMP unreachable from 10.0.0.1 for source Loopback0'
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: trap-source Loopback0 不可达或 ACL 阻断
+    probability: 0.6
+    evidence:
+    - NMS 端收到 ICMP unreachable for source
+    verify: 'ping 10.0.0.1 source Loopback0
+
+      show snmp traps'
+    fix: '# 改 trap-source 到一个 NMS 直连接口
+
+      no snmp-server trap-source Loopback0
+
+      snmp-server trap-source Vlan100
+
+      # 同时 ACL 放行 UDP/162'
+    rollback: no snmp-server trap-source Vlan100
+  - rank: 2
+    cause: snmp-server host 是 traps 但用了 RO community
+    probability: 0.25
+    verify: show snmp host
+    fix: snmp-server host 10.1.1.100 traps NetSys@2024
+  - rank: 3
+    cause: UDP/162 ACL 中间阻断
+    probability: 0.15
+    verify: show ip access-list | include 162
+    fix: permit udp host x.x.x.x eq snmptrap any
+  references:
+  - type: rfc
+    url: https://datatracker.ietf.org/doc/html/rfc3418
+    title: SNMP MIB
+anti_examples:
+- 请重启
+- 改 RO community
+- 关 snmp-server
+grading_rubric:
+  must_have:
+  - 诊断 trap-source 不可达
+  - 改用直连接口
+  nice_to_have:
+  - ACL 放行
+  penalty:
+  - 重启

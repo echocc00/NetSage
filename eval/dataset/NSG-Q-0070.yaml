@@ -1,0 +1,36 @@
+id: NSG-Q-0070
+title: 生成思科 IOS-XE 17 OSPF area 0 + passive-interface default
+category: config
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 2
+tags:
+- ospf
+- area-0
+- passive
+input:
+  symptom: 某 Cisco ASR 1001-X 路由器配 OSPF process 1，router-id 10.0.0.1，所有接口入 area 0。只有 Lo100 应当主动发 Hello。
+  device_info:
+    model: ASR 1001-X
+    version: IOS-XE 17.09.04a
+  question: 生成 OSPF 配置
+expected_output:
+  config: "router ospf 1\n router-id 10.0.0.1\n passive-interface default\n no passive-interface Loopback100\n network 10.0.0.0 0.255.255.255 area 0\n network 192.168.0.0 0.0.255.255 area 0\n"
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/support/ospf-passive
+    version: IOS-XE-17.09
+anti_examples:
+- 用 wildcard mask 0.0.0.255 错（应 0.0.255.255 for /24）
+- 漏 passive-interface default
+grading_rubric:
+  must_have:
+  - router ospf <pid>
+  - router-id
+  - network <addr> <wildcard> area 0
+  - passive-interface default
+  nice_to_have:
+  - no passive-interface Loopback
+  penalty:
+  - wildcard mask 反掩码错
+  - 缺 router-id

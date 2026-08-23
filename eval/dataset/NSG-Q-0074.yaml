@@ -1,0 +1,36 @@
+id: NSG-Q-0074
+title: 生成 Juniper EX4300 IPv6 默认路由（next-hop 2001:db8::1）
+category: config
+vendor: juniper
+version: 21.2R1
+difficulty: 2
+tags:
+- static-route
+- ipv6
+- default
+input:
+  symptom: 某 Juniper EX4300 配 IPv6 默认路由，下一跳 2001:db8::1
+  device_info:
+    model: EX4300-48T
+    version: Junos 21.2R1.6
+  question: 生成 IPv6 默认路由
+expected_output:
+  config: 'set routing-options rib inet6.0 static route ::/0 next-hop 2001:db8::1
+
+    '
+  references:
+  - type: vendor_doc
+    url: https://www.juniper.net/documentation/junos-21.2/static-route-ipv6
+    version: 21.2R1
+anti_examples:
+- 漏 rib inet6.0（IPv6 路由表）
+- 用 set routing-options static route 0/0 (IPv4 syntax)
+grading_rubric:
+  must_have:
+  - routing-options rib inet6.0
+  - static route ::/0
+  - next-hop 2001:db8::1
+  nice_to_have:
+  - qualified-next-hop 接口
+  penalty:
+  - 写成 IPv4 syntax

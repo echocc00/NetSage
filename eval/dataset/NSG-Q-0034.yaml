@@ -1,0 +1,69 @@
+id: NSG-Q-0034
+title: BGP 邻居反复 Up/Down（华为 VRP-8.180，TTL 多跳 + ebgp-max-hop 误配）
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 3
+tags:
+- bgp
+- eBGP
+- ttl
+- flap
+- multihop
+input:
+  symptom: 'BGP-5-ADJCHG: Neighbor 10.1.1.2 Down - TTL expired in transit（5 次/分钟）'
+  device_info:
+    model: CE12808
+    version: VRP-8.180
+    interfaces:
+    - 10GE1/0/4
+  evidence:
+  - config_snippet: "bgp 65001\n  peer 10.1.1.2 as-number 65002\n  peer 10.1.1.2 ebgp-max-hop 5  # 中间有 2 个路由器，但实际有反射"
+  - log_lines:
+    - '%BGP-3-STATE_CHG: Peer 10.1.1.2 -> Idle, received Notification: TTL expired in transit'
+    - '频率: 5 次/分钟'
+    - '%BGP-5-ADJCHG: Neighbor 10.1.1.2 Up'
+  question: 诊断 TTL 反复到期 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: TTL 多跳设置不够（中间路由器数量超过 max-hop）
+    probability: 0.7
+    evidence:
+    - Notification 含 "TTL expired"
+    - ebgp-max-hop 已设为 5 但仍 expired
+    - 说明实际 hop 数 ≥ 6
+    verify: 'display bgp peer 10.1.1.2 verbose | include TTL
+
+      display ip ip-prefix / ip forwarding path'
+    fix: "bgp 65001\n  undo peer 10.1.1.2 ebgp-max-hop\n  peer 10.1.1.2 ebgp-max-hop 255"
+    rollback: "bgp 65001\n  peer 10.1.1.2 ebgp-max-hop 5"
+  - rank: 2
+    cause: 中间设备 IP TTL 强制 decrement (>1 跳)
+    probability: 0.2
+    verify: tracert 10.1.1.2
+    fix: 中间设备修改 policy 或降低 hop 数
+  - rank: 3
+    cause: 设备 CPU 高 / 报文处理慢
+    probability: 0.1
+    verify: display cpu-usage history / display logbuffer | include CPU
+    fix: 识别攻击源（如 ISIS LSA 风暴）
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/vrp-bgp-ttl
+    version: VRP-8.180
+    title: VRP BGP TTL 防环章节
+anti_examples:
+- 请重启设备
+- 删除 BGP 进程
+- 关闭 TTL 校验
+grading_rubric:
+  must_have:
+  - top 根因为 TTL 多跳数不够
+  - 给 max-hop=255 修复
+  - ≥1 验证命令
+  nice_to_have:
+  - 含 rollback
+  - ≥3 候选根因
+  penalty:
+  - 推荐重启

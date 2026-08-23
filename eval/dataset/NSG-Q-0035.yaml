@@ -1,0 +1,59 @@
+id: NSG-Q-0035
+title: BGP 卡在 Active（思科 IOS-XE 17.09，本端 AS 配错）
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 2
+tags:
+- bgp
+- active
+- as-mismatch
+input:
+  symptom: '%BGP-5-ADJCHANGE: neighbor 10.1.1.2 Active'
+  device_info:
+    model: Catalyst 9300-48P
+    version: IOS-XE 17.09.04a
+  evidence:
+  - config_snippet: "router bgp 65001\n  neighbor 10.1.1.2 remote-as 65003  # ⚠️ 应是 65002"
+  - log_lines:
+    - '%BGP-3-NOTIFICATION: sent to neighbor 10.1.1.2 2/2 (peer in wrong AS) 2 bytes 03E3'
+    - neighbor 10.1.1.2 Active 反复
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: 本地 AS 配错（65003 vs 实际 65002）
+    probability: 0.85
+    evidence:
+    - NOTIFICATION code 2/2 (peer in wrong AS)
+    - TCP SYN OK 但 Open 拒绝
+    verify: show ip bgp neighbors 10.1.1.2 | include "remote AS"
+    fix: "conf t\n router bgp 65001\n  no neighbor 10.1.1.2 remote-as 65003\n  neighbor 10.1.1.2 remote-as 65002\n end\n clear ip bgp 10.1.1.2 soft"
+    rollback: neighbor 10.1.1.2 remote-as 65003
+  - rank: 2
+    cause: TCP 179 被 ACL 阻断
+    probability: 0.1
+    verify: show tcp pro address 10.1.1.2 179
+    fix: 中间设备 permit tcp any eq bgp
+  - rank: 3
+    cause: 本端 router-id 冲突
+    probability: 0.05
+    verify: show ip bgp summary | include ID
+    fix: router bgp 65001 → router-id 10.0.0.1
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/support/ios-bgp-active
+    version: IOS-XE-17.09
+anti_examples:
+- 请重启
+- 删除 BGP 进程
+- 增加 advertisement-interval
+grading_rubric:
+  must_have:
+  - AS mismatch 诊断
+  - fix remote-as
+  - ≥1 验证命令
+  nice_to_have:
+  - 解释 NOTIFICATION code 2/2
+  penalty:
+  - 推荐重启

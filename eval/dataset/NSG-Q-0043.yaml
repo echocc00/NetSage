@@ -1,0 +1,65 @@
+id: NSG-Q-0043
+title: BGP EVPN Type-2 路由泄漏（思科 NX-OS 9.3，route-target import 错配）
+category: troubleshoot
+vendor: cisco
+version: NX-OS-9.3
+difficulty: 4
+tags:
+- bgp
+- evpn
+- type-2
+- route-target
+input:
+  symptom: Leaf-A 上学习不到 Leaf-B 通告的 VM1 MAC 地址（Type-2 路由）
+  device_info:
+    model: Nexus 9336C-FX2
+    version: NX-OS 9.3(8)
+  evidence:
+  - config_snippet: "# Leaf-B (vni 10010)\nl2vpn evpn instance 10 point-to-point\n  rd 10.0.0.2:10\n  route-target import 65000:10010\n  route-target export 65000:10000   # ⚠️ 与 import 不一致"
+  - log_lines:
+    - 'show bgp l2vpn evpn route-type 2: Leaf-B 导出 RT=65000:10000'
+    - 'show bgp l2vpn evpn route-type 2 received on Leaf-A: 无'
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: Leaf-B 导出 RT 配错（65000:10000 vs 应有 65000:10010）
+    probability: 0.75
+    evidence:
+    - Leaf-B export RT=65000:10000, Leaf-A import RT=65000:10010 不匹配
+    verify: 'show bgp l2vpn evpn
+
+      show bgp l2vpn evpn route-type 2'
+    fix: "conf t\n  l2vpn evpn instance 10 point-to-point\n   route-target export 65000:10010\n  end"
+    rollback: route-target export 65000:10000
+  - rank: 2
+    cause: RD 配置格式错误
+    probability: 0.1
+    verify: show l2vpn evpn summary
+    fix: RD 格式 ip:nn (如 10.0.0.1:10)
+  - rank: 3
+    cause: NVE peer BGP 邻居未建立
+    probability: 0.1
+    verify: show nve peers
+    fix: bgp peer 邻居修复
+  - rank: 4
+    cause: BUM 抑制 ARP suppression 全网不一致
+    probability: 0.05
+    verify: show ip arp suppression-cache
+    fix: 统一起配置
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/td/docs/switches/datacenter/sw/nx-os/nxcli/vxlan
+    version: NX-OS-9.3
+anti_examples:
+- 请重启
+- 删除 l2vpn evpn instance 重建
+- 改 VNI/VTEP
+grading_rubric:
+  must_have:
+  - 诊断 export RT 错配
+  - 修复 export 与 import 一致
+  nice_to_have:
+  - 解释 EVPN RT 在 NLRI 中的角色
+  penalty:
+  - 重启

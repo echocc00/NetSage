@@ -1,0 +1,34 @@
+id: NSG-Q-0071
+title: 生成华三 S6850 OSPF area 0.0.0.1 stub no-summary
+category: config
+vendor: h3c
+version: Comware-7.1.070
+difficulty: 3
+tags:
+- ospf
+- totally-stub
+input:
+  symptom: 某 H3C S6850 配 OSPF area 0.0.0.1 为 totally-stub（ABR 上抑制 type-3），进程 1 router-id 10.0.0.1
+  device_info:
+    model: S6850-56HF
+    version: Comware 7.1.070 R7625
+  question: 生成 OSPF totally-stub 配置
+expected_output:
+  config: "ospf 1 router-id 10.0.0.1\n #\n area 0.0.0.1\n  stub no-summary\n"
+  references:
+  - type: vendor_doc
+    url: https://www.h3c.com/cn/d_202206/ospf-totally-stub
+    version: Comware 7.1.070
+anti_examples:
+- 只配 stub 漏 no-summary
+- 把 no-summary 写在 stub 之前
+grading_rubric:
+  must_have:
+  - ospf <pid> router-id
+  - area 0.0.0.1
+  - stub no-summary
+  nice_to_have:
+  - 冒号前后空格
+  penalty:
+  - 漏 no-summary
+  - 缩进错

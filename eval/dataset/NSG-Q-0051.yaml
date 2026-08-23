@@ -1,0 +1,60 @@
+id: NSG-Q-0051
+title: IPsec Phase-1 协商失败（华为 USG 6680，IKE proposal 与对端不重叠）
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 4
+tags:
+- ipsec
+- ike
+- phase1
+- proposal
+input:
+  symptom: 'IKE_SA_INIT: NO_PROPOSAL_CHOSEN；IPsec 隧道不起'
+  device_info:
+    model: USG 6680
+    version: VRP-8.180
+  evidence:
+  - config_snippet: "ike proposal 1\n  encryption-algorithm aes-cbc-256\n  integrity sha2-256\n  dh group 14\n  authentication-method pre-share\n# 对端 only aes-gcm-256 group 15"
+  - log_lines:
+    - 'IKE: NO_PROPOSAL_CHOSEN 收到'
+    - 'display ike sa: 没有活跃 SA'
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: IKE proposal 算法集合与对端无交集
+    probability: 0.85
+    evidence:
+    - NO_PROPOSAL_CHOSEN 告警
+    verify: 'display ike proposal
+
+      display ike sa'
+    fix: "ike proposal 2\n  encryption-algorithm aes-cbc-256 aes-gcm-256\n  integrity sha2-256 sha2-384\n  dh group 14 group 15\n  authentication-method pre-share\n# 删除原 proposal 1，叠加自定义到 2"
+    rollback: undo ike proposal 2
+  - rank: 2
+    cause: authentication-method 不匹配
+    probability: 0.1
+    verify: display ike peer | include auth
+    fix: authentication-method 改为 pre-share / rsa-signature 一致
+  - rank: 3
+    cause: pre-shared-key 不一致
+    probability: 0.05
+    verify: display ike peer
+    fix: 对齐 pre-shared-key
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/vrp-ipsec-ike
+    version: VRP-8.180
+anti_examples:
+- 请重启
+- 关闭 IPsec
+- 删 tunnel
+grading_rubric:
+  must_have:
+  - 诊断 NO_PROPOSAL_CHOSEN
+  - 修改 ike proposal 加多组算法
+  nice_to_have:
+  - dh group 解释
+  penalty:
+  - 重启

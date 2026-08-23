@@ -1,0 +1,70 @@
+id: NSG-Q-0044
+title: OSPF 卡 EXSTART（思科 IOS-XE 17，MTU 一致但是 DR 优先级错配）
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 3
+tags:
+- ospf
+- exstart
+- dr-priority
+- mtu
+input:
+  symptom: OSPF 卡 EXSTART 反复重试
+  device_info:
+    model: Catalyst 9300-48P
+    version: IOS-XE 17.09.04a
+    interfaces:
+    - GigabitEthernet1/0/24
+  evidence:
+  - config_snippet: "interface GigabitEthernet1/0/24\n ip address 10.1.1.1 255.255.255.252\n ip ospf 1 area 0\n ip ospf priority 200\nip mtu 1500\n\n! 对端\ninterface GigabitEthernet1/0/24\n ip ospf priority 0   # ⚠️ 0 = 不参与 DR 选举，永远 DROther"
+  - log_lines:
+    - '%OSPF-5-ADJCHG: Neighbor 10.0.0.2 Down, AdjInit 失败'
+    - 'show ip ospf neighbor: state EXSTART 反复'
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: OSPF priority 0 在 BROADCAST 链路下永远不能成为 DR，导致 DR 选举失败
+    probability: 0.5
+    evidence:
+    - OSPF BROADCAST 类型需要 DR/BDR，priority 0 表示不参与选举
+    - AdjInit 失败对端没有 candidate DR
+    verify: 'show ip ospf interface g1/0/24 | include "Priority"
+
+      show ip ospf neighbor | include DR'
+    fix: "interface g1/0/24\n  no ip ospf priority 0\n  ip ospf priority 200"
+    rollback: ip ospf priority 0
+  - rank: 2
+    cause: MTU mismatch（OSPF 卡 EXSTART 经典原因）
+    probability: 0.3
+    verify: 'show interface g1/0/24 | include MTU
+
+      show ip ospf interface'
+    fix: 两侧 ip mtu 1500 对齐
+  - rank: 3
+    cause: 子网掩码不一致（OSPF 要求同一 subnet）
+    probability: 0.1
+    verify: show ip interface brief
+    fix: 对齐子网掩码
+  - rank: 4
+    cause: OSPF 网络类型错配（broadcast vs p2p）
+    probability: 0.1
+    verify: show ip ospf interface | include Network
+    fix: 两侧 ip ospf network 类型对齐
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/support/ospf-exstart
+    version: IOS-XE-17.09
+anti_examples:
+- 请重启
+- 删除 OSPF 进程
+- 把 priority 都设为 1
+grading_rubric:
+  must_have:
+  - 诊断 priority 0 + MTU 双重原因
+  - 修复
+  nice_to_have:
+  - explain BROADCAST vs P2P
+  penalty:
+  - 重启

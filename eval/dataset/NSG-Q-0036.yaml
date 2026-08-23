@@ -1,0 +1,59 @@
+id: NSG-Q-0036
+title: BGP 卡 OpenConfirm（华三 Comware 7，MD5 认证令牌不一致）
+category: troubleshoot
+vendor: h3c
+version: Comware-7.1.070
+difficulty: 3
+tags:
+- bgp
+- md5
+- authentication
+- openconfirm
+input:
+  symptom: BGP 卡在 OpenConfirm；反复 Open Sent / OpenConfirm 状态切换
+  device_info:
+    model: S12508X-AF
+    version: Comware 7.1.070 R7625
+  evidence:
+  - config_snippet: "bgp 65001\n  peer 10.1.1.2 as-number 65002\n  peer 10.1.1.2 password cipher Huawei@2024"
+  - log_lines:
+    - '%@BGPN/3/STATECHG: Peer(10.1.1.1) OpenConfirm -> Idle (received Notification: authentication failure)'
+  question: OpenConfirm 卡死。诊断 + 修复。
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: MD5 预共享密钥两端不一致
+    probability: 0.8
+    evidence:
+    - 'Notification: authentication failure'
+    - Open Sent / OpenConfirm 反复
+    - BGPN/3/STATECHG log
+    verify: display bgp peer 10.1.1.2 verbose | include MD5
+    fix: "# 方案 A：暂时删除密码确认\nbgp 65001\n  undo peer 10.1.1.2 password\n# 方案 B：用简单密码重配一致\nbgp 65001\n  peer 10.1.1.2 password simple NetSage@2024\nbgp 65002\n  peer 10.1.1.1 password simple NetSage@2024"
+    rollback: 重新配 cipher
+  - rank: 2
+    cause: TTL mismatch (eBGP 多跳问题)
+    probability: 0.15
+    verify: display bgp peer | include TTL
+    fix: 两端 ebgp-max-hop 对齐
+  - rank: 3
+    cause: TTL-security 错配（H3C 的 GTSM）
+    probability: 0.05
+    verify: display bgp peer | include GTSM
+    fix: undo ttl-security hops
+  references:
+  - type: vendor_doc
+    url: https://www.h3c.com/cn/d_202206/bgp-md5
+    version: Comware 7.1.070
+anti_examples:
+- 请重启
+- 关闭 BGP 认证
+- 改用明文就 OK
+grading_rubric:
+  must_have:
+  - 诊断 MD5 不一致
+  - 重配方案
+  nice_to_have:
+  - TTL/GTSM 检查
+  penalty:
+  - 重启

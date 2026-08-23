@@ -1,0 +1,36 @@
+id: NSG-Q-0075
+title: 生成 Arista EOS 4.24 单 Leaf VXLAN EVPN anycast-gateway MAC 00:00:5e:00:01:20
+category: config
+vendor: arista
+version: '4.24'
+difficulty: 4
+tags:
+- vxlan
+- evpn
+- anycast-gateway
+input:
+  symptom: 某 Arista DCS-7280 配 VNI 10020 anycast-gateway，VR MAC 00:00:5e:00:01:20，对端 leaf BGP peer 10.1.1.10
+  device_info:
+    model: DCS-7280QR-C36
+    version: EOS 4.24.6M
+  question: 生成 Arista VXLAN anycast-gateway 配置
+expected_output:
+  config: "ip virtual-router mac-address 00:00:5e:00:01:20\n!\nvlan 20\n vn-segment 10020\n!\ninterface Vxlan1\n vxlan vlan 20 vni 10020\n!\ninterface Vlan20\n ip address 10.1.20.1/24\n ip virtual-router address 10.1.20.1\n!\nrouter bgp 65000\n\
+    \ address-family evpn\n  neighbor 10.1.1.10 activate\n"
+  references:
+  - type: vendor_doc
+    url: https://www.arista.com/en/docs/eos-4.24/evpn-vxlan
+    version: EOS 4.24
+anti_examples:
+- 忘 ip virtual-router mac-address
+- Vxlan1 没绑 vlan
+grading_rubric:
+  must_have:
+  - ip virtual-router mac-address
+  - vni 配置
+  - BGP evpn 邻居
+  nice_to_have:
+  - mac 格式规范
+  penalty:
+  - 缺 anycast-gateway 全局
+  - BGP 邻居 漏 activate

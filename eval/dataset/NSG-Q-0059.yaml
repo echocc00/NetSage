@@ -1,0 +1,59 @@
+id: NSG-Q-0059
+title: IPsec 加密流量 NAT 协商失败（思科 IOS-XE 17，UDP 4500 未放行）
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 4
+tags:
+- ipsec
+- nat-traversal
+- udp-4500
+input:
+  symptom: IPsec 隧道 UP 但流量不通
+  device_info:
+    model: ISR 4451-X
+    version: IOS-XE 17.09.04a
+  evidence:
+  - config_snippet: "crypto ipsec transform-set TSET esp-aes 256\ncrypto map CMAP 10 ipsec-isakmp\n  set peer 198.51.100.1\n# NAT 在 transport 边界"
+  - log_lines:
+    - '%CRYPTO-5-IKE_PHASE2_DOWN: Phase-2 down'
+    - NAT keepalive timeout
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: NAT 边界放行了 UDP 500 但未放行 UDP 4500
+    probability: 0.6
+    evidence:
+    - NAT keepalive timeout
+    verify: 'show crypto ipsec sa
+
+      show ip access-list'
+    fix: "# 在 NAT 边界设备上\nip access-list extended ACL-NAT\n  permit udp any eq 4500 any eq 4500\n  permit esp any any\n# ISR 上启用 nat-trans\ncrypto isakmp nat-traversal 10000"
+    rollback: undo ip access-list ACL-NAT
+  - rank: 2
+    cause: IPsec 加密流量 ASP 丢
+    probability: 0.25
+    verify: show crypto isakmp count
+    fix: 分段 MP
+  - rank: 3
+    cause: QoS 限制 ESP 流量
+    probability: 0.15
+    verify: show policy-map
+    fix: 提升 ESP 优先级
+  references:
+  - type: rfc
+    url: https://datatracker.ietf.org/doc/html/rfc3947
+    title: Negotiation of NAT-Traversal in IKE
+anti_examples:
+- 请重启
+- 禁用 IPsec
+- 关 NAT
+grading_rubric:
+  must_have:
+  - 诊断 NAT-T UDP 4500
+  - firewall 放行
+  nice_to_have:
+  - nat-traversal 启用
+  penalty:
+  - 关 IPsec

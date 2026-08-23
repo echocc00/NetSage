@@ -1,0 +1,76 @@
+id: NSG-Q-0062
+title: H3C IRF 分裂事件（Comware 7.1，MAD 检测选举冲突）
+category: troubleshoot
+vendor: h3c
+version: Comware-7.1.070
+difficulty: 5
+tags:
+- irf
+- split
+- mad
+- conflicts
+input:
+  symptom: IRF 反复 split 后两台设备都被选举为 Master
+  device_info:
+    model: S12504X-AF
+    version: Comware 7.1.070 R7625
+  evidence:
+  - config_snippet: '# Device-A
+
+      irf member 1 priority 32
+
+      mad detection-mode arp
+
+      # Device-B
+
+      irf member 2 priority 32  # 同优先级冲突'
+  - log_lines:
+    - '%20IRF/5/IRF_SPLIT: IRF system split into two'
+    - '%20IRF/4/MAD_CONFLICT:'
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: 两端 IRF priority 同分冲突，MAD 协议也未决高下
+    probability: 0.6
+    evidence:
+    - MAD_CONFLICT log
+    verify: 'display irf
+
+      display mad verbose'
+    fix: '# Device-A: priority 32 保持
+
+      # Device-B: 改 priority 16
+
+      irf member 2 priority 16
+
+      # 改 MAD 检测
+
+      mad detection-mode lldp  # 比 arp 更精确'
+    rollback: undo irf member 2 priority
+  - rank: 2
+    cause: MAD 接口本身 down 导致 false positive
+    probability: 0.25
+    verify: display mad interface
+    fix: 检查 MAD 接口状态
+  - rank: 3
+    cause: IRF link 上行设备未配置 IRF-helper
+    probability: 0.15
+    verify: show irf topology
+    fix: 在 transit 设备上配 irf helper
+  references:
+  - type: vendor_doc
+    url: https://www.h3c.com/cn/d_202206/irf-mad
+    version: Comware 7.1.070
+anti_examples:
+- 请重启
+- 关闭 IRF
+- 改 stacking 模式
+grading_rubric:
+  must_have:
+  - 诊断 priority 冲突
+  - 修复 priority 分级
+  nice_to_have:
+  - MAD 检测模式选择
+  penalty:
+  - 关闭 IRF

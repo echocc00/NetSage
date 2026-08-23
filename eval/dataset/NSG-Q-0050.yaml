@@ -1,0 +1,61 @@
+id: NSG-Q-0050
+title: VXLAN Type-3 BUM 不通（华三 Comware 7，BGP l2vpn evpn peer enable 漏配）
+category: troubleshoot
+vendor: h3c
+version: Comware-7.1.070
+difficulty: 4
+tags:
+- vxlan
+- evpn
+- type-3
+- bgp
+- enable
+input:
+  symptom: BUM 流量跨 Leaf 不通；Type-3 路由学习不到
+  device_info:
+    model: S9850-32B
+    version: Comware 7.1.070 R7625
+  evidence:
+  - config_snippet: "bgp 65000\n  peer 10.0.0.1 as-number 65000\n  ! ⚠️ 缺 address-family l2vpn evpn / peer enable"
+  - log_lines:
+    - 'display bgp l2vpn evpn peer: no peer established family'
+    - 'display evpn route: 只有本端 Type-3'
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: address-family l2vpn evpn 下未 peer 10.0.0.1 enable
+    probability: 0.7
+    evidence:
+    - bgp l2vpn evpn no peer family
+    verify: 'display bgp l2vpn evpn peer
+
+      display evpn route'
+    fix: "bgp 65000\n  address-family l2vpn evpn\n   peer 10.0.0.1 enable\n  quit"
+    rollback: address-family l2vpn evpn → undo peer 10.0.0.1 enable
+  - rank: 2
+    cause: EVPN instance 漏配
+    probability: 0.2
+    verify: display evpn instance
+    fix: "evpn instance evi-10\n  vxlan vni 10010\n  route-target 65000:10010 both"
+  - rank: 3
+    cause: nve peer 不通
+    probability: 0.1
+    verify: display nve peer
+    fix: 检查 BGP 互联可达性
+  references:
+  - type: vendor_doc
+    url: https://www.h3c.com/cn/d_202206/evpn-type3
+    version: Comware 7.1.070
+anti_examples:
+- 请重启
+- 改 instance id
+- 删除 nve
+grading_rubric:
+  must_have:
+  - 诊断 BGP enable 缺失
+  - 修复 peer enable
+  nice_to_have:
+  - instance 检查
+  penalty:
+  - 重启

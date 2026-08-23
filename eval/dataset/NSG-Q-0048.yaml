@@ -1,0 +1,64 @@
+id: NSG-Q-0048
+title: OSPF 路由表中某些 area 间路由缺失（Juniper 21.2，ABR type-3 漏配）
+category: troubleshoot
+vendor: juniper
+version: 21.2R1
+difficulty: 4
+tags:
+- ospf
+- abr
+- summary
+- type-3
+input:
+  symptom: 'show route 192.168.10.0/24: 缺失！期望从 area 0 通过 ABR 通告到 area 0.0.0.10'
+  device_info:
+    model: MX204
+    version: Junos 21.2R1.6
+  evidence:
+  - config_snippet: 'set protocols ospf area 0.0.0.0 interface ge-0/0/0
+
+      set protocols ospf area 0.0.0.10 interface ge-0/0/1 stub no-summaries
+
+      # ⚠️ stub no-summaries 不收 type-3 路由'
+  - log_lines:
+    - 'show route 192.168.10.0/24: not in routing table'
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: stub no-summaries 抑制 type-3 summary 路由
+    probability: 0.85
+    evidence:
+    - area 0.0.0.10 是 totally stub area
+    - missing 192.168.10.0/24
+    verify: 'show ospf database area 0.0.0.10
+
+      show route 192.168.10.0/24'
+    fix: "edit protocols ospf\n  set area 0.0.0.10 stub\n  delete area 0.0.0.10 stub no-summaries\ncommit"
+    rollback: rollback 1
+  - rank: 2
+    cause: ABR 上 area-range 配置误
+    probability: 0.1
+    verify: show ospf area-range
+    fix: set ospf area 0 area-range 192.168.0.0/16 restrict
+  - rank: 3
+    cause: router-id 冲突导致 ABR 失效
+    probability: 0.05
+    verify: show ospf router-id
+    fix: router-id 配置每台独立
+  references:
+  - type: vendor_doc
+    url: https://www.juniper.net/documentation/junos-21.2/ospf-stub
+    version: 21.2R1
+anti_examples:
+- 请重启
+- 删 area 0.0.0.10 重建
+- 改 area 0.0.0.0
+grading_rubric:
+  must_have:
+  - 诊断 stub no-summaries
+  - 修复：no-summaries
+  nice_to_have:
+  - area-range 配置
+  penalty:
+  - 重启

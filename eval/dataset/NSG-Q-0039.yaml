@@ -1,0 +1,60 @@
+id: NSG-Q-0039
+title: BGP IPv6 邻居卡 OpenConfirm（思科 IOS-XE 17，地址族未独立 activate）
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 3
+tags:
+- bgp
+- capability
+- address-family
+- ipv6
+- mp-bgp
+input:
+  symptom: IPv6 BGP peer 1999::2 卡 OpenConfirm；IPv4 邻居正常
+  device_info:
+    model: ASR 1001-X
+    version: IOS-XE 17.09.04a
+  evidence:
+  - config_snippet: "router bgp 65001\n  neighbor 1999::2 remote-as 65002\n  address-family ipv4 unicast\n   neighbor 1999::2 activate\n  ! ⚠️ 缺 address-family ipv6 unicast"
+  - log_lines:
+    - '%BGP-5-ADJCHANGE: neighbor 1999::2 Up'
+    - 'OpenConfirm: "no matching interface-protocol"'
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: IPv6 地址族未独立 activate（v4 family 内 activate 对 IPv6 邻居无效）
+    probability: 0.85
+    evidence:
+    - '"no matching interface-protocol"'
+    - OpenConfirm 卡住
+    verify: show ip bgp neighbors 1999::2 | include AFI / IPv6
+    fix: "router bgp 65001\n  address-family ipv6 unicast\n   neighbor 1999::2 activate\n  exit-address-family"
+    rollback: address-family ipv6 unicast → no neighbor 1999::2 activate
+  - rank: 2
+    cause: MP-BGP capability 协商问题
+    probability: 0.1
+    verify: show ip bgp neighbors 1999::2 | include capability
+    fix: 重新 add capability
+  - rank: 3
+    cause: IPv6 链路不通
+    probability: 0.05
+    verify: show ipv6 route 1999::2
+    fix: 互联接口配 IPv6 + enable ipv6 routing
+  references:
+  - type: rfc
+    url: https://datatracker.ietf.org/doc/html/rfc2545
+    title: BGP-4 MP for IPv6
+anti_examples:
+- 请重启
+- 改成 IPv4
+- 关闭 IPv6
+grading_rubric:
+  must_have:
+  - address-family ipv6 unicast activate
+  - ≥1 验证命令
+  nice_to_have:
+  - RFC 2545 引用
+  penalty:
+  - 重启

@@ -1,0 +1,66 @@
+id: NSG-Q-0060
+title: VRRP 频繁主备切换（Juniper 21.2，preempt 配置错配）
+category: troubleshoot
+vendor: juniper
+version: 21.2R1
+difficulty: 3
+tags:
+- vrrp
+- high-availability
+- preempt
+input:
+  symptom: VRRP 频繁切换（5 分钟/次）
+  device_info:
+    model: MX204
+    version: Junos 21.2R1.6
+  evidence:
+  - config_snippet: '# Device-A
+
+      set interfaces ge-0/0/1 unit 0 family inet address 10.1.1.2/24 vrrp-group 1 virtual-address 10.1.1.1 priority 110
+
+      # Device-B
+
+      set interfaces ge-0/0/1 unit 0 family inet address 10.1.1.3/24 vrrp-group 1 virtual-address 10.1.1.1 priority 100
+
+      # ⚠️ A 没配 preempt，B 是默认 preempt'
+  - log_lines:
+    - 'show vrrp detail: state frequent Flip'
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: B 抢占 (preempt) 开启，但 B priority 低
+    probability: 0.5
+    evidence:
+    - B 每次重连都触发抢占
+    verify: show vrrp detail
+    fix: '# 关闭 B 的 preempt
+
+      set interfaces ge-0/0/1 unit 0 family inet vrrp-group 1 no-preempt'
+    rollback: delete interfaces ge-0/0/1 unit 0 family inet vrrp-group 1 no-preempt
+  - rank: 2
+    cause: priority 反了或接口 down
+    probability: 0.3
+    verify: show interfaces ge-0/0/1
+    fix: 恢复 interface + 改 priority
+  - rank: 3
+    cause: BFD 抖动
+    probability: 0.2
+    verify: show bfd session
+    fix: 调慢 BFD interval
+  references:
+  - type: rfc
+    url: https://datatracker.ietf.org/doc/html/rfc5798
+    title: VRRPv3 for IPv4/IPv6
+anti_examples:
+- 请重启
+- 改 priority 1
+- 关 VRRP
+grading_rubric:
+  must_have:
+  - 诊断 preempt 开启
+  - 关闭 B preempt
+  nice_to_have:
+  - BFD interval
+  penalty:
+  - 重启

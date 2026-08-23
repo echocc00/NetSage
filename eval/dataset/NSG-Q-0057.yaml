@@ -1,0 +1,59 @@
+id: NSG-Q-0057
+title: Eth-channel 反复 Up/Down（思科 IOS-XE 17，LACP 模式错配）
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 3
+tags:
+- eth-channel
+- lacp
+- mode-mismatch
+input:
+  symptom: port-channel 反复 Up/Down；show etherchannel summary 显示 "P/"
+  device_info:
+    model: Catalyst 9500-40Y4C
+    version: IOS-XE 17.09.04a
+  evidence:
+  - config_snippet: "# Switch-A\ninterface range g1/0/1-2\n  channel-group 10 mode active\n# Switch-B\ninterface range g1/0/1-2\n  channel-group 10 mode on   # ⚠️ on vs active 模式不匹配"
+  - log_lines:
+    - 'show etherchannel 10 summary: (P/)'
+    - p2p lacp 失败 收到 (S)
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: LACP 模式不一致（active vs on）
+    probability: 0.7
+    evidence:
+    - show etherchannel summary 显示 (P/) 端口个别属于
+    verify: 'show etherchannel summary
+
+      show etherchannel 10 detail'
+    fix: "interface range g1/0/1-2\n  channel-group 10 mode active  # Switch-B 也改 active"
+    rollback: channel-group 10 mode on
+  - rank: 2
+    cause: STP block 导致
+    probability: 0.2
+    verify: show spanning-tree detail
+    fix: spanning-tree portfast trunk in port-channel
+  - rank: 3
+    cause: speed/duplex 错配
+    probability: 0.1
+    verify: show interface status
+    fix: 两侧 speed duplex 强制一致
+  references:
+  - type: rfc
+    url: https://datatracker.ietf.org/doc/html/rfc7796
+    title: LACPDU
+anti_examples:
+- 请重启
+- 关闭 eth-channel
+- 强制 on 模式两台
+grading_rubric:
+  must_have:
+  - 诊断 active vs on 模式错配
+  - 修复统一 active
+  nice_to_have:
+  - RFC 7796 引用
+  penalty:
+  - 重启

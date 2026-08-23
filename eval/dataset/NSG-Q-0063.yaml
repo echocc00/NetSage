@@ -1,0 +1,60 @@
+id: NSG-Q-0063
+title: 浮动静态路由不切换（Arista EOS 4.24，preference 设错）
+category: troubleshoot
+vendor: arista
+version: '4.24'
+difficulty: 3
+tags:
+- static-route
+- float
+- preference
+input:
+  symptom: 主路由 down 后 floating route 未接管
+  device_info:
+    model: DCS-7280QR-C36
+    version: EOS 4.24.6M
+  evidence:
+  - config_snippet: 'ip route 0.0.0.0/0 10.1.1.1
+
+      ip route 0.0.0.0/0 192.168.1.1 254  # ⚠️ AD=254 太高'
+  - log_lines:
+    - 'show ip route 0.0.0.0/0: via 10.1.1.1 unreachable but still active'
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: floating route preference 254 太高（应低于默认 1）
+    probability: 0.7
+    evidence:
+    - default route AD 254
+    verify: show ip route 0.0.0.0/0
+    fix: 'ip route 0.0.0.0/0 192.168.1.1 100  # 100 < 默认 1 的浮动路由'
+    rollback: no ip route 0.0.0.0/0 192.168.1.1
+  - rank: 2
+    cause: 主路由 link-probe 探测发现 up（虚假）
+    probability: 0.2
+    verify: 'show interface | include down
+
+      ip sla'
+    fix: track 真实可达性
+  - rank: 3
+    cause: ECMP 设错
+    probability: 0.1
+    verify: show ip route summary
+    fix: no ecmp → 自动 fallback
+  references:
+  - type: vendor_doc
+    url: https://www.arista.com/en/docs/eos-4.24/static-route
+    version: EOS 4.24
+anti_examples:
+- 请重启
+- 删除全部静态路由
+- 改 IGW
+grading_rubric:
+  must_have:
+  - 诊断 preference 设错
+  - 修复 AD 值
+  nice_to_have:
+  - track 监测
+  penalty:
+  - 重启

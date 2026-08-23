@@ -1,0 +1,40 @@
+id: NSG-Q-0069
+title: 生成华为 CE12800 eBGP 与单 peer 配置
+category: config
+vendor: huawei
+version: VRP-8.180
+difficulty: 2
+tags:
+- bgp
+- ebgp
+- peering
+input:
+  symptom: 某 Huawei CE12800 与对端 AS 65002 建立 eBGP，对端 IP 10.1.1.2，通告 192.168.0.0/16。本地 AS 65001，router-id 10.0.0.1
+  device_info:
+    model: CE12808
+    version: VRP-8.180
+  question: 生成 eBGP peer 配置
+expected_output:
+  config: "bgp 65001\n router-id 10.0.0.1\n peer 10.1.1.2 as-number 65002\n peer 10.1.1.2 password cipher Huawei@2024\n #\n ipv4-family unicast\n  peer 10.1.1.2 enable\n  network 192.168.0.0 255.255.0.0\n"
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/vrp-bgp
+    version: VRP-8.180
+anti_examples:
+- 漏 router-id
+- 用 ipv4-family 写错缩进（应 2 空格 vs 4 空格）
+- 漏 ipv4-family unicast → peer enable
+grading_rubric:
+  must_have:
+  - bgp <asn>
+  - router-id
+  - peer x.x.x.x as-number
+  - ipv4-family unicast peer enable
+  - network 通告
+  nice_to_have:
+  - 密码认证
+  - next-hop-local
+  penalty:
+  - 漏 router-id
+  - ipv4-family peer 缩进错
+  - network 反掩码 vs 掩码使用错

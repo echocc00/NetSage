@@ -1,0 +1,65 @@
+id: NSG-Q-0053
+title: 40GE 接口频繁 flap（Arista EOS 4.24，光模块 RxPower 衰减）
+category: troubleshoot
+vendor: arista
+version: '4.24'
+difficulty: 3
+tags:
+- interface
+- optic
+- crc
+- flap
+input:
+  symptom: Ethernet1 频繁 Up/Down（10 次/小时）
+  device_info:
+    model: DCS-7280QR-C36
+    version: EOS 4.24.6M
+  evidence:
+  - config_snippet: "interface Ethernet1\n  speed 40000\n  no shutdown"
+  - log_lines:
+    - '%LINEPROTO-5-UPDOWN: Line protocol on Interface Ethernet1, changed state to up'
+    - 重复 10 次/小时
+    - '%ETH-4-MULT_DROP: hardware output drops'
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: 光模块 RxPower 衰减（超出 tolerance）
+    probability: 0.7
+    evidence:
+    - interface flap 频次高
+    - output drops 伴随
+    verify: 'show interface ethernet1
+
+      show interface ethernet1 transceiver'
+    fix: '# 1. 更换光模块
+
+      # 2. 清洁光纤端面
+
+      # 3. 检查 link-up 抖动时间（print timing）'
+  - rank: 2
+    cause: 光纤连接器污染
+    probability: 0.2
+    verify: show transceiver
+    fix: 清洁端面 + 重新插入
+  - rank: 3
+    cause: speed/duplex 协商不一致
+    probability: 0.1
+    verify: show interface Ethernet1 status
+    fix: 两端 speed 40000 全双工强制
+  references:
+  - type: vendor_doc
+    url: https://www.arista.com/en/docs/eos-4.24/optic
+    version: EOS 4.24
+anti_examples:
+- 请重启
+- 更换 line card
+- 关闭 40GE
+grading_rubric:
+  must_have:
+  - 诊断光模块衰减
+  - 更换 + 清洁
+  nice_to_have:
+  - transceiver 命令
+  penalty:
+  - 重启

@@ -1,0 +1,60 @@
+id: NSG-Q-0052
+title: IPsec 隧道反复重建（思科 IOS-XE 17，DPD 抖动）
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 4
+tags:
+- ipsec
+- dpd
+- sa-lifetime
+- flap
+input:
+  symptom: IPsec 隧道反复重建（30 秒/次）
+  device_info:
+    model: ISR 4451-X
+    version: IOS-XE 17.09.04a
+  evidence:
+  - config_snippet: "crypto ikev2 profile PROF1\n  dpd 5 3 on-demand\ncrypto ipsec transform-set TSET esp-aes 256 esp-sha256-hmac\n  mode tunnel\n  lifetime 3600\n# DPD 间隔 5 秒，门限 3 次"
+  - log_lines:
+    - '%CRYPTO-5-DPD_PROBE: Probe failed'
+    - '%CRYPTO-4-IKE_DELETE_CHILD_SA_FAILURE'
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: DPD 间隔太短 + on-demand 触发误判（中间设备抖动）
+    probability: 0.6
+    evidence:
+    - DPD probe 5s 间隔太短，链路抖动被误判 tunnel down
+    verify: 'show crypto ikev2 sa verbose
+
+      show crypto ipsec sa'
+    fix: "crypto ikev2 profile PROF1\n  dpd 30 3 on-demand  # 30 秒更稳\ncrypto ipsec transform-set TSET\n  lifetime 86400  # 24 小时"
+    rollback: lifetime 3600
+  - rank: 2
+    cause: Phase-2 lifetime 设过短
+    probability: 0.3
+    verify: show crypto ipsec sa | include lifetime
+    fix: lifetime 28800 (8h)
+  - rank: 3
+    cause: SLA 监控器误判
+    probability: 0.1
+    verify: show track
+    fix: 调整 SLA threshold
+  references:
+  - type: rfc
+    url: https://datatracker.ietf.org/doc/html/rfc3706
+    title: IKE Dead Peer Detection
+anti_examples:
+- 请重启
+- 关闭 DPD
+- 调短 lifetime
+grading_rubric:
+  must_have:
+  - 诊断 DPD 误判
+  - DPD 30s 调整
+  nice_to_have:
+  - RFC 3706 引用
+  penalty:
+  - 关闭 DPD

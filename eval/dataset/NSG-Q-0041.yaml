@@ -1,0 +1,70 @@
+id: NSG-Q-0041
+title: BGP 路由泄漏（Juniper 21.2，community 不当导致路由跨 VRF 流）
+category: troubleshoot
+vendor: juniper
+version: 21.2R1
+difficulty: 4
+tags:
+- bgp
+- route-leak
+- community
+- rt
+input:
+  symptom: VRF-A 中的 192.168.0.0/24 路由泄漏到 VRF-B（不应跨租户）
+  device_info:
+    model: MX204
+    version: Junos 21.2R1.6
+  evidence:
+  - config_snippet: 'set routing-instances VRF-A instance-type vrf
+
+      set routing-instances VRF-A route-distinguisher 65000:1
+
+      set routing-instances VRF-A vrf-target target:65000:100
+
+      # ⚠️ 漏加 export 限定，导致所有 VRF 共享 RT
+
+      '
+  - log_lines:
+    - 'show route 192.168.0.0/24 table VRF-B.inet.0: 通过 (security warning)'
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: VRF target 范围过大（共享 RT 触发跨 VRF 路由通告）
+    probability: 0.6
+    evidence:
+    - show route table VRF-B 看到 VRF-A 的路由
+    - vrf-target 配置未限定 import
+    verify: 'show routing-instances VRF-A vrf-target
+
+      show route table VRF-B.inet.0 hidden'
+    fix: 'set routing-instances VRF-A vrf-target export target:65000:101 import target:65000:101
+
+      # 限制 RT 范围为 101（与 VRF-A 内部一致）'
+    rollback: rollback 1
+  - rank: 2
+    cause: rib-group 全局共享
+    probability: 0.3
+    verify: show rib-groups
+    fix: 为每个 VRF 独立 rib-group
+  - rank: 3
+    cause: policy import 误用 import vrf-match
+    probability: 0.1
+    verify: show policy
+    fix: policy-statement 严格限定 target
+  references:
+  - type: vendor_doc
+    url: https://www.juniper.net/documentation/junos-21.2/vrf-target
+    version: 21.2R1
+anti_examples:
+- 请重启
+- 重启 routing process
+- 全开 target
+grading_rubric:
+  must_have:
+  - 诊断 VRF-Target 误共享
+  - 修复：限定 RT
+  nice_to_have:
+  - policy import 检查
+  penalty:
+  - 重启

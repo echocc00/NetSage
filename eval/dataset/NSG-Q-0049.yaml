@@ -1,0 +1,58 @@
+id: NSG-Q-0049
+title: VXLAN Type-2 MAC 不互通（思科 NX-OS 9.3，EVPN instance 漏配 l2vpn evpn instance）
+category: troubleshoot
+vendor: cisco
+version: NX-OS-9.3
+difficulty: 4
+tags:
+- vxlan
+- evpn
+- type-2
+- mac
+input:
+  symptom: 同 VNI 10010 跨 Leaf，VM MAC 地址学习不到
+  device_info:
+    model: Nexus 9336C-FX2
+    version: NX-OS 9.3(8)
+  evidence:
+  - config_snippet: "feature nv overlay\nfeature vn-segment-vlan-based\nl2vpn evpn   # ⚠️ 没建 evpn instance\nrouter bgp 65000\n  address-family l2vpn evpn\n    neighbor 10.0.0.1 activate"
+  - log_lines:
+    - 'show l2vpn evpn summary: total instances 0'
+    - 'show nve vni 10010: L2VNI information not found'
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: 未配置 l2vpn evpn instance；type-2 路由无法 reachability
+    probability: 0.7
+    evidence:
+    - show l2vpn evpn summary 显示 0 instances
+    verify: show l2vpn evpn summary / show nve vni
+    fix: "conf t\n  l2vpn evpn instance 10 point-to-point\n   rd 10.0.0.1:10\n   route-target import 65000:10010\n   route-target export 65000:10010\n   encapsulate vxlan\n  end"
+    rollback: no l2vpn evpn instance 10
+  - rank: 2
+    cause: NVE 接口未配置 member vni
+    probability: 0.2
+    verify: show nve interface nve 1 detail
+    fix: "interface nve1\n  member vni 10010\n   ingress-replication protocol bgp"
+  - rank: 3
+    cause: BGP EVPN address-family 漏激活
+    probability: 0.1
+    verify: show bgp l2vpn evpn summary
+    fix: "router bgp 65000\n  address-family l2vpn evpn\n   neighbor 10.0.0.1 activate"
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/td/docs/switches/datacenter/sw/nx-os/vxlan
+    version: NX-OS-9.3
+anti_examples:
+- 请重启
+- 改 VNI
+- 删除 nve 重建
+grading_rubric:
+  must_have:
+  - 诊断 instance 漏配
+  - l2vpn evpn instance 配置
+  nice_to_have:
+  - BGP activate 检查
+  penalty:
+  - 重启

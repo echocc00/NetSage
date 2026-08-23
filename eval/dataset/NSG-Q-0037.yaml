@@ -1,0 +1,69 @@
+id: NSG-Q-0037
+title: BGP 不优选期望路径（Juniper 21.2，policy-statement 应用错）
+category: troubleshoot
+vendor: juniper
+version: 21.2R1
+difficulty: 4
+tags:
+- bgp
+- bestpath
+- policy
+- local-preference
+input:
+  symptom: show route 10.0.0.0/8 选 peer 10.1.1.3 (AS_PATH 65005)，但工程师期望 peer 10.1.1.2 (AS_PATH 65003 65004) 更优（已配 local-preference 200）
+  device_info:
+    model: MX204
+    version: Junos 21.2R1.6
+  evidence:
+  - config_snippet: 'set protocols bgp group EBGP neighbor 10.1.1.2 import LP-200
+
+      set policy-options policy-statement LP-200 term 1 then local-preference 200'
+  - log_lines:
+    - 'show route 10.0.0.0/8 detail | grep localpref: Localpreference: 100 (default)'
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: policy-statement LP-200 缺 from 子句，无法匹配特定邻居
+    probability: 0.7
+    evidence:
+    - local-preference 显示 100 默认值
+    - show policy LP-200 显示 term 1 无匹配条件
+    verify: show policy LP-200 / show route 10.0.0.0/8 detail | grep Localpref
+    fix: 'set policy-options policy-statement LP-200 term 1 from neighbor 10.1.1.2
+
+      set policy-options policy-statement LP-200 term 1 then local-preference 200
+
+      commit'
+    rollback: rollback 1
+  - rank: 2
+    cause: policy-statement 没有放到正确的 import/export 位置
+    probability: 0.15
+    verify: show protocols bgp group EBGP | display inheritance
+    fix: set protocols bgp group EBGP neighbor 10.1.1.2 import LP-200
+  - rank: 3
+    cause: AS-path 长度匹配设置错
+    probability: 0.1
+    verify: show route 10.0.0.0/8 detail | grep as-path
+    fix: as-path-ignore 或 as-path prepend
+  - rank: 4
+    cause: next-hop 不可达导致不去选
+    probability: 0.05
+    verify: show route 10.1.1.2
+    fix: 让 next-hop 在 IGP 路由表
+  references:
+  - type: vendor_doc
+    url: https://www.juniper.net/documentation/junos-21.2/bgp-bestpath
+    version: 21.2R1
+anti_examples:
+- 请重启
+- clear bgp neighbor all
+- flush bgp.l3v.0
+grading_rubric:
+  must_have:
+  - from neighbor 子句缺失
+  - policy-statement 正确写法
+  nice_to_have:
+  - rollback 步骤
+  penalty:
+  - 重启

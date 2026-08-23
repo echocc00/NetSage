@@ -1,0 +1,75 @@
+id: NSG-Q-0054
+title: Trunk 不通过 VNI（Juniper 21.2，VLAN ID 不一致）
+category: troubleshoot
+vendor: juniper
+version: 21.2R1
+difficulty: 2
+tags:
+- interface
+- vlan
+- trunk
+- mismatch
+input:
+  symptom: Trunk 端口 VLAN 10 不通
+  device_info:
+    model: EX4300
+    version: Junos 21.2R1.6
+  evidence:
+  - config_snippet: '# Switch-A
+
+      set interfaces ge-0/0/1 unit 0 family ethernet-switching vlan members VLAN10
+
+      # Switch-B
+
+      set interfaces ge-0/0/1 unit 0 family ethernet-switching vlan members VLAN1
+
+      # ⚠️ VLAN 名/ID 不一致'
+  - log_lines:
+    - 'show ethernet-switching table ge-0/0/1: no entries'
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: VLAN 名/ID 错配
+    probability: 0.7
+    evidence:
+    - switch A 是 VLAN10，switch B 是 VLAN1
+    verify: 'show vlans
+
+      show ethernet-switching table'
+    fix: 'delete interfaces ge-0/0/1 unit 0 family ethernet-switching vlan members VLAN1
+
+      set interfaces ge-0/0/1 unit 0 family ethernet-switching vlan members VLAN10
+
+      # 同时两端 vlans 配置一致
+
+      set vlans VLAN10 vlan-id 10
+
+      commit'
+    rollback: rollback 0
+  - rank: 2
+    cause: native vlan 不匹配
+    probability: 0.2
+    verify: show ethernet-switching options
+    fix: set interfaces ge-0/0/1 unit 0 family ethernet-switching native-vlan-id 10
+  - rank: 3
+    cause: port mode 配错
+    probability: 0.1
+    verify: show interfaces ge-0/0/1 | include mode
+    fix: set interfaces ge-0/0/1 unit 0 family ethernet-switching interface-mode trunk
+  references:
+  - type: vendor_doc
+    url: https://www.juniper.net/documentation/junos-21.2/vlan-trunk
+    version: 21.2R1
+anti_examples:
+- 请重启
+- 关闭 trunk
+- 删除 VLAN
+grading_rubric:
+  must_have:
+  - 诊断 VLAN 错配
+  - 统一 VLAN ID
+  nice_to_have:
+  - native-vlan-id
+  penalty:
+  - 重启

@@ -1,0 +1,59 @@
+id: NSG-Q-0040
+title: BGP maximum-prefix 超限（华为 VRP-8.180，对端路由泄漏）
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 3
+tags:
+- bgp
+- maximum-prefix
+- route-leak
+- shutdown
+input:
+  symptom: 'BGP 邻居被强制 Idle: %BGP-3-MAXPFX_EXCEEDED'
+  device_info:
+    model: NE40E-X8A
+    version: VRP-8.180
+  evidence:
+  - config_snippet: "bgp 65001\n  peer 10.1.1.2 as-number 65002\n  peer 10.1.1.2 maximum-prefix 1000 80 restart 30\n# 对端发了 5000 前缀"
+  - log_lines:
+    - '%BGP-3-MAXPFX_EXCEEDED: Peer 10.1.1.2 exceeded maximum-prefix limit 1000'
+    - Peer 10.1.1.2 -> Idle
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: 对端 BGP 路由泄漏（攻击/配置错）导致前缀超限
+    probability: 0.7
+    evidence:
+    - MAXPFX_EXCEEDED
+    - 对端发了 5000 前缀（远超 1000 上限）
+    verify: display bgp peer 10.1.1.2 verbose | include prefix
+    fix: "bgp 65001\n  # 方案 A：上限放宽到 10000\n  peer 10.1.1.2 maximum-prefix 10000 90\n  # 方案 B：配合 prefix-list 限制\n  ip ip-prefix NET-LIMIT index 10 deny 10.0.0.0 8 greater-equal 17\n  peer 10.1.1.2 ip-prefix NET-LIMIT import"
+    rollback: undo peer 10.1.1.2 maximum-prefix
+  - rank: 2
+    cause: maximum-prefix threshold 配置太严，restarter 时间未到
+    probability: 0.2
+    verify: display bgp peer 10.1.1.2 | include restart
+    fix: '重启前手动 reset: reset bgp 10.1.1.2'
+  - rank: 3
+    cause: 上游 65002 扩容新业务路由
+    probability: 0.1
+    verify: 与上游 65002 沟通
+    fix: 协商 prefix 上限
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/vrp-bgp-maximum-prefix
+    version: VRP-8.180
+anti_examples:
+- 请重启
+- 不限 prefix 数
+- 删除 BGP 邻居
+grading_rubric:
+  must_have:
+  - 诊断路由泄漏
+  - 配置 prefix-list + maximum-prefix 调整
+  nice_to_have:
+  - reset bgp
+  penalty:
+  - 重启

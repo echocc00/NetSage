@@ -1,0 +1,37 @@
+id: NSG-Q-0072
+title: 生成华为 NE40E Route Reflector 配置（cluster-id 10.0.0.1）
+category: config
+vendor: huawei
+version: VRP-8.180
+difficulty: 3
+tags:
+- bgp
+- route-reflector
+- cluster-id
+input:
+  symptom: 某 Huawei NE40E-X16 作为 RR，cluster-id 10.0.0.1，本地 AS 65000，客户端 peer 10.1.1.10（AS 65000）
+  device_info:
+    model: NE40E-X16
+    version: VRP-8.180
+  question: 生成 RR 配置
+expected_output:
+  config: "bgp 65000\n router-id 10.0.0.1\n #\n peer 10.0.0.1 reflect-client     # cluster-id 由 peer 行指定\n #\n ipv4-family unicast\n  peer 10.1.1.10 as-number 65000\n  peer 10.1.1.10 reflect-client\n  peer 10.1.1.10 next-hop-local\n"
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/vrp-bgp-rr
+    version: VRP-8.180
+anti_examples:
+- 漏 reflector cluster-id
+- 在 client 端也配 reflect-client（错，应在 RR 上）
+- 忘了 next-hop-local
+grading_rubric:
+  must_have:
+  - bgp 65000
+  - router-id
+  - reflect-client
+  - ipv4-family
+  nice_to_have:
+  - next-hop-local
+  penalty:
+  - reflect-client 写错端
+  - 漏 cluster-id

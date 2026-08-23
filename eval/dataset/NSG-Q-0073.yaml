@@ -1,0 +1,41 @@
+id: NSG-Q-0073
+title: 生成思科 IOS-XE 17 单 Spine EVPN VXLAN L2VNI 10 配置
+category: config
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 4
+tags:
+- vxlan
+- evpn
+- l2vni
+- bgp
+input:
+  symptom: 某 Cisco Catalyst 9300 作 Spine，AS 65000，loopback 10.0.0.1。L2VNI 10010 对应 VLAN 10，REDIRECT-DIST 65000:10010，对端 Leaf 10.1.1.1。
+  device_info:
+    model: Catalyst 9300-48P
+    version: IOS-XE 17.09.04a
+  question: 生成 VXLAN EVPN Spine + L2VNI 配置
+expected_output:
+  config: "nv overlay evpn\nfeature vn-segment-vlan-based\nfeature nv overlay\n!\nl2vpn evpn\n replication-type static\n router-id Loopback0\n!\nvlan 10\n vn-segment 10010\n!\nrouter bgp 65000\n address-family l2vpn evpn\n  neighbor 10.1.1.1\
+    \ activate\n  neighbor 10.1.1.1 send-community both\n!\n l2vpn evpn instance 10 point-to-point\n  rd 10.0.0.1:10\n  route-target import 65000:10010\n  route-target export 65000:10010\n"
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/support/nx-os-9.3-vxlan-evpn
+    version: IOS-XE-17.09
+anti_examples:
+- 忘 nv overlay evpn 全局开启
+- RD/RT 拼写错
+- address-family l2vpn evpn 漏 activate
+grading_rubric:
+  must_have:
+  - nv overlay evpn
+  - l2vpn evpn
+  - vni 10010
+  - rd 配置
+  - route-target
+  - BGP address-family activate
+  nice_to_have:
+  - vn-segment 命名规范
+  penalty:
+  - 漏 nv overlay
+  - RD/RT 错误

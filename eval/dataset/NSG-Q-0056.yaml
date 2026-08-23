@@ -1,0 +1,60 @@
+id: NSG-Q-0056
+title: 策略路由不匹配（华为 VRP-8.180，ACL 配置错位）
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 3
+tags:
+- policy-route
+- acl
+- next-hop
+input:
+  symptom: 策略路由 rule 不匹配，源 10.1.0.0/16 未走 192.168.10.1
+  device_info:
+    model: CE5880
+    version: VRP-8.180
+  evidence:
+  - config_snippet: "acl number 3000\n  rule 5 permit ip source 10.1.0.0 0.0.255.255\n# 但 rule-id 写错或反掩码错\npolicy-based-route PBR1\n  node 10 permit\n    if-match acl 3000\n    apply ip-address next-hop 192.168.10.1"
+  - log_lines:
+    - 'traffic-statistics PBR1: packet match 0'
+    - policy-rule 生效但匹配数 0
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: ACL rule-id 错配或反掩码错（10.1.0.0/16 应配反掩码 0.0.255.255）
+    probability: 0.65
+    evidence:
+    - traffic match 0
+    - ACL 5 反而被配 0.255.255.255
+    verify: 'display acl 3000
+
+      display traffic-policy PBR1'
+    fix: "acl number 3000\n  rule 10 permit ip source 10.1.0.0 0.0.255.255  # rule-id 10 + 正确反掩码\ninterface 10GE1/0/1\n  traffic-policy PBR1 inbound"
+    rollback: undo rule 10
+  - rank: 2
+    cause: policy-based-route 没应用到入接口
+    probability: 0.2
+    verify: display traffic-policy applied-record
+    fix: interface 10GE1/0/1 → traffic-policy PBR1 inbound
+  - rank: 3
+    cause: node-id 错配导致不命中
+    probability: 0.15
+    verify: display policy-based-route
+    fix: node 10 改为 node 5 优先
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/vrp-pbr
+    version: VRP-8.180
+anti_examples:
+- 请重启
+- 删除策略
+- 改 default 路由
+grading_rubric:
+  must_have:
+  - 诊断 ACL 错配
+  - 规则反掩码 + rule-id 修正
+  nice_to_have:
+  - traffic-policy inbound 应用
+  penalty:
+  - 重启

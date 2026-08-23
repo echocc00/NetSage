@@ -1,0 +1,60 @@
+id: NSG-Q-0038
+title: BGP 路由进入但转发丢包（Arista EOS 4.24，next-hop IGP 不可达）
+category: troubleshoot
+vendor: arista
+version: '4.24'
+difficulty: 3
+tags:
+- bgp
+- next-hop
+- blackhole
+- igp
+input:
+  symptom: BGP 收到 192.168.0.0/24，但转发黑洞（destination unreachable）
+  device_info:
+    model: DCS-7280QR-C36
+    version: EOS 4.24.6M
+  evidence:
+  - config_snippet: "router bgp 65001\n  neighbor 10.1.1.2 remote-as 65002\n  address-family ipv4\n   network 192.168.0.0/24"
+  - log_lines:
+    - 'show ip bgp 192.168.0.0/24: via 10.1.1.2'
+    - 'show ip route 10.1.1.2: unreachable (OSPF 仅有 10.1.0.0/24)'
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: BGP next-hop 10.1.1.2 在 IGP 中不可达（eBGP 多跳未配 IGP reachability）
+    probability: 0.75
+    evidence:
+    - show ip bgp OK 但 show ip route 下一跳 unreachable
+    verify: 'show ip bgp 192.168.0.0/24 | grep next-hop
+
+      show ip route 10.1.1.2'
+    fix: "router bgp 65001\n   neighbor 10.1.1.2 default-originate\n# 或\nip route 192.168.0.0/24 10.1.1.2"
+    rollback: no neighbor 10.1.1.2 default-originate
+  - rank: 2
+    cause: next-hop self 缺失，跨 peer group 转发错
+    probability: 0.15
+    verify: show ip bgp neighbors 10.1.1.2 | include next-hop-self
+    fix: "neighbor group NEXT-HOP-SELF peer-group\n neighbor NEXT-HOP-SELF next-hop-self"
+  - rank: 3
+    cause: OSPF 通告范围不含 eBGP 互联地址
+    probability: 0.1
+    verify: show ip ospf interface
+    fix: 把互联地址加入 OSPF 通告
+  references:
+  - type: vendor_doc
+    url: https://www.arista.com/en/docs/eos-4.24/bgp-next-hop
+    version: EOS 4.24
+anti_examples:
+- 请重启
+- 删除 BGP 邻居重建
+- 丢弃 192.168.0.0/24
+grading_rubric:
+  must_have:
+  - 诊断 next-hop 不可达
+  - next-hop-self + default-originate
+  nice_to_have:
+  - IGP 通告范围检查
+  penalty:
+  - 重启

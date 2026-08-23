@@ -1,0 +1,58 @@
+id: NSG-Q-0042
+title: eBGP/iBGP 邻居混淆（华三 Comware 7，next-hop-self 缺失）
+category: troubleshoot
+vendor: h3c
+version: Comware-7.1.070
+difficulty: 3
+tags:
+- bgp
+- ibgp
+- ebgp
+- next-hop-self
+input:
+  symptom: iBGP 同 AS 内部邻居可达，但内部 RR 反射给 iBGP 客户端的路由 next-hop 不可达（黑洞）
+  device_info:
+    model: S9850-32B
+    version: Comware 7.1.070 R7625
+  evidence:
+  - config_snippet: "bgp 65000\n  peer 10.0.0.1 as-number 65000\n  peer 10.0.0.1 reflect-client\n  ! ⚠️ RR 上未加 peer x.x.x.x next-hop-local"
+  - log_lines:
+    - 'display bgp routing-table 192.168.0.0/24: next-hop 10.1.1.2'
+    - '但 show ip route 10.1.1.2: unreachable'
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: RR 上缺 next-hop-local，导致 iBGP 客户端无法 resolve next-hop
+    probability: 0.7
+    evidence:
+    - 路由有 next-hop 10.1.1.2 但 IGP 无路径
+    verify: display bgp routing-table 192.168.0.0/24 / display ip routing-table
+    fix: "bgp 65000\n  peer 10.0.0.1 next-hop-local\n  peer 10.0.0.1 reflect-client"
+    rollback: undo peer 10.0.0.1 next-hop-local
+  - rank: 2
+    cause: iBGP 客户端 RR 之间做 full-mesh 而非 RR 模式
+    probability: 0.2
+    verify: display bgp peer | include reflect
+    fix: 确定 RR 层级
+  - rank: 3
+    cause: cluster-id 冲突
+    probability: 0.1
+    verify: display bgp cluster
+    fix: bgp 65000 → cluster-id 10.0.0.1
+  references:
+  - type: vendor_doc
+    url: https://www.h3c.com/cn/d_202206/bgp-rr-next-hop
+    version: Comware 7.1.070
+anti_examples:
+- 请重启
+- 删 RR 重配
+- close BGP peer
+grading_rubric:
+  must_have:
+  - next-hop-local
+  - 诊断 RR vs iBGP
+  nice_to_have:
+  - cluster-id
+  penalty:
+  - 重启

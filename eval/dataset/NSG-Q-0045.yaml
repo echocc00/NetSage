@@ -1,0 +1,62 @@
+id: NSG-Q-0045
+title: OSPF LSDB 频繁刷新（华为 VRP-8.180，SPF 频繁计算导致 CPU 高）
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 4
+tags:
+- ospf
+- lsa
+- spf
+- cpu
+input:
+  symptom: OSPF display ospf spf-statistics 1000 次/分钟，CPU 持续 >60%
+  device_info:
+    model: CE5880-C48S8CQ
+    version: VRP-8.180
+  evidence:
+  - config_snippet: "ospf 1\n  area 0.0.0.0\n    network 10.1.1.0 0.0.0.255\n# 邻居 50+ 个，且每 60s 都有 1 个邻居重启（链路上 SDH 跳变）"
+  - log_lines:
+    - '%OSPF/4/SHORTAGE_OF_LSBD(l): LSDB overflow attempts 5'
+    - 'display ospf cpu-usage: 65% (SPF 80%)'
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: 邻居频繁重启触发 LSA 重新泛洪，SPF 频繁计算
+    probability: 0.7
+    evidence:
+    - LSDB overflow 告警
+    - SPF 频繁
+    - 设备邻居 50+ 个
+    verify: 'display ospf spf-statistics
+
+      display ospf peer | include "Up| Established" | head'
+    fix: "# 方案 A：调小 SPF throttle\nospf 1\n  spf-schedule-interval 5000 10000 20000\n  initial-delay 1000\n# 方案 B：触发型 LSA 接口上配 ospf timer hello 30 dead 120 降低 churn"
+    rollback: undo spf-schedule-interval
+  - rank: 2
+    cause: LSA 老化触发频繁重生成
+    probability: 0.2
+    verify: display ospf lsdb | include LSAge
+    fix: 调大 LSA refresh 间隔
+  - rank: 3
+    cause: 路由震荡（上游 IGP router flap）
+    probability: 0.1
+    verify: display logbuffer | include "Neighbor up"
+    fix: 上游稳定性治理
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/vrp-ospf-spf-throttle
+    version: VRP-8.180
+anti_examples:
+- 请重启
+- 删除 OSPF 重配
+- 关闭 SPF
+grading_rubric:
+  must_have:
+  - 诊断 SPF 频繁计算
+  - spf-schedule-interval 调优
+  nice_to_have:
+  - initial-delay 解释
+  penalty:
+  - 重启

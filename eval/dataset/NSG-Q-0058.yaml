@@ -1,0 +1,59 @@
+id: NSG-Q-0058
+title: VXLAN ARP 表振荡（思科 NX-OS 9.3，ARP suppression 配置不一致）
+category: troubleshoot
+vendor: cisco
+version: NX-OS-9.3
+difficulty: 4
+tags:
+- vxlan
+- arp
+- suppression
+input:
+  symptom: Type-2 路由正常但 ARP 表频繁变化
+  device_info:
+    model: Nexus 9336C-FX2
+    version: NX-OS 9.3(8)
+  evidence:
+  - config_snippet: "# Leaf-A\nl2vpn evpn instance 10 point-to-point\n  arp suppress  # 启用\n# Leaf-B\nl2vpn evpn instance 10 point-to-point\n  ! ⚠️ 未启用 arp suppress"
+  - log_lines:
+    - 'show ip arp suppression-cache Leaf-A: 100 entries'
+    - 'Leaf-B: empty'
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: ARP suppression 配置不一致（部分 Leaf 启用）
+    probability: 0.7
+    evidence:
+    - Leaf-A enabled 100 ARP, Leaf-B 0 ARP
+    verify: 'show ip arp suppression-cache
+
+      show l2vpn evpn instance detail'
+    fix: "l2vpn evpn instance 10 point-to-point\n  arp suppress\n# Leaf-B 端也加"
+    rollback: no arp suppress
+  - rank: 2
+    cause: VTEP gateway IP 配错
+    probability: 0.15
+    verify: show nve peer
+    fix: 检查 anycast gateway 一致性
+  - rank: 3
+    cause: BGP RR 不通告 Type-2 路由
+    probability: 0.15
+    verify: show bgp l2vpn evpn type-2
+    fix: 检查 RT 与 redistribute
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/td/docs/switches/datacenter/sw/nx-os/vxlan/arp-suppress
+    version: NX-OS-9.3
+anti_examples:
+- 请重启
+- 关闭 EVPN
+- 禁 Type-2
+grading_rubric:
+  must_have:
+  - 诊断 ARP suppression 不一致
+  - 两 Leaf 一致启用
+  nice_to_have:
+  - VTEP gateway 配置
+  penalty:
+  - 重启

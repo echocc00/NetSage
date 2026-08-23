@@ -1,0 +1,62 @@
+id: NSG-Q-0055
+title: 静态路由不优（华三 Comware 7，下一跳不可达）
+category: troubleshoot
+vendor: h3c
+version: Comware-7.1.070
+difficulty: 2
+tags:
+- static-route
+- recursive-lookup
+input:
+  symptom: ip route-static 192.168.0.0 255.255.0.0 10.0.0.1 显示 inactive
+  device_info:
+    model: S5731-S48P4X
+    version: Comware 7.1.070 R7625
+  evidence:
+  - config_snippet: 'ip route-static 192.168.0.0 255.255.0.0 10.0.0.1
+
+      # 但本端 10.0.0.0/24 不在直连段'
+  - log_lines:
+    - 'display ip routing-table 192.168.0.0/16: inactive'
+    - 下一跳 10.0.0.1 不可达
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: 下一跳 IP 10.0.0.1 不在直连路由表
+    probability: 0.8
+    evidence:
+    - 路由 inactive
+    verify: display ip routing-table 10.0.0.1
+    fix: 'ip route-static 192.168.0.0 255.255.0.0 192.168.1.1 preference 5
+
+      # 或换出接口
+
+      ip route-static 192.168.0.0 255.255.0.0 Vlan-interface10 10.0.0.1'
+    rollback: undo ip route-static 192.168.0.0 255.255.0.0
+  - rank: 2
+    cause: 下一跳 IP 是本端接口
+    probability: 0.15
+    verify: display ip interface brief
+    fix: 改成正确的下一跳 IP
+  - rank: 3
+    cause: 出接口 down
+    probability: 0.05
+    verify: display ip interface brief | include down
+    fix: undo shutdown
+  references:
+  - type: vendor_doc
+    url: https://www.h3c.com/cn/d_202206/static-route
+    version: Comware 7.1.070
+anti_examples:
+- 请重启
+- 删除全部 route
+- 改 default route
+grading_rubric:
+  must_have:
+  - 诊断下一跳不可达
+  - 修改出接口或下一跳
+  nice_to_have:
+  - preference 调整
+  penalty:
+  - 重启

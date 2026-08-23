@@ -1,0 +1,59 @@
+id: NSG-Q-0061
+title: IPv6 默认路由丢失（Juniper 21.2，ndp/dhcpv6 中继配错）
+category: troubleshoot
+vendor: juniper
+version: 21.2R1
+difficulty: 3
+tags:
+- ipv6
+- default-route
+- ndp
+- dhcpv6
+input:
+  symptom: IPv6 默认路由 2000::/3 缺失
+  device_info:
+    model: MX204
+    version: Junos 21.2R1.6
+  evidence:
+  - config_snippet: 'set routing-options rib inet6.0 static route ::/0 next-hop 2001:db8::1
+
+      # ⚠️ 缺 interface route aggregation'
+  - log_lines:
+    - 'show route ::/0: not found'
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: 下一跳 2001:db8::1 不可达 / 不在 IGP 上通告
+    probability: 0.6
+    evidence:
+    - route not found
+    verify: show route 2001:db8::1
+    fix: set routing-options rib inet6.0 static route ::/0 qualified-next-hop 2001:db8::1 interface ge-0/0/1.0
+    rollback: delete routing-options static route ::/0
+  - rank: 2
+    cause: IPv6 路由协议未开启（routing-options inet6 disabled）
+    probability: 0.2
+    verify: show ipv6 forwarding
+    fix: set forwarding-options family inet6 route-monitoring
+  - rank: 3
+    cause: Neighbor cache 失效
+    probability: 0.2
+    verify: show ipv6 neighbor
+    fix: clear ipv6 neighbor
+  references:
+  - type: rfc
+    url: https://datatracker.ietf.org/doc/html/rfc4861
+    title: Neighbor Discovery for IPv6
+anti_examples:
+- 请重启
+- 关 IPv6 routing
+- 改 default route 静默
+grading_rubric:
+  must_have:
+  - 诊断下一跳不可达
+  - qualified-next-hop
+  nice_to_have:
+  - route-monitoring 开启
+  penalty:
+  - 关闭 IPv6

@@ -1,0 +1,57 @@
+id: NSG-Q-0067
+title: IS-IS 邻居震荡（华三 Comware 7，L1/L2 level mismatch）
+category: troubleshoot
+vendor: h3c
+version: Comware-7.1.070
+difficulty: 4
+tags:
+- isis
+- level-mismatch
+input:
+  symptom: IS-IS 邻居反复 Up/Down，display isis neighbor 显示一直 Init
+  device_info:
+    model: S9850-32B
+    version: Comware 7.1.070 R7625
+  evidence:
+  - config_snippet: "# Spoke-A\nisis 1\n  is-level level-1\n  network-entity 49.0001.0000.0000.0001.00\n# Spoke-B\nisis 1\n  is-level level-1-2  # ⚠️ L1 vs L1-2 错配"
+  - log_lines:
+    - '%ISIS-3-LEVEL_MISMATCH: Level mismatch with IS'
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: IS-IS level 不一致（L1 vs L1-2）
+    probability: 0.7
+    evidence:
+    - ISIS-3-LEVEL_MISMATCH
+    verify: 'display isis interface
+
+      display isis peer'
+    fix: "# 统一 level\nisis 1\n  is-level level-1-2"
+    rollback: undo is-level
+  - rank: 2
+    cause: NET address area-id 不一致
+    probability: 0.2
+    verify: display isis
+    fix: 检查 NET format 一致
+  - rank: 3
+    cause: IS-IS 认证密码
+    probability: 0.1
+    verify: display isis interface authentication
+    fix: 统一 domain-password
+  references:
+  - type: vendor_doc
+    url: https://www.h3c.com/cn/d_202206/isis-level
+    version: Comware 7.1.070
+anti_examples:
+- 请重启
+- 关闭 IS-IS
+- 改成 OSPF
+grading_rubric:
+  must_have:
+  - 诊断 level mismatch
+  - 统一 L1-2
+  nice_to_have:
+  - NET area-id 检查
+  penalty:
+  - 重启

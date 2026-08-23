@@ -1,0 +1,56 @@
+id: NSG-Q-0066
+title: Huawei CloudEngine NX-OS ospf 类型 P2MP 学习不到下游路由
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 4
+tags:
+- ospf
+- p2mp
+- network-type
+input:
+  symptom: OSPF P2MP Hub-Spoke 下游路由学习不到
+  device_info:
+    model: CE5855-EI
+    version: VRP-8.180
+  evidence:
+  - config_snippet: "# Hub\ninterface 10GE1/0/1\n  ospf network-type p2mp\n  ospf p2mp neighbor 10.1.1.1\n# Spoke 端 network-type 是 broadcast"
+  - log_lines:
+    - 'display ospf lsdb: 缺少 Type-3'
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: P2MP Hub 与 Spoke 端 network-type 不一致
+    probability: 0.7
+    evidence:
+    - Type-3 缺失
+    verify: display ospf interface 10GE1/0/1 | include Network
+    fix: "# Spoke 端\ninterface 10GE1/0/1\n  ospf network-type p2mp\n  ospf p2mp neighbor 10.1.1.2  # back to Hub"
+    rollback: undo ospf network-type
+  - rank: 2
+    cause: P2MP 邻居命令格式错
+    probability: 0.2
+    verify: display ospf p2mp neighbor
+    fix: ospf p2mp neighbor <ip> p2mp-type broadcast
+  - rank: 3
+    cause: NBMA DR 选举不匹配
+    probability: 0.1
+    verify: display ospf neighbor
+    fix: ospf dr-priority 一致
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/vrp-ospf-p2mp
+    version: VRP-8.180
+anti_examples:
+- 请重启
+- 改 broadcast
+- 删除 OSPF
+grading_rubric:
+  must_have:
+  - 诊断 P2MP 类型不一致
+  - 修复 Spoke 端配 p2mp
+  nice_to_have:
+  - p2mp neighbor 命令
+  penalty:
+  - 重启

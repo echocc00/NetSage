@@ -1,0 +1,67 @@
+id: NSG-Q-0047
+title: OSPF NSSA Type-7 不转 Type-5（Arista EOS 4.24，ABR 漏配 area nssa）
+category: troubleshoot
+vendor: arista
+version: '4.24'
+difficulty: 4
+tags:
+- ospf
+- nssa
+- type-7
+- type-5
+- abr
+input:
+  symptom: NSSA 区外部路由注入后，其他 OSPF area 学不到（无 type-5 路由）
+  device_info:
+    model: DCS-7280QR-C36
+    version: EOS 4.24.6M
+  evidence:
+  - config_snippet: "# ABR device\nrouter ospf 10\n  area 0.0.0.1 stub no-summary nssa  # ⚠️ stub 和 nssa 互斥"
+  - log_lines:
+    - 'show ip ospf database: 本地 area 0.0.0.1 有 type-7'
+    - 'show ip ospf database summary: 0.0.0.0 area 没有 type-5'
+  question: 诊断 + 修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: stub 与 nssa 互斥（二选一）
+    probability: 0.65
+    evidence:
+    - NSSA 配置被 stub 覆盖
+    - no type-5 路由生成
+    verify: 'show ip ospf area 0.0.0.1 detail
+
+      show running-config section ospf'
+    fix: "router ospf 10\n  no area 0.0.0.1 stub\n  area 0.0.0.1 nssa"
+    rollback: area 0.0.0.1 stub
+  - rank: 2
+    cause: ABR 上 P-bit 标记为 0（不翻译 type-7→type-5）
+    probability: 0.2
+    verify: show ip ospf database nssa-external | include P-bit
+    fix: 在 NSSA ASBR 上配置 nssa 把 P-bit 设为 1（默认是 1）
+  - rank: 3
+    cause: ABR ABR-type 不是 ASBR，只转 type-3，不转 type-5
+    probability: 0.1
+    verify: show ip ospf border-routers
+    fix: 在 ABR 上加 always-translate-7-to-5
+  - rank: 4
+    cause: NSSA 区 filter-list 阻挡了 type-5
+    probability: 0.05
+    verify: show ip ospf filter
+    fix: 调整 filter-list
+  references:
+  - type: rfc
+    url: https://datatracker.ietf.org/doc/html/rfc3101
+    title: The OSPF NSSA Option
+anti_examples:
+- 请重启
+- 改 area 0
+- 关闭 NSSA
+grading_rubric:
+  must_have:
+  - 诊断 stub/nssa 互斥
+  - 修复：no stub + nssa
+  nice_to_have:
+  - P-bit 解释
+  penalty:
+  - 重启
