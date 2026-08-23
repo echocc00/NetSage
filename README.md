@@ -191,3 +191,8 @@ flowchart TB
 ## 许可证
 
 Apache-2.0
+
+
+---
+
+<sub>📋 本 README 遵循 [echocc00/README-TEMPLATE.md](https://github.com/echocc00/.github/blob/main/README-TEMPLATE.md) 写作规范</sub>
