@@ -1,0 +1,17 @@
+template_id: huawei_vrp_roce_pfc
+vendor: huawei
+os: vrp
+version_min: "8.0"
+version_max: "8.999"
+protocol: roce
+feature: pfc
+input_schema:
+  - { name: interface, type: string, required: true, desc: "接口名" }
+  - { name: pfc_priority, type: int, required: true, enum: [0, 1, 2, 3], desc: "PFC 优先级" }
+  - { name: pfc_headroom, type: string, required: true, desc: "headroom 大小（如 10KB）" }
+  - { name: watchdog_interval, type: int, required: false, desc: "watchdog 间隔 ms" }
+output_format: cli
+validated_against: []
+author: ""
+reviewers: []
+last_reviewed: ""

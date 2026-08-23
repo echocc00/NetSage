@@ -1,0 +1,9 @@
+dcb pfc
+  priority {{ pfc_priority }}
+    headroom {{ pfc_headroom }}
+    watchdog enable
+    watchdog interval {{ watchdog_interval | default(100) }}
+interface {{ interface }}
+  pfc enable {{ pfc_priority }}
+  qos buffer headroom {{ pfc_headroom }} bytes
+  qos wred ecn enable

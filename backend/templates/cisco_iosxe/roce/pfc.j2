@@ -1,0 +1,9 @@
+priority-flow-control mode on
+priority-flow-control watch-port {{ interface }}
+interface {{ interface }}
+  priority-flow-control on
+  priority-flow-control watch-port {{ interface }}
+  pause buffer threshold {{ pfc_headroom }}
+  no priority-flow-control pause watchdog disable
+  priority-flow-control pause watchdog interval {{ watchdog_interval | default(100) }}
+  service-policy type qos input pfc-priority-{{ pfc_priority }}

@@ -1,0 +1,29 @@
+# OpenSM + opensm-mcp 部署（Phase 4 RDMA 专项，v2.0 二十一章 GPL 法务隔离）
+#
+# 三条红线（不可破）：
+# 1. 不链接：不 import OpenSM 库（仅 subprocess/HTTP 调用）
+# 2. 不分发：不发布含 OpenSM 二进制的镜像（用官方 rdma-core 镜像，用户本机拉取）
+# 3. 不修改：用原版 OpenSM + 自研 wrapper，不 fork
+#
+# 无 IB 硬件时：opensm-mcp 设 OPENSM_MOCK=true，返回种子数据，不依赖 OpenSM 容器。
+
+services:
+  opensm:
+    image: ghcr.io/rdma-core/opensm:latest
+    container_name: netsage-opensm
+    network_mode: host
+    volumes:
+      - /dev/infiniband:/dev/infiniband
+    command: ["opensm", "-B"]
+    restart: unless-stopped
+    profiles: ["ib-hardware"]
+
+  opensm-mcp:
+    build: ../mcp-servers/opensm-mcp
+    container_name: netsage-opensm-mcp
+    ports: ["9006:9006"]
+    environment:
+      OPENSM_MOCK: "true"
+      OPENSM_HOST: "localhost"
+      OPENSM_PORT: "10000"
+    restart: unless-stopped

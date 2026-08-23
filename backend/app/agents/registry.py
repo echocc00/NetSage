@@ -199,6 +199,30 @@ def build_runner() -> AgentRunner:
             "render": partial(compliance_render, tools=tools),
         },
     )
+
+    # RdmAgent（Phase 4 RDMA 专项，差异化护城河）
+    from app.agents.rdma_handlers import (
+        RDMA_AGENT_DEFINITION,
+        rdma_collect,
+        rdma_diagnose,
+        rdma_suggest_tuning,
+    )
+
+    runner.register(
+        AgentDefinition(
+            name=RDMA_AGENT_DEFINITION["name"],
+            role=RDMA_AGENT_DEFINITION["role"],
+            system_prompt=RDMA_AGENT_DEFINITION["system_prompt"],
+            tools=RDMA_AGENT_DEFINITION["tools"],
+            state_schema=RDMA_AGENT_DEFINITION["state_schema"],
+            transitions=[Transition(t["from"], t["to"]) for t in RDMA_AGENT_DEFINITION["transitions"]],
+        ),
+        {
+            "collect": partial(rdma_collect, tools=tools),
+            "diagnose": partial(rdma_diagnose, tools=tools),
+            "suggest_tuning": partial(rdma_suggest_tuning, tools=tools),
+        },
+    )
     return runner
 
 

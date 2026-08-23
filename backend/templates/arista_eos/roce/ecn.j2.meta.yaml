@@ -1,0 +1,18 @@
+template_id: arista_eos_roce_ecn
+vendor: arista
+os: eos
+version_min: "4.28"
+version_max: "4.999"
+protocol: roce
+feature: ecn
+input_schema:
+  - { name: pfc_priority, type: int, required: false, enum: [0, 1, 2, 3] }
+  - { name: ecn_threshold, type: string, required: true, desc: "ECN 最小阈值" }
+  - { name: ecn_ce_threshold, type: string, required: true, desc: "ECN 最大阈值" }
+  - { name: dscp, type: int, required: false }
+  - { name: shape_rate, type: int, required: false, desc: "整形速率百分比" }
+output_format: cli
+validated_against: []
+author: ""
+reviewers: []
+last_reviewed: ""

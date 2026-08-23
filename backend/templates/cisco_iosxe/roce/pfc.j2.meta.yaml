@@ -1,0 +1,17 @@
+template_id: cisco_iosxe_roce_pfc
+vendor: cisco
+os: iosxe
+version_min: "17.0"
+version_max: "17.999"
+protocol: roce
+feature: pfc
+input_schema:
+  - { name: interface, type: string, required: true }
+  - { name: pfc_priority, type: int, required: true, enum: [0, 1, 2, 3] }
+  - { name: pfc_headroom, type: string, required: true, desc: "pause buffer 阈值" }
+  - { name: watchdog_interval, type: int, required: false }
+output_format: cli
+validated_against: []
+author: ""
+reviewers: []
+last_reviewed: ""

@@ -6,6 +6,7 @@ import DesignPage from './pages/design'
 import TroubleshootPage from './pages/troubleshoot'
 import ChangesPage from './pages/changes'
 import AuditPage from './pages/audit'
+import RdmaPage from './pages/rdma'
 import LoginPage from './pages/login'
 
 const AuthGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -32,6 +33,7 @@ const App: React.FC = () => {
         <Route path="troubleshoot" element={<TroubleshootPage />} />
         <Route path="changes" element={<ChangesPage />} />
         <Route path="audit" element={<AuditPage />} />
+        <Route path="rdma" element={<RdmaPage />} />
       </Route>
     </Routes>
   )

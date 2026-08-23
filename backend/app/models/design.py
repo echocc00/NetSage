@@ -29,3 +29,24 @@ class NetworkDesign(Base, TimestampMixin):
     rollback_config: Mapped[str] = mapped_column(Text, default="")
     lint_passed: Mapped[bool] = mapped_column(Boolean, default=False)
     created_by: Mapped[str] = mapped_column(String(50), default="ai")
+
+
+class RdmaFabric(Base, TimestampMixin):
+    """RDMA Fabric 设计方案（Phase 4，v2.0 差异化护城河）。
+
+    持久化无损网络设计：PFC/ECN/DCQCN 策略 + Fabric 拓扑 + 调优参数。
+    """
+    __tablename__ = "rdma_fabrics"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(200))
+    site: Mapped[str] = mapped_column(String(100), default="")
+    vendor: Mapped[str] = mapped_column(String(50))
+    fabric_type: Mapped[str] = mapped_column(String(32), default="rocev2")  # rocev2 / ib
+    pfc_priority: Mapped[int] = mapped_column(Integer, default=3)
+    ecn_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    dcqcn_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    mtu: Mapped[int] = mapped_column(Integer, default=9100)
+    tuning_params: Mapped[str] = mapped_column(Text, default="{}")   # JSON
+    topology: Mapped[str] = mapped_column(Text, default="{}")        # JSON
+    created_by: Mapped[str] = mapped_column(String(50), default="ai")

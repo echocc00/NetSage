@@ -1,0 +1,17 @@
+template_id: huawei_vrp_roce_ecn
+vendor: huawei
+os: vrp
+version_min: "8.0"
+version_max: "8.999"
+protocol: roce
+feature: ecn
+input_schema:
+  - { name: interface, type: string, required: true }
+  - { name: ecn_threshold, type: string, required: true, desc: "ECN 阈值（如 150KB）" }
+  - { name: ecn_ce_threshold, type: string, required: true, desc: "CE 标记阈值" }
+  - { name: dcqcn_block, type: string, required: false, desc: "DCQCN 参数块" }
+output_format: cli
+validated_against: []
+author: ""
+reviewers: []
+last_reviewed: ""

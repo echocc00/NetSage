@@ -1,0 +1,9 @@
+class-map type qos match-any roce-ecn
+  match cos {{ pfc_priority | default(3) }}
+policy-map type qos roce-ecn-policy
+  class roce-ecn
+    set dscp {{ dscp | default(46) }}
+    random-detect ecn
+    random-detect minimum-threshold {{ ecn_threshold }} maximum-threshold {{ ecn_ce_threshold }}
+interface {{ interface }}
+  service-policy type qos input roce-ecn-policy

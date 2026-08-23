@@ -1,0 +1,7 @@
+dcbpfc enable
+dcbpfc priority {{ pfc_priority }} no-drop
+interface {{ interface }}
+  dcbpfc priority {{ pfc_priority }} no-drop
+  tx-queue {{ pfc_priority }}
+    bandwidth percent {{ bandwidth_pct | default(50) }}
+    priority-flow-control pause watchdog

@@ -1,0 +1,8 @@
+dcb ecn
+  ecn enable
+  ecn threshold {{ ecn_threshold }}
+  ecn ce-threshold {{ ecn_ce_threshold }}
+interface {{ interface }}
+  qos wred ecn enable
+  qos wred ecn threshold {{ ecn_threshold }}
+  {{ dcqcn_block | default('') }}

@@ -1,0 +1,18 @@
+template_id: cisco_iosxe_roce_ecn
+vendor: cisco
+os: iosxe
+version_min: "17.0"
+version_max: "17.999"
+protocol: roce
+feature: ecn
+input_schema:
+  - { name: interface, type: string, required: true }
+  - { name: pfc_priority, type: int, required: false, enum: [0, 1, 2, 3] }
+  - { name: ecn_threshold, type: string, required: true, desc: "ECN 最小阈值" }
+  - { name: ecn_ce_threshold, type: string, required: true, desc: "ECN 最大阈值" }
+  - { name: dscp, type: int, required: false, desc: "DSCP 值" }
+output_format: cli
+validated_against: []
+author: ""
+reviewers: []
+last_reviewed: ""

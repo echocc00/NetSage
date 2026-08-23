@@ -1,0 +1,5 @@
+qos map dscp {{ dscp | default(46) }} to traffic-class {{ pfc_priority | default(3) }}
+qos map traffic-class {{ pfc_priority | default(3) }} to tx-queue {{ pfc_priority | default(3) }}
+tx-queue {{ pfc_priority | default(3) }}
+  shape rate {{ shape_rate | default(100) }} percent
+  random-detect ecn minimum-threshold {{ ecn_threshold }} maximum-threshold {{ ecn_ce_threshold }}

@@ -1,0 +1,16 @@
+template_id: arista_eos_roce_pfc
+vendor: arista
+os: eos
+version_min: "4.28"
+version_max: "4.999"
+protocol: roce
+feature: pfc
+input_schema:
+  - { name: interface, type: string, required: true }
+  - { name: pfc_priority, type: int, required: true, enum: [0, 1, 2, 3] }
+  - { name: bandwidth_pct, type: int, required: false, desc: "带宽百分比" }
+output_format: cli
+validated_against: []
+author: ""
+reviewers: []
+last_reviewed: ""
