@@ -34,6 +34,9 @@ clab-*/
 # 评测报告
 eval/reports/*.html
 
+# 厂商手册原文（版权属厂商，不提交仓库，仅本地 ingest）
+doc/vendor-manuals/
+
 # OS
 .DS_Store
 Thumbs.db
