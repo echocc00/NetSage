@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 from eval.runner import grade, load_dataset, run_eval
+from eval.runner.schema import validate_dataset
+from pathlib import Path
 
 
 def test_load_dataset_finds_questions():
@@ -12,11 +14,38 @@ def test_load_dataset_finds_questions():
     assert qs[0].category in {"troubleshoot", "config", "design", "audit", "perf"}
 
 
+def test_dataset_size_500():
+    """v0.1.3 验收：评测集 ≥ 500 题。"""
+    qs = load_dataset()
+    assert len(qs) >= 500, f"评测集 {len(qs)} < 500"
+
+
+def test_dataset_all_schema_valid():
+    """v0.1.3 验收：500+ 题全部 schema 校验通过。"""
+    d = Path(__file__).resolve().parents[3] / "eval" / "dataset"
+    passed, total, errors = validate_dataset(d)
+    assert total >= 500
+    assert passed == total, f"{total - passed} 题校验失败: {errors[:5]}"
+
+
+def test_dataset_category_coverage():
+    """v0.1.3 验收：5 类齐全。"""
+    qs = load_dataset()
+    cats = {q.category for q in qs}
+    assert cats >= {"troubleshoot", "config", "design", "audit", "perf"}
+
+
+def test_dataset_vendor_coverage():
+    """v0.1.3 验收：≥4 厂商覆盖。"""
+    qs = load_dataset()
+    vendors = {q.vendor for q in qs}
+    assert len(vendors) >= 4
+
+
 def test_grade_good_response():
     """好响应：命中 must_have，无 penalty → passed（v2.0 22.4）。"""
     qs = load_dataset()
     q = qs[0]
-    # 构造一个命中 must_have 的响应
     resp = "根因：光模块 CRC。验证：display interface。修复：更换光模块。"
     result = grade(resp, q)
     assert result["penalty_hits"] == 0

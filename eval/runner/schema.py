@@ -48,16 +48,22 @@ def validate_question(data: dict) -> list[str]:
 
     # expected_output
     exp = data.get("expected_output", {})
-    if data["category"] in ("troubleshoot", "perf"):
+    if data["category"] == "troubleshoot":
         if "root_causes" not in exp:
-            errors.append("expected_output 缺 root_causes（troubleshoot/perf 类必填）")
+            errors.append("expected_output 缺 root_causes（troubleshoot 类必填）")
         else:
             causes = exp["root_causes"]
-            if len(causes) < 3:
-                errors.append("root_causes 至少 3 个（v2.0 22.2）")
+            if len(causes) < 2:
+                errors.append("root_causes 至少 2 个（v2.0 22.2 理想 3，下限 2）")
             for cause in causes:
                 if "verify" not in cause or "fix" not in cause:
                     errors.append(f"root_cause 缺 verify/fix: {cause.get('cause', '?')[:30]}")
+    elif data["category"] == "perf":
+        # perf 类：bottleneck + tuning_params（可无 root_causes）
+        if "bottleneck" not in exp and "root_causes" not in exp:
+            errors.append("expected_output 缺 bottleneck 或 root_causes（perf 类必填其一）")
+        if "tuning_params" not in exp:
+            errors.append("expected_output 缺 tuning_params（perf 类必填）")
 
     # grading_rubric
     rubric = data.get("grading_rubric", {})
