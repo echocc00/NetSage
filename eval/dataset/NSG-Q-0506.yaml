@@ -1,0 +1,31 @@
+id: NSG-Q-0506
+title: '生成 cisco interface/vlan 配 (变体 #52): 思科 vlan 100 ID'
+category: config
+vendor: cisco
+version: 8.0+
+difficulty: 2
+tags:
+- interface
+- vlan
+input:
+  symptom: 思科 vlan 100 ID
+  device_info:
+    model: generic
+    version: 8.0+
+  question: 生成命令
+expected_output:
+  config: "vlan 100\n  name tenant-A\n!\ninterface Vlan100\n  ip address 10.100.0.1 255.255.255.0\n  ip vrf forwarding default\n  description tenant-A"
+  references:
+  - type: vendor_doc
+    url: https://cisco.com/interface-vlan
+    version: 8.0+
+anti_examples:
+- 漏 interface 必要字段
+- interface vlan 缩进错乱
+grading_rubric:
+  must_have:
+  - 包含 interface/vlan 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 cisco_iosxe_interface_vlan 必填项

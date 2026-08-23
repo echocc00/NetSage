@@ -1,0 +1,39 @@
+id: NSG-Q-0513
+title: '生成 juniper interface/vlan 配 (变体 #59): Juniper vlan 50'
+category: config
+vendor: juniper
+version: 8.0+
+difficulty: 2
+tags:
+- interface
+- vlan
+input:
+  symptom: Juniper vlan 50
+  device_info:
+    model: generic
+    version: 8.0+
+  question: 生成命令
+expected_output:
+  config: 'set vlans vlan-eng vlan-id 50
+
+    set vlans vlan-eng description eng
+
+    set interfaces irb unit 50 family inet address 10.50.0.1/24
+
+    set vlans vlan-eng l3-interface irb.50
+
+    set routing-instances default interface irb.50'
+  references:
+  - type: vendor_doc
+    url: https://juniper.com/interface-vlan
+    version: 8.0+
+anti_examples:
+- 漏 interface 必要字段
+- interface vlan 缩进错乱
+grading_rubric:
+  must_have:
+  - 包含 interface/vlan 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 juniper_junos_interface_vlan 必填项

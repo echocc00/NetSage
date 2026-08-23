@@ -1,0 +1,31 @@
+id: NSG-Q-0464
+title: '生成 huawei bgp/peering 配 (变体 #1): eBGP 建立，与对端 AS 65002 本端 65001'
+category: config
+vendor: huawei
+version: 8.0+
+difficulty: 2
+tags:
+- bgp
+- peering
+input:
+  symptom: eBGP 建立，与对端 AS 65002 本端 65001
+  device_info:
+    model: generic
+    version: 8.0+
+  question: 生成命令
+expected_output:
+  config: "bgp 65001\n\n  router-id 10.0.0.1\n\n\n  peer 10.1.1.2 as-number 65002"
+  references:
+  - type: vendor_doc
+    url: https://huawei.com/bgp-peering
+    version: 8.0+
+anti_examples:
+- 漏 bgp 必要字段
+- bgp peering 缩进错乱
+grading_rubric:
+  must_have:
+  - 包含 bgp/peering 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 huawei_vrp_bgp_peering 必填项

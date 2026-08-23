@@ -1,0 +1,53 @@
+id: NSG-Q-0516
+title: '生成 juniper bgp/ipv6_family 配 (变体 #62): Juniper IPv6 BGP dual-stack'
+category: config
+vendor: juniper
+version: 8.0+
+difficulty: 2
+tags:
+- bgp
+- ipv6_family
+input:
+  symptom: Juniper IPv6 BGP dual-stack
+  device_info:
+    model: generic
+    version: 8.0+
+  question: 生成命令
+expected_output:
+  config: 'set routing-options router-id 10.0.0.1
+
+    set routing-options autonomous-system 65000
+
+
+    set protocols bgp group UNDERLAY neighbor 10.1.1.1
+
+
+
+    set protocols bgp group UNDERLAY neighbor 10.1.1.1 peer-as 65001
+
+
+    set protocols bgp group underlay family inet unicast
+
+    set protocols bgp group underlay family inet6 unicast
+
+
+
+    set protocols bgp group underlay-v6 neighbor 2001:db8::2
+
+    set protocols bgp group underlay-v6 neighbor 2001:db8::2 family inet6 unicast
+
+    set protocols bgp group underlay-v6 neighbor 2001:db8::2 peer-as 65001'
+  references:
+  - type: vendor_doc
+    url: https://juniper.com/bgp-ipv6_family
+    version: 8.0+
+anti_examples:
+- 漏 bgp 必要字段
+- bgp ipv6_family 缩进错乱
+grading_rubric:
+  must_have:
+  - 包含 bgp/ipv6_family 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 juniper_junos_bgp_ipv6_family 必填项

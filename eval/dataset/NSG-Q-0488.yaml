@@ -1,0 +1,40 @@
+id: NSG-Q-0488
+title: '生成 juniper ospf/stub_area 配 (变体 #27): Juniper totally-stub'
+category: config
+vendor: juniper
+version: 8.0+
+difficulty: 2
+tags:
+- ospf
+- stub_area
+input:
+  symptom: Juniper totally-stub
+  device_info:
+    model: generic
+    version: 8.0+
+  question: 生成命令
+expected_output:
+  config: 'set routing-options router-id 10.0.0.1
+
+    set protocols ospf area 0.0.0.1
+
+
+    set protocols ospf area 0.0.0.1 stub no-summaries
+
+
+
+    set protocols ospf area 0.0.0.1 interface ge-0/0/1'
+  references:
+  - type: vendor_doc
+    url: https://juniper.com/ospf-stub_area
+    version: 8.0+
+anti_examples:
+- 漏 ospf 必要字段
+- ospf stub_area 缩进错乱
+grading_rubric:
+  must_have:
+  - 包含 ospf/stub_area 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 juniper_junos_ospf_stub_area 必填项

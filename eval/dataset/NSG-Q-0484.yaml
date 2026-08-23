@@ -1,0 +1,31 @@
+id: NSG-Q-0484
+title: '生成 huawei vxlan/anycast_gateway 配 (变体 #23): 华为 anycast VNI 10030'
+category: config
+vendor: huawei
+version: 8.0+
+difficulty: 2
+tags:
+- vxlan
+- anycast_gateway
+input:
+  symptom: 华为 anycast VNI 10030
+  device_info:
+    model: generic
+    version: 8.0+
+  question: 生成命令
+expected_output:
+  config: "evpn-overlay enable\nbridge-domain 30\n  vxlan vni 10030\ninterface Vbdif30\n  ip address 10.1.30.1/24\n  arp collect host\n  vxlan anycast-gateway enable\n  #\n  evpn anycast-gateway local-mac 00-00-5e-00-01-30"
+  references:
+  - type: vendor_doc
+    url: https://huawei.com/vxlan-anycast_gateway
+    version: 8.0+
+anti_examples:
+- 漏 vxlan 必要字段
+- vxlan anycast_gateway 缩进错乱
+grading_rubric:
+  must_have:
+  - 包含 vxlan/anycast_gateway 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 huawei_vrp_vxlan_anycast_gateway 必填项

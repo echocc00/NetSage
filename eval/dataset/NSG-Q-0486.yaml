@@ -1,0 +1,31 @@
+id: NSG-Q-0486
+title: '生成 cisco ospf/interface 配 (变体 #25): 思科 p2p OSPF'
+category: config
+vendor: cisco
+version: 8.0+
+difficulty: 2
+tags:
+- ospf
+- interface
+input:
+  symptom: 思科 p2p OSPF
+  device_info:
+    model: generic
+    version: 8.0+
+  question: 生成命令
+expected_output:
+  config: "interface GigabitEthernet1/0/3\n  ip ospf 1 area 0.0.0.0\n  ip ospf network point-to-point\n  ip ospf cost 1"
+  references:
+  - type: vendor_doc
+    url: https://cisco.com/ospf-interface
+    version: 8.0+
+anti_examples:
+- 漏 ospf 必要字段
+- ospf interface 缩进错乱
+grading_rubric:
+  must_have:
+  - 包含 ospf/interface 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 cisco_iosxe_ospf_interface 必填项

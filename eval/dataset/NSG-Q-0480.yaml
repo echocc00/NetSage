@@ -1,0 +1,31 @@
+id: NSG-Q-0480
+title: '生成 cisco ospf/stub_area 配 (变体 #19): 思科 OSPF NSSA'
+category: config
+vendor: cisco
+version: 8.0+
+difficulty: 2
+tags:
+- ospf
+- stub_area
+input:
+  symptom: 思科 OSPF NSSA
+  device_info:
+    model: generic
+    version: 8.0+
+  question: 生成命令
+expected_output:
+  config: "router ospf 1\n  router-id 10.0.0.1\n\n  area 0.0.0.1 nssa\n\n\n  network 192.168.1.0 0.0.0.255 area 0.0.0.1"
+  references:
+  - type: vendor_doc
+    url: https://cisco.com/ospf-stub_area
+    version: 8.0+
+anti_examples:
+- 漏 ospf 必要字段
+- ospf stub_area 缩进错乱
+grading_rubric:
+  must_have:
+  - 包含 ospf/stub_area 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 cisco_iosxe_ospf_stub_area 必填项

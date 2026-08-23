@@ -1,0 +1,33 @@
+id: NSG-Q-0477
+title: '生成 huawei wireless/ssid 配 (变体 #16): WLAN 4 VLAN 绑定'
+category: config
+vendor: huawei
+version: 8.0+
+difficulty: 2
+tags:
+- wireless
+- ssid
+input:
+  symptom: WLAN 4 VLAN 绑定
+  device_info:
+    model: generic
+    version: 8.0+
+  question: 生成命令
+expected_output:
+  config: "wlan\n#\nwmm-profile name wmm1 id 1\n  qos wmm\n#\nradio-profile name r1 id 1\n  channel 149\n  power 80\n  radio-type ieee80211ax\n#\ntraffic-profile name t1 id 1\n  forwarding-mode direct\n#\nsecurity-profile name sec1 id 1\n  security-policy\
+    \ wpa2-psk\n  ssid corp\n  psk NetSys@2024\n  psk-pass-phrase\n#\nap-group name ag1\n  radio-profile r1 radio all\n  traffic-profile t1 radio all\n  security-profile sec1 radio all\n#\nap ap-id 2 ap-mac ccdd.eeff.aabb\n  ap-name ap02\n  ap-group\
+    \ ag1\n#\nvap-profile name v1 id 1\n  ssid corp\n  traffic-profile t1\n  security-profile sec1\n  forward-mode direct"
+  references:
+  - type: vendor_doc
+    url: https://huawei.com/wireless-ssid
+    version: 8.0+
+anti_examples:
+- 漏 wireless 必要字段
+- wireless ssid 缩进错乱
+grading_rubric:
+  must_have:
+  - 包含 wireless/ssid 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 huawei_vrp_wireless_ssid 必填项

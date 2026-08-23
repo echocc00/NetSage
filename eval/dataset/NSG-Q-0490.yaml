@@ -1,0 +1,32 @@
+id: NSG-Q-0490
+title: '生成 arista vxlan/evpn_l2vpn 配 (变体 #29): Arista VXLAN BD 100 VNI 10100'
+category: config
+vendor: arista
+version: 8.0+
+difficulty: 2
+tags:
+- vxlan
+- evpn_l2vpn
+input:
+  symptom: Arista VXLAN BD 100 VNI 10100
+  device_info:
+    model: generic
+    version: 8.0+
+  question: 生成命令
+expected_output:
+  config: "ip routing\nip vrf definition default\n!\ninterface Loopback0\n  ip address 10.0.0.1/32\n!\nrouter bgp 65000\n  router-id 10.0.0.1\n\n  neighbor 10.1.1.1 remote-as 65001\n  neighbor 10.1.1.1 update-source Loopback0\n\n  !\n  address-family\
+    \ evpn\n\n    neighbor 10.1.1.1 activate\n\n!\nvlan 100\n  vn-segment 10100\n!\ninterface Vxlan1\n  no shutdown\n  source-interface Loopback0\n\n  vxlan-unicast-group 10.1.1.1\n\n  vxlan vlan 100 vni 10100"
+  references:
+  - type: vendor_doc
+    url: https://arista.com/vxlan-evpn_l2vpn
+    version: 8.0+
+anti_examples:
+- 漏 vxlan 必要字段
+- vxlan evpn_l2vpn 缩进错乱
+grading_rubric:
+  must_have:
+  - 包含 vxlan/evpn_l2vpn 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 arista_eos_vxlan_evpn_l2vpn 必填项

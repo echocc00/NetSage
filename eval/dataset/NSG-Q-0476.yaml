@@ -1,0 +1,31 @@
+id: NSG-Q-0476
+title: '生成 cisco interface/trunk 配 (变体 #13): 思科 trunk VLAN 1-100'
+category: config
+vendor: cisco
+version: 8.0+
+difficulty: 2
+tags:
+- interface
+- trunk
+input:
+  symptom: 思科 trunk VLAN 1-100
+  device_info:
+    model: generic
+    version: 8.0+
+  question: 生成命令
+expected_output:
+  config: "interface GigabitEthernet1/0/2\n  switchport trunk encapsulation dot1q\n  switchport trunk allowed vlan 100\n\n  switchport trunk native vlan 1\n\n  switchport mode trunk\n  switchport nonegotiate"
+  references:
+  - type: vendor_doc
+    url: https://cisco.com/interface-trunk
+    version: 8.0+
+anti_examples:
+- 漏 interface 必要字段
+- interface trunk 缩进错乱
+grading_rubric:
+  must_have:
+  - 包含 interface/trunk 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 cisco_iosxe_interface_trunk 必填项

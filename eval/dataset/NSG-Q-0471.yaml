@@ -1,0 +1,33 @@
+id: NSG-Q-0471
+title: '生成 cisco vxlan/evpn_l2vpn 配 (变体 #8): 思科 VXLAN BD10 多 VTEP'
+category: config
+vendor: cisco
+version: 8.0+
+difficulty: 2
+tags:
+- vxlan
+- evpn_l2vpn
+input:
+  symptom: 思科 VXLAN BD10 多 VTEP
+  device_info:
+    model: generic
+    version: 8.0+
+  question: 生成命令
+expected_output:
+  config: "nv overlay evpn\nfeature vn-segment-vlan-based\nfeature nv overlay\n!\nl2vpn evpn\n  replication-type static\n  router-id Loopback0\n!\nvlan 10\n  vn-segment 10010\n!\ninterface nve1\n  no shutdown\n  source-interface Loopback0\n \
+    \ host-reachability protocol bgp\n  member vni 10010\n    ingress-replication protocol bgp\n!\nrouter bgp 65000\n  address-family l2vpn evpn\n\n    neighbor 10.1.1.1 activate\n    neighbor 10.1.1.1 send-community both\n\n    neighbor 10.1.1.2\
+    \ activate\n    neighbor 10.1.1.2 send-community both\n\n  !\n  l2vpn evpn instance 10 point-to-point\n    rd 10.0.0.1:10\n    route-target import 65000:10010\n    route-target export 65000:10010"
+  references:
+  - type: vendor_doc
+    url: https://cisco.com/vxlan-evpn_l2vpn
+    version: 8.0+
+anti_examples:
+- 漏 vxlan 必要字段
+- vxlan evpn_l2vpn 缩进错乱
+grading_rubric:
+  must_have:
+  - 包含 vxlan/evpn_l2vpn 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 cisco_iosxe_vxlan_evpn_l2vpn 必填项

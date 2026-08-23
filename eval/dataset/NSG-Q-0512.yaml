@@ -1,0 +1,47 @@
+id: NSG-Q-0512
+title: '生成 juniper vxlan/anycast_gateway 配 (变体 #58): Juniper anycast VNI 10060'
+category: config
+vendor: juniper
+version: 8.0+
+difficulty: 2
+tags:
+- vxlan
+- anycast_gateway
+input:
+  symptom: Juniper anycast VNI 10060
+  device_info:
+    model: generic
+    version: 8.0+
+  question: 生成命令
+expected_output:
+  config: 'set routing-instances ac-60 instance-type virtual-switch
+
+    set routing-instances ac-60 vlan-id 60
+
+    set routing-instances ac-60 vxlan vni 10060
+
+    set routing-instances ac-60 routing-interface irb.60
+
+    set routing-instances ac-60 protocols evpn encapsulation vxlan
+
+    set routing-instances ac-60 protocols evpn default-gateway do-esi-switching
+
+    !
+
+    set interfaces irb unit 60 family inet address 10.1.60.1/24
+
+    set interfaces irb unit 60 mac 00:00:5e:00:01:60'
+  references:
+  - type: vendor_doc
+    url: https://juniper.com/vxlan-anycast_gateway
+    version: 8.0+
+anti_examples:
+- 漏 vxlan 必要字段
+- vxlan anycast_gateway 缩进错乱
+grading_rubric:
+  must_have:
+  - 包含 vxlan/anycast_gateway 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 juniper_junos_vxlan_anycast_gateway 必填项

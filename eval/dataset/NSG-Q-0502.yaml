@@ -1,0 +1,32 @@
+id: NSG-Q-0502
+title: '生成 h3c bgp/route_reflector 配 (变体 #48): 华三 RR 2 client'
+category: config
+vendor: h3c
+version: 8.0+
+difficulty: 2
+tags:
+- bgp
+- route_reflector
+input:
+  symptom: 华三 RR 2 client
+  device_info:
+    model: generic
+    version: 8.0+
+  question: 生成命令
+expected_output:
+  config: "bgp 65000\n  router-id 10.0.0.1\n  group RR internal\n  peer RR reflect-client\n  peer RR next-hop-local\n  #\n  undo peer RR next-hop-unchanged\n  #\n\n  peer 10.1.1.10 group RR as-number 65000\n\n  peer 10.1.1.11 group RR as-number\
+    \ 65000\n\n#\nipv4-family unicast\n  peer RR enable\n  peer RR reflect-client\n  peer RR next-hop-local"
+  references:
+  - type: vendor_doc
+    url: https://h3c.com/bgp-route_reflector
+    version: 8.0+
+anti_examples:
+- 漏 bgp 必要字段
+- bgp route_reflector 缩进错乱
+grading_rubric:
+  must_have:
+  - 包含 bgp/route_reflector 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 h3c_comware_bgp_route_reflector 必填项

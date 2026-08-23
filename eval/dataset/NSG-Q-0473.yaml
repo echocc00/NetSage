@@ -1,0 +1,34 @@
+id: NSG-Q-0473
+title: '生成 cisco vpn/ipsec_site2site 配 (变体 #10): 思科 IKEv2 IPsec AES-256+SHA-256'
+category: config
+vendor: cisco
+version: 8.0+
+difficulty: 2
+tags:
+- vpn
+- ipsec_site2site
+input:
+  symptom: 思科 IKEv2 IPsec AES-256+SHA-256
+  device_info:
+    model: generic
+    version: 8.0+
+  question: 生成命令
+expected_output:
+  config: "crypto ikev2 proposal p1\n  encryption aes-cbc-256 256\n  integrity sha256\n  group 14\n!\ncrypto ikev2 policy PROF1\n  proposal p1\n!\ncrypto ikev2 keyring KR1\n  peer 198.51.100.1\n    address 198.51.100.1\n    pre-shared-key NetSys@2024\n\
+    !\ncrypto ikev2 profile PROF1\n  match identity remote address 198.51.100.1 10.0.2.0\n  authentication remote pre-share\n  authentication local pre-share\n  keyring local KR1\n!\ncrypto ipsec transform-set TSET aes-cbc-256 sha256\n  mode\
+    \ tunnel\n!\ncrypto map CMAP 10 ipsec-isakmp\n  set peer 198.51.100.1\n  set transform-set TSET\n  set ikev2-profile PROF1\n  match address 3000\n!\ninterface GigabitEthernet0/0/1\n  ip address 203.0.113.1 255.255.255.252\n  crypto map CMAP\n\
+    !\nip route 10.0.2.0  203.0.113.2"
+  references:
+  - type: vendor_doc
+    url: https://cisco.com/vpn-ipsec_site2site
+    version: 8.0+
+anti_examples:
+- 漏 vpn 必要字段
+- vpn ipsec_site2site 缩进错乱
+grading_rubric:
+  must_have:
+  - 包含 vpn/ipsec_site2site 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 cisco_iosxe_vpn_ipsec_site2site 必填项

@@ -1,0 +1,32 @@
+id: NSG-Q-0474
+title: '生成 huawei vpn/ssl_remote 配 (变体 #11): SSL VPN gateway 多用户'
+category: config
+vendor: huawei
+version: 8.0+
+difficulty: 2
+tags:
+- vpn
+- ssl_remote
+input:
+  symptom: SSL VPN gateway 多用户
+  device_info:
+    model: generic
+    version: 8.0+
+  question: 生成命令
+expected_output:
+  config: "ssl-vpn gateway gw1\n  ip address 198.51.100.10 port 443     # 网关公网 IP\n  #\n  ssl policy 1\n#\nvdi-pool p1 192.168.10.1 192.168.10.254\n#\nuser-group default group-bind default\n  user @default\n  password cipher hash\n#\nip route-static\
+    \   vdi-pool p1"
+  references:
+  - type: vendor_doc
+    url: https://huawei.com/vpn-ssl_remote
+    version: 8.0+
+anti_examples:
+- 漏 vpn 必要字段
+- vpn ssl_remote 缩进错乱
+grading_rubric:
+  must_have:
+  - 包含 vpn/ssl_remote 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 huawei_vrp_vpn_ssl_remote 必填项

@@ -1,0 +1,32 @@
+id: NSG-Q-0519
+title: '生成 arista bgp/route_reflector 配 (变体 #65): Arista RR cluster 10.2.2.2'
+category: config
+vendor: arista
+version: 8.0+
+difficulty: 2
+tags:
+- bgp
+- route_reflector
+input:
+  symptom: Arista RR cluster 10.2.2.2
+  device_info:
+    model: generic
+    version: 8.0+
+  question: 生成命令
+expected_output:
+  config: "router bgp 65000\n  bgp cluster-id 10.2.2.2\n  neighbor RR peer-group\n  neighbor RR remote-as 65000\n  neighbor RR route-reflector-client\n  neighbor RR next-hop-self\n  !\n  address-family ipv4 unicast\n    neighbor RR activate\n\
+    \    neighbor RR route-reflector-client\n    neighbor RR next-hop-self\n  !\n\n  neighbor 10.1.3.10 peer-group RR\n  neighbor 10.1.3.10 remote-as 65000"
+  references:
+  - type: vendor_doc
+    url: https://arista.com/bgp-route_reflector
+    version: 8.0+
+anti_examples:
+- 漏 bgp 必要字段
+- bgp route_reflector 缩进错乱
+grading_rubric:
+  must_have:
+  - 包含 bgp/route_reflector 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 arista_eos_bgp_route_reflector 必填项

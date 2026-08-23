@@ -1,0 +1,32 @@
+id: NSG-Q-0517
+title: '生成 arista vpn/ipsec_site2site 配 (变体 #63): Arista IPsec site-to-site'
+category: config
+vendor: arista
+version: 8.0+
+difficulty: 2
+tags:
+- vpn
+- ipsec_site2site
+input:
+  symptom: Arista IPsec site-to-site
+  device_info:
+    model: generic
+    version: 8.0+
+  question: 生成命令
+expected_output:
+  config: "ipsec policy pol1\n  sa strength esp-aes-256-sha256\n  pfs 14\n  proposal 1\n  remote-gateway 198.51.100.1\n  local-spi auto\n  remote-spi auto\n  match 3000\n  sa lifetime 28800 \n  bind-interface Ethernet1\n!\ninterface Ethernet1\n\
+    \  ip address 203.0.113.1/30\n  ipsec policy pol1\n!\nip route 10.0.2.0/24 203.0.113.2"
+  references:
+  - type: vendor_doc
+    url: https://arista.com/vpn-ipsec_site2site
+    version: 8.0+
+anti_examples:
+- 漏 vpn 必要字段
+- vpn ipsec_site2site 缩进错乱
+grading_rubric:
+  must_have:
+  - 包含 vpn/ipsec_site2site 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 arista_eos_vpn_ipsec_site2site 必填项

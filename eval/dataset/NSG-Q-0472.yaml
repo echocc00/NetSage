@@ -1,0 +1,33 @@
+id: NSG-Q-0472
+title: '生成 huawei vpn/ipsec_site2site 配 (变体 #9): IPsec AES-128+SHA1-96'
+category: config
+vendor: huawei
+version: 8.0+
+difficulty: 2
+tags:
+- vpn
+- ipsec_site2site
+input:
+  symptom: IPsec AES-128+SHA1-96
+  device_info:
+    model: generic
+    version: 8.0+
+  question: 生成命令
+expected_output:
+  config: "ike proposal p1\n  encryption-algorithm aes-cbc-128\n  authentication-algorithm pre-share\n  authentication-method pre-share\n  integrity-algorithm sha1\n  dh group14\n#\nike peer peer1\n  pre-shared-key cipher NetSys@2024\n  remote-address\
+    \ 198.51.100.1\n  ike-proposal p1\n#\nipsec proposal prop1\n  encapsulation-mode tunnel\n  esp authentication-algorithm sha1\n  esp encryption-algorithm aes-cbc-128\n#\nipsec policy pol1 1 isakmp\n  security acl 3000\n  ike-peer peer1\n \
+    \ proposal prop1\n#\ninterface 10GE1/0/1\n  ip address 203.0.113.1 255.255.255.252\n  nat outbound 2000 address-group     # 可选：NAT 豁免需用 rule ipsec-amount\n  ipsec policy pol1\n#\nip route-static 10.0.2.0 255.255.255.0 203.0.113.2"
+  references:
+  - type: vendor_doc
+    url: https://huawei.com/vpn-ipsec_site2site
+    version: 8.0+
+anti_examples:
+- 漏 vpn 必要字段
+- vpn ipsec_site2site 缩进错乱
+grading_rubric:
+  must_have:
+  - 包含 vpn/ipsec_site2site 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 huawei_vrp_vpn_ipsec_site2site 必填项

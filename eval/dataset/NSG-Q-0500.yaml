@@ -1,0 +1,33 @@
+id: NSG-Q-0500
+title: '生成 h3c vpn/ipsec_site2site 配 (变体 #46): 华三 IPsec AES-128'
+category: config
+vendor: h3c
+version: 8.0+
+difficulty: 2
+tags:
+- vpn
+- ipsec_site2site
+input:
+  symptom: 华三 IPsec AES-128
+  device_info:
+    model: generic
+    version: 8.0+
+  question: 生成命令
+expected_output:
+  config: "ike proposal p1\n  encryption-algorithm aes-cbc-128\n  authentication-algorithm pre-share\n  authentication-method pre-share\n  integrity-algorithm sha1\n  dh group5\n#\nike peer peer1\n  pre-shared-key cipher NetSys@2024\n  remote-address\
+    \ 198.51.100.1\n  ike-proposal p1\n#\nipsec transform-set ts1\n  esp authentication-algorithm sha1\n  esp encryption-algorithm aes-cbc-128\n  encapsulation-mode tunnel\n#\nipsec policy pol1 1 isakmp\n  security acl 3000\n  remote-address\
+    \ 198.51.100.1\n  ike-peer peer1\n  transform ts1\n#\ninterface TenGigabitEthernet1/0/1\n  ip address 203.0.113.1 255.255.255.252\n  ipsec apply policy pol1\n#\nip route-static 10.0.2.0 255.255.255.0 203.0.113.2"
+  references:
+  - type: vendor_doc
+    url: https://h3c.com/vpn-ipsec_site2site
+    version: 8.0+
+anti_examples:
+- 漏 vpn 必要字段
+- vpn ipsec_site2site 缩进错乱
+grading_rubric:
+  must_have:
+  - 包含 vpn/ipsec_site2site 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 h3c_comware_vpn_ipsec_site2site 必填项

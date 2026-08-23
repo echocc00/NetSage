@@ -1,0 +1,31 @@
+id: NSG-Q-0503
+title: '生成 h3c bgp/ipv6_family 配 (变体 #49): 华三 IPv6 BGP'
+category: config
+vendor: h3c
+version: 8.0+
+difficulty: 2
+tags:
+- bgp
+- ipv6_family
+input:
+  symptom: 华三 IPv6 BGP
+  device_info:
+    model: generic
+    version: 8.0+
+  question: 生成命令
+expected_output:
+  config: "bgp 65000\n\n  router-id 10.0.0.1\n\n\n  peer 10.1.1.1 as-number 65001\n\n  #\n  ipv4-family unicast\n\n    peer 10.1.1.1 enable\n\n  #\n  ipv6-family unicast\n\n\n    peer 2001:db8::2 enable"
+  references:
+  - type: vendor_doc
+    url: https://h3c.com/bgp-ipv6_family
+    version: 8.0+
+anti_examples:
+- 漏 bgp 必要字段
+- bgp ipv6_family 缩进错乱
+grading_rubric:
+  must_have:
+  - 包含 bgp/ipv6_family 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 h3c_comware_bgp_ipv6_family 必填项

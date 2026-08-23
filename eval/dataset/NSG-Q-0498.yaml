@@ -1,0 +1,31 @@
+id: NSG-Q-0498
+title: '生成 h3c interface/vlan 配 (变体 #42): 华三 vlan-interface 100'
+category: config
+vendor: h3c
+version: 8.0+
+difficulty: 2
+tags:
+- interface
+- vlan
+input:
+  symptom: 华三 vlan-interface 100
+  device_info:
+    model: generic
+    version: 8.0+
+  question: 生成命令
+expected_output:
+  config: "vlan 100\n  description corp\n#\ninterface Vlan-interface100\n  ip address 10.100.0.1 255.255.255.0\n  ip binding vpn-instance public"
+  references:
+  - type: vendor_doc
+    url: https://h3c.com/interface-vlan
+    version: 8.0+
+anti_examples:
+- 漏 interface 必要字段
+- interface vlan 缩进错乱
+grading_rubric:
+  must_have:
+  - 包含 interface/vlan 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 h3c_comware_interface_vlan 必填项
