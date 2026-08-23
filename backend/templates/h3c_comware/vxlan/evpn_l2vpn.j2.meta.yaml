@@ -1,4 +1,3 @@
-# h3c_comware/vxlan/evpn_l2vpn 模板元数据（v2.0 27.2 必带字段）
 template_id: h3c_comware_vxlan_evpn_l2vpn
 vendor: h3c
 os: comware
@@ -10,16 +9,12 @@ input_schema:
   - { name: local_asn, type: int, required: true }
   - { name: vtep_peers, type: array, required: true,
       items: { address: string, remote_asn: int } }
-  - { name: vsi_name, type: string, required: true,
-      desc: "VSI 实例名，H3C 模型是 VSI+vs interface" }
-  - { name: vni, type: int, required: true,
-      desc: "VXLAN VNI" }
-  - { name: vsi_interface_id, type: int, required: true,
-      desc: "Vsi-interface 编号" }
-  - { name: vsi_interface_ip, type: string, required: true,
-      desc: "Vsi-interface IP/掩码" }
+  - { name: vsi_name, type: string, required: true }
+  - { name: vni, type: int, required: true }
+  - { name: vsi_interface_id, type: int, required: true }
+  - { name: vsi_interface_ip, type: string, required: true }
 output_format: cli
 validated_against: []
-author: "echocc00 · 来源：H3C Comware 7 配置指导 VXLAN/EVPN 章节"
+author: ""
 reviewers: []
-last_reviewed: "2026-08-23"
+last_reviewed: ""

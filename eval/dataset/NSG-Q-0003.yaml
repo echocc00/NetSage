@@ -27,6 +27,11 @@ expected_output:
 anti_examples: ["用 Cisco 的反掩码语法（VRP network 用 wildcard，注意 10.0.0.0 应为 255.0.0.0）"]
 
 grading_rubric:
-  must_have:      ["ospf 进程 + router-id", "area 声明", "两条 network 通告"]
-  nice_to_have:   ["silent-interface 建议"]
-  penalty:        ["wildcard 计算错误"]
+  must_have:
+    - "ospf 进程 + router-id"
+    - "area 声明"
+    - "两条 network 通告"
+  nice_to_have:
+    - "silent-interface 建议"
+  penalty:
+    - "wildcard 计算错误"

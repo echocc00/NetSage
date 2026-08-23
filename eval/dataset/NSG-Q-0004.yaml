@@ -37,6 +37,13 @@ expected_output:
 anti_examples: ['只报"无风险"（明显缺加固项）', "建议删除 BGP 进程"]
 
 grading_rubric:
-  must_have:      ["≥3 风险点", "每项带 fix", "severity 分级"]
-  nice_to_have:   ["引用手册章节", "给出 route-policy 示例"]
-  penalty:        ["温和辞令不列具体修复", "风险分级错误"]
+  must_have:
+    - "≥3 风险点"
+    - "每项带 fix"
+    - "severity 分级"
+  nice_to_have:
+    - "引用手册章节"
+    - "给出 route-policy 示例"
+  penalty:
+    - "温和辞令不列具体修复"
+    - "风险分级错误"

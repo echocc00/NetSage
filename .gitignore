@@ -39,6 +39,7 @@ doc/vendor-manuals/
 
 # 中途开发文档（仅本地保留，不入仓库）
 doc/NetSage-遗留内容交付规范-v1.0.md
+doc/templates-briefs/
 
 # OS
 .DS_Store

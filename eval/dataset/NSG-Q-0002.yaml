@@ -29,6 +29,14 @@ expected_output:
 anti_examples: ["peer 配置在全局而不在 ipv4-family 下 enable（华为 VRP 常见错）"]
 
 grading_rubric:
-  must_have:      ["bgp 进程存在", "peer as-number 正确", "peer enable 在 ipv4-family 下", "router-id 存在"]
-  nice_to_have:   ["peer description", "更新源/下一跳处理"]
-  penalty:        ["AS 号写反", "漏 ipv4-family enable"]
+  must_have:
+    - "bgp 进程存在"
+    - "peer as-number 正确"
+    - "peer enable 在 ipv4-family 下"
+    - "router-id 存在"
+  nice_to_have:
+    - "peer description"
+    - "更新源/下一跳处理"
+  penalty:
+    - "AS 号写反"
+    - "漏 ipv4-family enable"

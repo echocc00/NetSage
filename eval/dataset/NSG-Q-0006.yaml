@@ -43,6 +43,13 @@ expected_output:
 anti_examples: ["重启 BGP", "删除邻居重配", "直接加静态路由绕过"]
 
 grading_rubric:
-  must_have: ["≥1 候选根因", "next-hop 不可达为 top 候选", "含 next-hop-self 修复"]
-  nice_to_have: ["≥3 候选根因", "区分 eBGP/iBGP next-hop 行为"]
-  penalty: ["推荐重启", "未验证 next-hop 可达性"]
+  must_have:
+    - "≥1 候选根因"
+    - "next-hop 不可达为 top 候选"
+    - "含 next-hop-self 修复"
+  nice_to_have:
+    - "≥3 候选根因"
+    - "区分 eBGP/iBGP next-hop 行为"
+  penalty:
+    - "推荐重启"
+    - "未验证 next-hop 可达性"

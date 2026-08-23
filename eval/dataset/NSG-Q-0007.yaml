@@ -43,6 +43,13 @@ expected_output:
 anti_examples: ["删除 OSPF 进程重配", "重启设备", "关闭 OSPF 重启"]
 
 grading_rubric:
-  must_have: ["MTU 不一致为 top 候选", "含 MTU 对齐修复", "≥1 验证命令"]
-  nice_to_have: ["提及 mtu-ignore 临时方案", "≥3 候选根因"]
-  penalty: ["推荐重启", "未验证 MTU"]
+  must_have:
+    - "MTU 不一致为 top 候选"
+    - "含 MTU 对齐修复"
+    - "≥1 验证命令"
+  nice_to_have:
+    - "提及 mtu-ignore 临时方案"
+    - "≥3 候选根因"
+  penalty:
+    - "推荐重启"
+    - "未验证 MTU"

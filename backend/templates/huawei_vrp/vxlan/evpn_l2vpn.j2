@@ -1,18 +1,17 @@
 evpn-overlay enable
-#
 bgp {{ local_asn }}
-{% if rd_ip is defined and rd_ip %}
-  peer {{ vtep_peers[0].address }} as-number {{ vtep_peers[0].remote_asn }}
-  peer {{ vtep_peers[0].address }} connect-interface LoopBack0
-{% endif %}
+{% for peer in vtep_peers %}
+  peer {{ peer.address }} as-number {{ peer.remote_asn }}
+  peer {{ peer.address }} connect-interface LoopBack0
+{% endfor %}
   #
   l2vpn-family evpn
-    peer {{ vtep_peers[0].address }} enable
-    peer {{ vtep_peers[0].address }} advertise l2vpn evpn
-#
+{% for peer in vtep_peers %}
+    peer {{ peer.address }} enable
+    peer {{ peer.address }} advertise l2vpn evpn
+{% endfor %}
 bridge-domain {{ bridge_domain_id }}
   vxlan vni {{ vni }}
-#
 interface Vbdif{{ bridge_domain_id }}
   ip address {{ vbdif_ip }}
 {% if advertise_arp is defined and advertise_arp %}

@@ -1,26 +1,19 @@
-# juniper_junos/vxlan/anycast_gateway 模板元数据（v2.0 27.2 必带字段）
 template_id: juniper_junos_vxlan_anycast_gateway
 vendor: juniper
 os: junos
-version_min: "21.2"
+version_min: "21.2R1"
 version_max: "22.999"
 protocol: vxlan
 feature: anycast_gateway
 input_schema:
-  - { name: instance_name, type: string, required: true,
-      desc: "routing-instance 名（virtual-switch）" }
-  - { name: vlan_id, type: int, required: true,
-      desc: "VLAN ID" }
-  - { name: vni, type: int, required: true,
-      desc: "VXLAN VNI" }
-  - { name: irb_unit, type: int, required: true,
-      desc: "IRB 接口 unit 号" }
-  - { name: irb_ip, type: string, required: true,
-      desc: "IRB 接口 IP/掩码，格式 x.x.x.x/yy" }
-  - { name: anycast_gw_mac, type: string, required: true,
-      desc: "IRB MAC（所有 Leaf 必须对齐），格式 HH:HH:HH:HH:HH:HH" }
-output_format: cli   # Junos set 风格
+  - { name: instance_name, type: string, required: true }
+  - { name: vlan_id, type: int, required: true }
+  - { name: vni, type: int, required: true }
+  - { name: irb_unit, type: int, required: true }
+  - { name: irb_ip, type: string, required: true }
+  - { name: anycast_gw_mac, type: string, required: true }
+output_format: cli
 validated_against: []
-author: "echocc00 · 来源：Junos 21.2R1 EVPN/VXLAN IRB 章节"
+author: ""
 reviewers: []
-last_reviewed: "2026-08-23"
+last_reviewed: ""

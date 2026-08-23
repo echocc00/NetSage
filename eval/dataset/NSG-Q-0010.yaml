@@ -43,6 +43,13 @@ expected_output:
 anti_examples: ["关闭 anycast-gateway", "改为单点网关（违背 fabric 设计）", "重启设备"]
 
 grading_rubric:
-  must_have: ["anycast-gateway 不一致为 top", "含 MAC 对齐修复", "≥1 验证命令"]
-  nice_to_have: ["提及 ARP suppression", "≥3 候选根因"]
-  penalty: ["关闭 anycast-gateway", "推荐重启"]
+  must_have:
+    - "anycast-gateway 不一致为 top"
+    - "含 MAC 对齐修复"
+    - "≥1 验证命令"
+  nice_to_have:
+    - "提及 ARP suppression"
+    - "≥3 候选根因"
+  penalty:
+    - "关闭 anycast-gateway"
+    - "推荐重启"

@@ -9,14 +9,10 @@ interface Vsi-interface{{ vsi_interface_id }}
   ip address {{ vsi_interface_ip }}
 !
 bgp {{ local_asn }}
-{% if vtep_peers is defined and vtep_peers %}
 {% for peer in vtep_peers %}
   peer {{ peer.address }} as-number {{ peer.remote_asn }}
-{% endfor %}
-{% for peer in vtep_peers %}
   peer {{ peer.address }} connect-interface LoopBack0
 {% endfor %}
-{% endif %}
   address-family l2vpn evpn
 {% for peer in vtep_peers %}
     peer {{ peer.address }} enable

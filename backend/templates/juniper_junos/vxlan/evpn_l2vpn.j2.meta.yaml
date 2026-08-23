@@ -1,28 +1,20 @@
-# juniper_junos/vxlan/evpn_l2vpn 模板元数据（v2.0 27.2 必带字段）
 template_id: juniper_junos_vxlan_evpn_l2vpn
 vendor: juniper
 os: junos
-version_min: "21.2"
+version_min: "21.2R1"
 version_max: "22.999"
 protocol: vxlan
 feature: evpn_l2vpn
 input_schema:
-  - { name: instance_name, type: string, required: true,
-      desc: "routing-instance 名" }
-  - { name: vlan_id, type: int, required: true,
-      desc: "VLAN ID" }
-  - { name: vni, type: int, required: true,
-      desc: "VXLAN VNI" }
-  - { name: rd, type: string, required: true,
-      desc: "Route Distinguisher，格式 ip:nn" }
-  - { name: vrf_target, type: string, required: true,
-      desc: "vrf-target，格式 asn:nn" }
-  - { name: bgp_neighbor, type: string, required: true,
-      desc: "远端 VTEP/RR IP" }
-  - { name: local_address, type: string, required: true,
-      desc: "本端 Loopback IP" }
-output_format: cli   # Junos set 风格
+  - { name: instance_name, type: string, required: true }
+  - { name: vlan_id, type: int, required: true }
+  - { name: vni, type: int, required: true }
+  - { name: rd, type: string, required: true }
+  - { name: vrf_target, type: string, required: true }
+  - { name: bgp_neighbor, type: string, required: true }
+  - { name: local_address, type: string, required: true }
+output_format: cli
 validated_against: []
-author: "echocc00 · 来源：Junos 21.2R1 EVPN/VXLAN Documentation"
+author: ""
 reviewers: []
-last_reviewed: "2026-08-23"
+last_reviewed: ""

@@ -43,6 +43,13 @@ expected_output:
 anti_examples: ["重启 OSPF 进程", "调整 Dead timer 到很大值掩盖问题"]
 
 grading_rubric:
-  must_have: ["计时器不一致为 top", "含对齐修复", "≥1 验证命令"]
-  nice_to_have: ["提及网络类型影响", "≥3 候选根因"]
-  penalty: ["掩盖问题不修根因", "重启"]
+  must_have:
+    - "计时器不一致为 top"
+    - "含对齐修复"
+    - "≥1 验证命令"
+  nice_to_have:
+    - "提及网络类型影响"
+    - "≥3 候选根因"
+  penalty:
+    - "掩盖问题不修根因"
+    - "重启"

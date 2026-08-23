@@ -1,4 +1,3 @@
-# huawei_vrp/vxlan/anycast_gateway 模板元数据（v2.0 27.2 必带字段）
 template_id: huawei_vrp_vxlan_anycast_gateway
 vendor: huawei
 os: vrp
@@ -7,18 +6,12 @@ version_max: "8.999"
 protocol: vxlan
 feature: anycast_gateway
 input_schema:
-  - { name: bridge_domain_id, type: int, required: true,
-      desc: "BD ID" }
-  - { name: vni, type: int, required: true,
-      desc: "VXLAN VNI" }
-  - { name: vbdif_ip, type: string, required: true,
-      desc: "VBD 接口 IP/掩码（任意网关），所有 Leaf 必须一致" }
-  - { name: anycast_gw_mac, type: string, required: true,
-      desc: "统一网关 MAC（所有 Leaf 必须对齐），格式 HH-HH-HH-HH-HH-HH" }
-  - { name: vrf, type: string, required: false,
-      desc: "VPN 实例名，缺省 default" }
+  - { name: bridge_domain_id, type: int, required: true }
+  - { name: vni, type: int, required: true }
+  - { name: vbdif_ip, type: string, required: true }
+  - { name: anycast_gw_mac, type: string, required: true }
 output_format: cli
 validated_against: []
-author: "echocc00 · 来源：华为 VRP 8.180 配置指南 任意网关 章节"
+author: ""
 reviewers: []
-last_reviewed: "2026-08-23"
+last_reviewed: ""

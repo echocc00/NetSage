@@ -1,4 +1,3 @@
-# cisco_iosxe/vxlan/evpn_l2vpn 模板元数据（v2.0 27.2 必带字段）
 template_id: cisco_iosxe_vxlan_evpn_l2vpn
 vendor: cisco
 os: iosxe
@@ -8,22 +7,15 @@ protocol: vxlan
 feature: evpn_l2vpn
 input_schema:
   - { name: local_asn, type: int, required: true }
-  - { name: router_id, type: string, required: true,
-      desc: "VTEP Router ID（Loopback IP）" }
   - { name: vtep_peers, type: array, required: true,
       items: { address: string, remote_asn: int } }
-  - { name: vlan_id, type: int, required: true,
-      desc: "接入 VLAN ID" }
-  - { name: vni, type: int, required: true,
-      desc: "VXLAN VNI" }
-  - { name: evpn_instance_id, type: int, required: true,
-      desc: "EVPN instance ID（一般与 vni 同号）" }
-  - { name: rd, type: string, required: true,
-      desc: "Route Distinguisher，格式 ip:nn" }
-  - { name: route_target, type: string, required: true,
-      desc: "Route Target，格式 asn:nn" }
+  - { name: vlan_id, type: int, required: true }
+  - { name: vni, type: int, required: true }
+  - { name: evpn_instance_id, type: int, required: true }
+  - { name: rd, type: string, required: true }
+  - { name: route_target, type: string, required: true }
 output_format: cli
 validated_against: []
-author: "echocc00 · 来源：Cisco IOS-XE 17.x Configuration Guide - VXLAN EVPN"
+author: ""
 reviewers: []
-last_reviewed: "2026-08-23"
+last_reviewed: ""

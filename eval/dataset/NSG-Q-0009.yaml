@@ -43,6 +43,13 @@ expected_output:
 anti_examples: ["重启设备", "删除 EVPN 配置重配", "改用静态 MAC"]
 
 grading_rubric:
-  must_have: ["EVPN family 为 top 候选", "含 peer enable 修复", "≥1 验证命令"]
-  nice_to_have: ["区分 underlay/overlay", "≥3 候选根因"]
-  penalty: ["推荐重启", "未验证 EVPN 邻居状态"]
+  must_have:
+    - "EVPN family 为 top 候选"
+    - "含 peer enable 修复"
+    - "≥1 验证命令"
+  nice_to_have:
+    - "区分 underlay/overlay"
+    - "≥3 候选根因"
+  penalty:
+    - "推荐重启"
+    - "未验证 EVPN 邻居状态"

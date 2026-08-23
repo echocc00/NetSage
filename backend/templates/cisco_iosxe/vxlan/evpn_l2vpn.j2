@@ -13,10 +13,8 @@ interface nve1
   no shutdown
   source-interface Loopback0
   host-reachability protocol bgp
-{% for vni_member in [vni] %}
-  member vni {{ vni_member }}
+  member vni {{ vni }}
     ingress-replication protocol bgp
-{% endfor %}
 !
 router bgp {{ local_asn }}
   address-family l2vpn evpn
