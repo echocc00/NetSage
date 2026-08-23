@@ -1,0 +1,31 @@
+# arista_eos/wireless/ssid 模板元数据
+template_id: arista_eos_wireless_ssid
+vendor: arista
+os: eos
+version_min: "4.24"
+version_max: "4.999"
+protocol: wireless
+feature: ssid
+input_schema:
+  - { name: profile_name, type: string, required: true }
+  - { name: ssid_name, type: string, required: true }
+  - { name: ssid, type: string, required: true }
+  - { name: vlan_id, type: int, required: true }
+  - { name: psk_passphrase, type: string, required: true }
+  - { name: channel_2g, type: int, required: true,
+      desc: "2.4G 信道" }
+  - { name: power_2g, type: int, required: true,
+      desc: "1-100（百分比）" }
+  - { name: channel_5g, type: int, required: true,
+      desc: "5G 信道" }
+  - { name: power_5g, type: int, required: true }
+  - { name: ap_group_name, type: string, required: true }
+  - { name: ap_model, type: string, required: true,
+      desc: "如 W-118 / W-318" }
+  - { name: ap_mac, type: string, required: true }
+  - { name: ap_name, type: string, required: true }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Arista EOS 4.24 Wireless Configuration Guide"
+reviewers: []
+last_reviewed: "2026-08-23"

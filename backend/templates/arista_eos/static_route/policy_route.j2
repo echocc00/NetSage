@@ -1,0 +1,13 @@
+ip access-list {{ acl_name }}
+  permit ip {{ src_subnet }}/{{ src_mask }} any
+!
+route-map {{ route_map_name }} permit {{ sequence }}
+  match ip address {{ acl_name }}
+  set ip next-hop {{ next_hop }}
+!
+interface {{ interface_name }}
+  ip address {{ local_ip }}/{{ netmask }}
+  ip policy route-map {{ route_map_name }}
+{% if fallback_route %}
+ip route 0.0.0.0/0 {{ fallback_route }}
+{% endif %}

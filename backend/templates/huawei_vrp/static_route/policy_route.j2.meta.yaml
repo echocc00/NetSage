@@ -1,0 +1,33 @@
+# huawei_vrp/static_route/policy_route 模板元数据
+template_id: huawei_vrp_static_route_policy_route
+vendor: huawei
+os: vrp
+version_min: "8.0"
+version_max: "8.999"
+protocol: static_route
+feature: policy_route
+input_schema:
+  - { name: policy_name, type: string, required: true }
+  - { name: acl_number, type: int, required: true,
+      desc: "ACL 2000-3999（basic/advanced）" }
+  - { name: rule_id, type: int, required: true,
+      desc: "ACL 规则号 0-4294967294" }
+  - { name: src_subnet, type: string, required: true,
+      desc: "源 IP/子网" }
+  - { name: src_mask, type: string, required: true,
+      desc: "子网掩码" }
+  - { name: next_hop, type: string, required: true,
+      desc: "下一跳 IP" }
+  - { name: node_id, type: int, required: true,
+      desc: "策略节点号" }
+  - { name: interface_name, type: string, required: true,
+      desc: "应用策略路由的入接口" }
+  - { name: local_ip, type: string, required: true }
+  - { name: netmask, type: string, required: true }
+  - { name: fallback_route, type: string, required: false,
+      desc: "默认路由下一跳（兜底）" }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：华为 VRP 8.x policy-based-route"
+reviewers: []
+last_reviewed: "2026-08-23"

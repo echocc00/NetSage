@@ -1,0 +1,22 @@
+# cisco_iosxe/bgp/ipv6_family 模板元数据
+template_id: cisco_iosxe_bgp_ipv6_family
+vendor: cisco
+os: iosxe
+version_min: "15.6(3)M"
+version_max: "17.999"
+protocol: bgp
+feature: ipv6_family
+input_schema:
+  - { name: local_asn, type: int, required: true }
+  - { name: router_id, type: string, required: false }
+  - { name: peers, type: array, required: true,
+      items: { address: string, remote_asn: int } }
+  - { name: ipv6_peers, type: array, required: true,
+      items: { address: string } }
+  - { name: import_strategy_v6, type: string, required: false,
+      enum: [static, connected, ospf, isis] }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Cisco IOS-XE 17.x BGP address-family ipv6"
+reviewers: []
+last_reviewed: "2026-08-23"

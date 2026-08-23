@@ -1,0 +1,20 @@
+bgp {{ local_asn }}
+{% if router_id is defined and router_id %}
+  router-id {{ router_id }}
+{% endif %}
+{% for peer in peers %}
+  peer {{ peer.address }} as-number {{ peer.remote_asn }}
+{% endfor %}
+  #
+  ipv4-family unicast
+{% for peer in peers %}
+    peer {{ peer.address }} enable
+{% endfor %}
+  #
+  ipv6-family unicast
+{% if import_strategy_v6 is defined and import_strategy_v6 %}
+    import-route {{ import_strategy_v6 }}
+{% endif %}
+{% for v6 in ipv6_peers %}
+    peer {{ v6.address }} enable
+{% endfor %}

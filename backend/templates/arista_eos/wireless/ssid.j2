@@ -1,0 +1,33 @@
+---
+# Arista EOS WAP/CVP（Cloud Vision Portal）无线配置
+# 通过 WAP 模式推送至 EOS 设备，然后由 WAP 推送至 AP
+---
+wireless
+!
+profile {{ profile_name }} ssid {{ ssid_name }}
+  ssid {{ ssid }}
+  vlan {{ vlan_id }}
+  security
+    mode wpa2-psk
+    passphrase 0 {{ psk_passphrase }}
+  band-steering enable
+!
+profile {{ profile_name }} radio radio-2.4
+  channel {{ channel_2g }}
+  power {{ power_2g }}
+  dot11n enable
+!
+profile {{ profile_name }} radio radio-5
+  channel {{ channel_5g }}
+  power {{ power_5g }}
+  dot11ac enable
+!
+ap-group {{ ap_group_name }}
+  ap-model {{ ap_model }}
+  ssid-profile {{ profile_name }}
+  radio radio-2.4 mode bgn
+  radio radio-5 mode ac
+!
+ap {{ ap_mac }}
+  ap-name {{ ap_name }}
+  ap-group {{ ap_group_name }}

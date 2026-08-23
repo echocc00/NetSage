@@ -1,0 +1,15 @@
+set routing-options router-id {{ router_id }}
+set protocols ospf area {{ area_id }}
+{% if area_type == 'stub' %}
+set protocols ospf area {{ area_id }} stub
+{% elif area_type == 'stub_no_summary' %}
+set protocols ospf area {{ area_id }} stub no-summaries
+{% elif area_type == 'nssa' %}
+set protocols ospf area {{ area_id }} nssa
+{% elif area_type == 'nssa_no_summary' %}
+set protocols ospf area {{ area_id }} nssa no-summaries
+{% endif %}
+{% if advertise_default %}
+set protocols ospf area {{ area_id }} nssa default-lsa type-7 metric {{ cost | default(1) }}
+{% endif %}
+set protocols ospf area {{ area_id }} interface {{ interface_name }}

@@ -1,0 +1,29 @@
+# juniper_junos/wireless/roaming 模板元数据
+template_id: juniper_junos_wireless_roaming
+vendor: juniper
+os: mist_api
+version_min: "21.2"
+version_max: "22.999"
+protocol: wireless
+feature: roaming
+input_schema:
+  - { name: org_id, type: string, required: true }
+  - { name: site_id, type: string, required: true }
+  - { name: mobility_domain, type: string, required: true,
+      desc: "FT Mobility Domain ID（一般 4 hex char）" }
+  - { name: method, type: string, required: false,
+      enum: [ft-over-ds, ft-over-air],
+      desc: "FT 方法：over DS（推荐）或 over-air" }
+  - { name: r0_key_timeout, type: int, required: false,
+      desc: "R0 key 寿命" }
+  - { name: band_steering, type: bool, required: false,
+      desc: "5GHz 优先" }
+  - { name: sticky_rssi, type: int, required: false,
+      desc: "sticky client drop 阈值（dBm）" }
+output_format: api
+validated_against: []
+author: "echocc00 · 来源：Juniper Mist API - 802.11r FT"
+reviewers: []
+last_reviewed: "2026-08-23"
+
+备注: "802.11r/K/v 由 Mist 集中配置，不需要每个 AP 单独配置"

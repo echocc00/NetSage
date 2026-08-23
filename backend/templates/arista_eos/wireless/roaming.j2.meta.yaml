@@ -1,0 +1,26 @@
+# arista_eos/wireless/roaming 模板元数据
+template_id: arista_eos_wireless_roaming
+vendor: arista
+os: eos
+version_min: "4.24"
+version_max: "4.999"
+protocol: wireless
+feature: roaming
+input_schema:
+  - { name: mobility_group_name, type: string, required: true }
+  - { name: mobility_domain, type: string, required: true,
+      desc: "FT mobility domain ID" }
+  - { name: ft_method, type: string, required: false,
+      enum: [ft-over-ds, ft-over-air], default: ft-over-ds }
+  - { name: sticky_threshold, type: int, required: true,
+      desc: "sticky 阈值（dBm）" }
+  - { name: roam_threshold, type: int, required: true,
+      desc: "漫游阈值（dBm）" }
+  - { name: ap_group_name, type: string, required: true }
+  - { name: ap_mac, type: string, required: true }
+  - { name: ap_name, type: string, required: true }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Arista EOS 4.24 Wireless Roaming Configuration"
+reviewers: []
+last_reviewed: "2026-08-23"

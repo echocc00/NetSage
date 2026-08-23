@@ -1,0 +1,26 @@
+---
+# Juniper Mist 802.11r Fast Roaming 配置
+---
+method: PUT
+endpoint: /api/v1/orgs/{org_id}/sites/{site_id}/wlan
+description: 配置 802.11r FT（Fast BSS Transition）漫游
+auth: api_token
+headers:
+  Content-Type: application/json
+body:
+  ft:
+    enabled: true
+    method: "ft-over-ds"
+    mobility_domain: "{{ mobility_domain }}"
+    r0_key_timeout: 60
+  ap_selection:
+    band: "both"
+    band_steering: true
+  band_steering:
+    enabled: true
+    cycle_count: 5
+    cycle_period_min: 10
+    snr_diff_threshold: 20
+  sticky_client:
+    enabled: true
+    min_data_rssi: "-75"

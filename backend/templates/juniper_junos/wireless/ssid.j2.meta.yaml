@@ -1,0 +1,28 @@
+# juniper_junos/wireless/ssid 模板元数据
+template_id: juniper_junos_wireless_ssid
+vendor: juniper
+os: mist_api
+version_min: "21.2"
+version_max: "22.999"
+protocol: wireless
+feature: ssid
+input_schema:
+  - { name: org_id, type: string, required: true,
+      desc: "Mist Org ID" }
+  - { name: site_id, type: string, required: true }
+  - { name: ssid, type: string, required: true }
+  - { name: vlan_id, type: int, required: true }
+  - { name: psk_passphrase, type: string, required: true }
+  - { name: bands, type: array, required: false,
+      items: { type: string, enum: ["2.4", "5", "6"] },
+      desc: "可用频段" }
+  - { name: isolation, type: bool, required: false,
+      desc: "启用 client 隔离" }
+output_format: api
+validated_against: []
+author: "echocc00 · 来源：Juniper Mist API Documentation - SSID/SSO"
+reviewers: []
+last_reviewed: "2026-08-23"
+
+备注: "Juniper 无线走 Mist 云管理平台（apiclient/Mist API），不是传统 Junos CLI。"
+备注_2: "本模板 output_format=api，由 ConfigEngineer Agent 通过 Mist SDK 调用。"

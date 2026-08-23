@@ -1,0 +1,25 @@
+# huawei_vrp/bgp/ipv6_family 模板元数据
+template_id: huawei_vrp_bgp_ipv6_family
+vendor: huawei
+os: vrp
+version_min: "8.0"
+version_max: "8.999"
+protocol: bgp
+feature: ipv6_family
+input_schema:
+  - { name: local_asn, type: int, required: true }
+  - { name: router_id, type: string, required: false }
+  - { name: peers, type: array, required: true,
+      items: { address: string, remote_asn: int },
+      desc: "IPv4 peer 列表" }
+  - { name: ipv6_peers, type: array, required: true,
+      items: { address: string },
+      desc: "IPv6 peer 列表（地址为 IPv6）" }
+  - { name: import_strategy_v6, type: string, required: false,
+      enum: [static, direct, ospfv3, isis],
+      desc: "IPv6 路由引入策略" }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：华为 VRP 8.x BGP IPv6 地址族"
+reviewers: []
+last_reviewed: "2026-08-23"

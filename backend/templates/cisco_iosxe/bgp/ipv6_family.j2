@@ -1,0 +1,22 @@
+router bgp {{ local_asn }}
+{% if router_id is defined and router_id %}
+  router-id {{ router_id }}
+{% endif %}
+{% for peer in peers %}
+  neighbor {{ peer.address }} remote-as {{ peer.remote_asn }}
+{% endfor %}
+  !
+  address-family ipv4 unicast
+{% for peer in peers %}
+    neighbor {{ peer.address }} activate
+{% endfor %}
+  exit-address-family
+  !
+  address-family ipv6 unicast
+{% if import_strategy_v6 is defined and import_strategy_v6 %}
+    redistribute {{ import_strategy_v6 }}
+{% endif %}
+{% for v6 in ipv6_peers %}
+    neighbor {{ v6.address }} activate
+{% endfor %}
+  exit-address-family

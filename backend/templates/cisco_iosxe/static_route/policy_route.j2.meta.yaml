@@ -1,0 +1,26 @@
+# cisco_iosxe/static_route/policy_route 模板元数据
+template_id: cisco_iosxe_static_route_policy_route
+vendor: cisco
+os: iosxe
+version_min: "15.6(3)M"
+version_max: "17.999"
+protocol: static_route
+feature: policy_route
+input_schema:
+  - { name: route_map_name, type: string, required: true }
+  - { name: acl_name, type: string, required: true }
+  - { name: src_subnet, type: string, required: true }
+  - { name: src_wildcard, type: string, required: true,
+      desc: "反掩码，如 0.0.0.255" }
+  - { name: next_hop, type: string, required: true }
+  - { name: sequence, type: int, required: true,
+      desc: "route-map 序号 0-65535" }
+  - { name: interface_name, type: string, required: true }
+  - { name: local_ip, type: string, required: true }
+  - { name: netmask, type: string, required: true }
+  - { name: fallback_route, type: string, required: false }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Cisco IOS-XE 17.x route-map + ip policy"
+reviewers: []
+last_reviewed: "2026-08-23"

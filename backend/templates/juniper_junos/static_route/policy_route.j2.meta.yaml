@@ -1,0 +1,25 @@
+# juniper_junos/static_route/policy_route 模板元数据
+template_id: juniper_junos_static_route_policy_route
+vendor: juniper
+os: junos
+version_min: "21.2"
+version_max: "22.999"
+protocol: static_route
+feature: policy_route
+input_schema:
+  - { name: policy_name, type: string, required: true,
+      desc: "policy-statement 名" }
+  - { name: term_name, type: string, required: true,
+      desc: "term 名" }
+  - { name: prefix_list_name, type: string, required: true }
+  - { name: sequence, type: int, required: true,
+      desc: "prefix-list 序号" }
+  - { name: src_subnet, type: string, required: true }
+  - { name: prefix_len, type: int, required: true }
+  - { name: next_hop, type: string, required: true }
+  - { name: fallback_route, type: string, required: false }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Junos 21.2R1 routing-options forwarding-table export"
+reviewers: []
+last_reviewed: "2026-08-23"

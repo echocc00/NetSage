@@ -1,0 +1,30 @@
+---
+# Juniper Mist 无线配置模板（走 Mist API 而非 Junos CLI）
+# 在 Mist 控制器上通过 REST API 推送
+# POST https://api.mist.com/api/v1/orgs/{org_id}/sites/{site_id}/wlan
+---
+method: POST
+endpoint: /api/v1/orgs/{org_id}/sites/{site_id}/ssids
+description: 创建 SSID 并绑定到 WLAN profile
+auth: api_token
+headers:
+  Content-Type: application/json
+body:
+  ssid: "{{ ssid }}"
+  enabled: true
+  bands:
+    - "5"
+    - "2.4"
+  vlan_id:
+    enabled: true
+    value: {{ vlan_id }}
+  auth:
+    type: "psk"
+    psk: "{{ psk_passphrase }}"
+  ssid_limit_per_wlan: 1
+  hidden: false
+  max_number_of_clients: 100
+  isolation: true
+
+# 对应 Jinja2 渲染时只渲染 body 部分
+# 注意：本模板由 Juniper Mist SDK 调用，不走 Jinja2 + ssh 推送

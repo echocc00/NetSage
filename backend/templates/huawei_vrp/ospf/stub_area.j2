@@ -1,0 +1,15 @@
+ospf {{ process_id }} router-id {{ router_id }}
+  area {{ area_id }}
+{% if area_type == 'stub' %}
+    stub
+{% elif area_type == 'stub_no_summary' %}
+    stub no-summary
+{% elif area_type == 'nssa' %}
+    nssa
+{% elif area_type == 'nssa_no_summary' %}
+    nssa no-summary
+{% endif %}
+{% if advertise_default %}
+    nssa default-route-advertise {{ cost | default(1) }}
+{% endif %}
+  network {{ network_addr }} {{ wildcard }}

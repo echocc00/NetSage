@@ -1,0 +1,25 @@
+# h3c_comware/static_route/policy_route 模板元数据
+template_id: h3c_comware_static_route_policy_route
+vendor: h3c
+os: comware
+version_min: "7.1.070"
+version_max: "7.999"
+protocol: static_route
+feature: policy_route
+input_schema:
+  - { name: policy_name, type: string, required: true }
+  - { name: acl_number, type: int, required: true }
+  - { name: rule_id, type: int, required: true }
+  - { name: src_subnet, type: string, required: true }
+  - { name: src_mask, type: string, required: true }
+  - { name: next_hop, type: string, required: true }
+  - { name: node_id, type: int, required: true }
+  - { name: interface_name, type: string, required: true }
+  - { name: local_ip, type: string, required: true }
+  - { name: netmask, type: string, required: true }
+  - { name: fallback_route, type: string, required: false }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：H3C Comware 7 policy-based-route"
+reviewers: []
+last_reviewed: "2026-08-23"

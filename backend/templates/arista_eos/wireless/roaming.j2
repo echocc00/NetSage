@@ -1,0 +1,28 @@
+---
+# Arista EOS 802.11r/k/v 漫游配置
+---
+wireless
+!
+mobility-group {{ mobility_group_name }}
+  country-code CN
+  mobility-domain "{{ mobility_domain }}"
+  ft enable
+  ft-method ft-over-ds
+!
+profile roaming profile-name
+  rapid-roaming enable
+  band-steering enable
+  sticky-client drop-threshold {{ sticky_threshold }}
+  roam-threshold {{ roam_threshold }}
+  load-balance
+    neighbor-discovery enable
+    station-count window 30
+!
+ap-group {{ ap_group_name }}
+  profile roaming profile-name
+  mobility-group {{ mobility_group_name }}
+!
+ap {{ ap_mac }}
+  ap-name {{ ap_name }}
+  ap-group {{ ap_group_name }}
+  mobility-domain {{ mobility_domain }}

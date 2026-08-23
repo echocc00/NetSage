@@ -1,0 +1,22 @@
+# arista_eos/bgp/ipv6_family 模板元数据
+template_id: arista_eos_bgp_ipv6_family
+vendor: arista
+os: eos
+version_min: "4.24"
+version_max: "4.999"
+protocol: bgp
+feature: ipv6_family
+input_schema:
+  - { name: local_asn, type: int, required: true }
+  - { name: router_id, type: string, required: false }
+  - { name: peers, type: array, required: true,
+      items: { address: string, remote_asn: int } }
+  - { name: ipv6_peers, type: array, required: true,
+      items: { address: string } }
+  - { name: import_strategy_v6, type: string, required: false,
+      enum: [static, connected, ospf, isis] }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Arista EOS 4.24 BGP IPv6 address-family"
+reviewers: []
+last_reviewed: "2026-08-23"

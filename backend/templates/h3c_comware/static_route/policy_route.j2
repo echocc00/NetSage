@@ -1,0 +1,14 @@
+acl number {{ acl_number }}
+  rule {{ rule_id }} permit source {{ src_subnet }} {{ src_mask }}
+#
+policy-based-route {{ policy_name }}
+  node {{ node_id }} permit
+    if-match acl {{ acl_number }}
+    apply ip-address next-hop {{ next_hop }}
+#
+interface {{ interface_name }}
+  ip address {{ local_ip }} {{ netmask }}
+  traffic-policy {{ policy_name }} inbound
+{% if fallback_route %}
+ip route-static 0.0.0.0 0.0.0.0 {{ fallback_route }}
+{% endif %}

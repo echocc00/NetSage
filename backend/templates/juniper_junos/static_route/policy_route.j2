@@ -1,0 +1,9 @@
+set policy-options prefix-list {{ prefix_list_name }} {{ sequence }} permit {{ src_subnet }}/{{ prefix_len }}
+set policy-options policy-statement {{ policy_name }} term {{ term_name }} from family inet
+set policy-options policy-statement {{ policy_name }} term {{ term_name }} from prefix-list {{ prefix_list_name }}
+set policy-options policy-statement {{ policy_name }} term {{ term_name }} then next-hop {{ next_hop }}
+set routing-options interface-routes traceoptions file policy-route.log
+set routing-options forwarding-table export {{ policy_name }}
+{% if fallback_route %}
+set routing-options static route 0.0.0.0/0 next-hop {{ fallback_route }}
+{% endif %}

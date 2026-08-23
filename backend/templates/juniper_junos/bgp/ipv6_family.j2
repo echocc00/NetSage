@@ -1,0 +1,18 @@
+set routing-options router-id {{ router_id }}
+set routing-options autonomous-system {{ local_asn }}
+{% for peer in peers %}
+set protocols bgp group {{ peer.group | default('underlay') }} neighbor {{ peer.address }}
+{% endfor %}
+{% for peer in peers %}
+set protocols bgp group {{ peer.group | default('underlay') }} neighbor {{ peer.address }} peer-as {{ peer.remote_asn }}
+{% endfor %}
+set protocols bgp group underlay family inet unicast
+set protocols bgp group underlay family inet6 unicast
+{% if import_strategy_v6 is defined and import_strategy_v6 %}
+set protocols bgp group underlay family inet6 unicast advertise {{ import_strategy_v6 }}
+{% endif %}
+{% for v6 in ipv6_peers %}
+set protocols bgp group underlay-v6 neighbor {{ v6.address }}
+set protocols bgp group underlay-v6 neighbor {{ v6.address }} family inet6 unicast
+set protocols bgp group underlay-v6 neighbor {{ v6.address }} peer-as {{ v6.remote_asn }}
+{% endfor %}

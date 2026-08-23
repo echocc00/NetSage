@@ -1,0 +1,24 @@
+# cisco_iosxe/ospf/stub_area 模板元数据
+template_id: cisco_iosxe_ospf_stub_area
+vendor: cisco
+os: iosxe
+version_min: "15.6(3)M"
+version_max: "17.999"
+protocol: ospf
+feature: stub_area
+input_schema:
+  - { name: process_id, type: int, required: true }
+  - { name: router_id, type: string, required: true }
+  - { name: area_id, type: string, required: true }
+  - { name: area_type, type: string, required: true,
+      enum: [stub, stub_no_summary, nssa, nssa_no_summary] }
+  - { name: advertise_default, type: bool, required: false }
+  - { name: cost, type: int, required: false }
+  - { name: network_addr, type: string, required: true }
+  - { name: wildcard, type: string, required: true,
+      desc: "Cisco 反掩码（子网掩码的反码），如 0.0.0.255" }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Cisco IOS-XE 17.x OSPF area stub/nssa"
+reviewers: []
+last_reviewed: "2026-08-23"

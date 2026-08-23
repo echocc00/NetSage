@@ -1,0 +1,24 @@
+# juniper_junos/bgp/ipv6_family 模板元数据
+template_id: juniper_junos_bgp_ipv6_family
+vendor: juniper
+os: junos
+version_min: "21.2"
+version_max: "22.999"
+protocol: bgp
+feature: ipv6_family
+input_schema:
+  - { name: local_asn, type: int, required: true }
+  - { name: router_id, type: string, required: true }
+  - { name: peers, type: array, required: true,
+      items: { address: string, remote_asn: int, group: string },
+      desc: "IPv4 peer 列表" }
+  - { name: ipv6_peers, type: array, required: true,
+      items: { address: string, remote_asn: int },
+      desc: "IPv6 peer 列表" }
+  - { name: import_strategy_v6, type: string, required: false,
+      enum: [static, direct, ospf3, isis] }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Junos 21.2R1 BGP family inet6"
+reviewers: []
+last_reviewed: "2026-08-23"

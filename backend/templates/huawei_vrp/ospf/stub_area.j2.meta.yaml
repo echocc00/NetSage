@@ -1,0 +1,28 @@
+# huawei_vrp/ospf/stub_area 模板元数据
+template_id: huawei_vrp_ospf_stub_area
+vendor: huawei
+os: vrp
+version_min: "8.0"
+version_max: "8.999"
+protocol: ospf
+feature: stub_area
+input_schema:
+  - { name: process_id, type: int, required: true }
+  - { name: router_id, type: string, required: true }
+  - { name: area_id, type: string, required: true,
+      desc: "如 0.0.0.1 / 1" }
+  - { name: area_type, type: string, required: true,
+      enum: [stub, stub_no_summary, nssa, nssa_no_summary],
+      desc: "stub 末梢 / 完全末梢 / NSSA / 完全 NSSA" }
+  - { name: advertise_default, type: bool, required: false,
+      desc: "NSSA 注入默认路由" }
+  - { name: cost, type: int, required: false,
+      desc: "default-route cost 1-16777214" }
+  - { name: network_addr, type: string, required: true }
+  - { name: wildcard, type: string, required: true,
+      desc: "反掩码，如 0.0.0.255" }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：华为 VRP 8.x OSPF area stub/nssa"
+reviewers: []
+last_reviewed: "2026-08-23"

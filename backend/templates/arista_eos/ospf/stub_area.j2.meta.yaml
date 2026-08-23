@@ -1,0 +1,23 @@
+# arista_eos/ospf/stub_area 模板元数据
+template_id: arista_eos_ospf_stub_area
+vendor: arista
+os: eos
+version_min: "4.24"
+version_max: "4.999"
+protocol: ospf
+feature: stub_area
+input_schema:
+  - { name: process_id, type: int, required: true }
+  - { name: router_id, type: string, required: true }
+  - { name: area_id, type: string, required: true }
+  - { name: area_type, type: string, required: true,
+      enum: [stub, stub_no_summary, nssa, nssa_no_summary] }
+  - { name: advertise_default, type: bool, required: false }
+  - { name: network_addr, type: string, required: true }
+  - { name: netmask, type: int, required: true,
+      desc: "前缀长度 1-32" }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Arista EOS 4.24 OSPF stub/NSSA"
+reviewers: []
+last_reviewed: "2026-08-23"

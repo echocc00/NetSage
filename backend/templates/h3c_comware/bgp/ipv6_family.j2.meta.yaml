@@ -1,0 +1,22 @@
+# h3c_comware/bgp/ipv6_family 模板元数据
+template_id: h3c_comware_bgp_ipv6_family
+vendor: h3c
+os: comware
+version_min: "7.1.070"
+version_max: "7.999"
+protocol: bgp
+feature: ipv6_family
+input_schema:
+  - { name: local_asn, type: int, required: true }
+  - { name: router_id, type: string, required: false }
+  - { name: peers, type: array, required: true,
+      items: { address: string, remote_asn: int } }
+  - { name: ipv6_peers, type: array, required: true,
+      items: { address: string } }
+  - { name: import_strategy_v6, type: string, required: false,
+      enum: [static, direct, ospfv3, isis] }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：H3C Comware 7 BGP IPv6 地址族"
+reviewers: []
+last_reviewed: "2026-08-23"

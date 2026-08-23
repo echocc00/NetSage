@@ -1,0 +1,24 @@
+# juniper_junos/ospf/stub_area 模板元数据
+template_id: juniper_junos_ospf_stub_area
+vendor: juniper
+os: junos
+version_min: "21.2"
+version_max: "22.999"
+protocol: ospf
+feature: stub_area
+input_schema:
+  - { name: router_id, type: string, required: true }
+  - { name: area_id, type: string, required: true,
+      desc: "Junos 用 ip:area-id 表示，如 0.0.0.1" }
+  - { name: area_type, type: string, required: true,
+      enum: [stub, stub_no_summary, nssa, nssa_no_summary],
+      desc: "Junos 关键字 stub / no-summaries / nssa / no-summaries" }
+  - { name: advertise_default, type: bool, required: false,
+      desc: "nssa default-lsa type-7" }
+  - { name: cost, type: int, required: false }
+  - { name: interface_name, type: string, required: true }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Junos 21.2R1 OSPF area stub/nssa"
+reviewers: []
+last_reviewed: "2026-08-23"
