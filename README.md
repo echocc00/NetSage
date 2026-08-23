@@ -4,6 +4,8 @@
 >
 
 [![Latest Release](https://img.shields.io/github/v/release/echocc00/NetSage?display_name=tag&style=flat-square)](https://github.com/echocc00/NetSage/releases/latest)
+[![License](https://img.shields.io/github/license/echocc00/NetSage?style=flat-square)](./LICENSE)
+[![License Check](https://img.shields.io/github/actions/workflow/status/echocc00/NetSage/license-check.yml?branch=main&style=flat-square&label=license)](https://github.com/echocc00/NetSage/actions/workflows/license-check.yml)
 
 > 💼 **商业授权 / Commercial licensing**
 >
