@@ -1,0 +1,50 @@
+id: NSG-Q-0445
+title: OSPF GR 故障（华三 Comware 7）
+category: troubleshoot
+vendor: h3c
+version: Comware-7.1.070
+difficulty: 4
+tags:
+- ospf
+- graceful-restart
+- stub-router
+input:
+  symptom: OSPF 重启后邻居全闪断
+  device_info:
+    model: ''
+    version: Comware-7.1.070
+    interfaces: []
+  evidence:
+  - config_snippet: "ospf 1\n graceful-restart  # ⚠️ 漏 enable"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: graceful-restart 未 enable
+    probability: 0.7
+    evidence: []
+    verify: display ospf graceful-restart
+    fix: 配 enable
+  - rank: 2
+    cause: helper 邻居未启 GR
+    probability: 0.3
+    evidence: []
+    verify: display ospf peer
+    fix: 两端都启 GR
+  references:
+  - type: vendor_doc
+    url: https://www.h3c.com/cn/d_202206/ospf-gr
+    version: Comware 7.1.070
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 ospf
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

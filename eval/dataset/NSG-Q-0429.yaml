@@ -1,0 +1,50 @@
+id: NSG-Q-0429
+title: VXLAN VTEP source interface 物理 down（Juniper Mist + H3C）
+category: troubleshoot
+vendor: h3c
+version: Comware-7.1.070
+difficulty: 4
+tags:
+- vxlan
+- vtep
+- source-interface
+input:
+  symptom: VXLAN VTEP 不可达
+  device_info:
+    model: ''
+    version: Comware-7.1.070
+    interfaces: []
+  evidence:
+  - config_snippet: "interface Loopback0\n ip address 10.0.0.1 32"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: source interface 物理 down
+    probability: 0.7
+    evidence: []
+    verify: display interface Loopback0
+    fix: 重启 Lo 接口
+  - rank: 2
+    cause: Loopback 接口 IP 被禁
+    probability: 0.3
+    evidence: []
+    verify: display interface brief
+    fix: 启用 IP
+  references:
+  - type: vendor_doc
+    url: https://www.h3c.com/cn/d_202206/vxlan-vtep
+    version: Comware 7.1.070
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 vxlan
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

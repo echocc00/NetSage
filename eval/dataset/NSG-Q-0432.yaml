@@ -1,0 +1,50 @@
+id: NSG-Q-0432
+title: IPsec transform-set 漏 ah（华三 Comware 7）
+category: troubleshoot
+vendor: h3c
+version: Comware-7.1.070
+difficulty: 3
+tags:
+- ipsec
+- transform-set
+- ah
+input:
+  symptom: IPsec 流量完整性保护不到位
+  device_info:
+    model: ''
+    version: Comware-7.1.070
+    interfaces: []
+  evidence:
+  - config_snippet: "ipsec transform-set ts1\n esp encryption-algorithm aes-cbc-256\n # ⚠️ 漏 esp authentication-algorithm"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: transform-set 漏 esp auth
+    probability: 0.7
+    evidence: []
+    verify: display ipsec transform-set
+    fix: 加 esp authentication-algorithm sha2-256
+  - rank: 2
+    cause: 对端需 ah 而已方 esp
+    probability: 0.3
+    evidence: []
+    verify: display ipsec sa
+    fix: 统一 transform-set
+  references:
+  - type: vendor_doc
+    url: https://www.h3c.com/cn/d_202206/ipsec-transform
+    version: Comware 7.1.070
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 ipsec
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

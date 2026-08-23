@@ -1,0 +1,50 @@
+id: NSG-Q-0427
+title: VXLAN Type-3 BUM 不通（Arista EOS 4.24，head-end-replication）
+category: troubleshoot
+vendor: arista
+version: '4.24'
+difficulty: 4
+tags:
+- vxlan
+- bum
+- head-end
+input:
+  symptom: VXLAN Type-3 路由学习不到
+  device_info:
+    model: ''
+    version: '4.24'
+    interfaces: []
+  evidence:
+  - config_snippet: "interface Vxlan1\n vxlan-unicast-group 10.0.0.2  # static 不全"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: vxlan-unicast-group 列表不全
+    probability: 0.7
+    evidence: []
+    verify: show vxlan vni
+    fix: 补全 peer-vtep 列表
+  - rank: 2
+    cause: BGP EVPN peer enable 漏配
+    probability: 0.3
+    evidence: []
+    verify: show bgp evpn summary
+    fix: 配 BGP EVPN
+  references:
+  - type: vendor_doc
+    url: https://www.arista.com/en/docs/eos-4.24/vxlan-bum
+    version: EOS 4.24
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 vxlan
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

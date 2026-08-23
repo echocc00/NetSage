@@ -1,0 +1,50 @@
+id: NSG-Q-0415
+title: BGP export policy 漏配（华三 Comware 7）
+category: troubleshoot
+vendor: h3c
+version: Comware-7.1.070
+difficulty: 3
+tags:
+- bgp
+- export
+- policy
+input:
+  symptom: BGP 路由不传递给对端
+  device_info:
+    model: ''
+    version: Comware-7.1.070
+    interfaces: []
+  evidence:
+  - config_snippet: "bgp 65001\n peer 10.1.1.2 as 65002\n # ⚠️ 漏 ipv4-family unicast peer enable"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: ipv4-family 配错
+    probability: 0.7
+    evidence: []
+    verify: display bgp peer
+    fix: address-family ipv4 → peer 10.1.1.2 enable
+  - rank: 2
+    cause: route-policy 阻挡
+    probability: 0.3
+    evidence: []
+    verify: display bgp routing-table filter
+    fix: 调整 route-policy
+  references:
+  - type: vendor_doc
+    url: https://www.h3c.com/cn/d_202206/bgp-export
+    version: Comware 7.1.070
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 bgp
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

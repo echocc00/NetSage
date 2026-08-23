@@ -1,0 +1,49 @@
+id: NSG-Q-0414
+title: BGP Confed AS-Path (思科 IOS-XE 17)
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 4
+tags:
+- bgp
+- confederation
+input:
+  symptom: BGP confederation 邻居不通
+  device_info:
+    model: ''
+    version: IOS-XE-17.09
+    interfaces: []
+  evidence:
+  - config_snippet: "router bgp 65002\n confederation identifier 65000\n neighbor 10.1.1.1 remote-as 65003  # 应是 confederation peer"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: confederation 邻居配错
+    probability: 0.8
+    evidence: []
+    verify: show bgp confederation
+    fix: router bgp 65002 → bgp confederation peers 65003
+  - rank: 2
+    cause: BGP router-id 一致
+    probability: 0.2
+    evidence: []
+    verify: show bgp summary
+    fix: 调整 router-id
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/support/bgp-confederation
+    version: IOS-XE-17.09
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 bgp
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

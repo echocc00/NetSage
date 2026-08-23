@@ -1,0 +1,50 @@
+id: NSG-Q-0436
+title: OSPFv3 neighbor 卡（华为 VRP-8.180，ipv6 link-local 重复）
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 3
+tags:
+- ospfv3
+- link-local
+- duplicate
+input:
+  symptom: OSPFv3 卡 Init
+  device_info:
+    model: ''
+    version: VRP-8.180
+    interfaces: []
+  evidence:
+  - config_snippet: "ospfv3 1\n interface 10GE1/0/2\n  ospfv3 1 area 0 instance 17\n # ⚠️ 两端 link-local 相同"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: 两端 link-local 一致引起冲突
+    probability: 0.7
+    evidence: []
+    verify: display ospfv3 interface
+    fix: ipv6 address force link-local 改
+  - rank: 2
+    cause: ND 重复
+    probability: 0.3
+    evidence: []
+    verify: display ipv6 neighbors
+    fix: 清邻居
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/vrp-ospfv3-link-local
+    version: VRP-8.180
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 ospfv3
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

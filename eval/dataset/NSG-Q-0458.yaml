@@ -1,0 +1,50 @@
+id: NSG-Q-0458
+title: AAA TACACS+ 端口封装（华三 Comware 7）
+category: troubleshoot
+vendor: h3c
+version: Comware-7.1.070
+difficulty: 3
+tags:
+- aaa
+- tacacs
+- tcp
+input:
+  symptom: TACACS+ 服务异常
+  device_info:
+    model: ''
+    version: Comware-7.1.070
+    interfaces: []
+  evidence:
+  - config_snippet: "tacacs-server host 10.1.1.99\n tacacs-server key cipher NetSys@2024  # TCP 单连接复用"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: TCP 包长超 256
+    probability: 0.7
+    evidence: []
+    verify: display tacacs
+    fix: 配 TCP 单连接
+  - rank: 2
+    cause: 共享密钥
+    probability: 0.3
+    evidence: []
+    verify: display tacacs-accounting
+    fix: 对齐 key
+  references:
+  - type: vendor_doc
+    url: https://www.h3c.com/cn/d_202206/tacacs
+    version: Comware 7.1.070
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 aaa
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

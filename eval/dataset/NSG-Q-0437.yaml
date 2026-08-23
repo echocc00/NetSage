@@ -1,0 +1,49 @@
+id: NSG-Q-0437
+title: EVPN Symmetric IRB 不通（Juniper Mist）
+category: troubleshoot
+vendor: juniper
+version: 21.2R1
+difficulty: 4
+tags:
+- evpn
+- symmetric-irb
+input:
+  symptom: EVPN IRB 流量不通
+  device_info:
+    model: ''
+    version: 21.2R1
+    interfaces: []
+  evidence:
+  - config_snippet: "set routing-instances anycast-gw instance-type virtual-switch\n set routing-instances anycast-gw interface irb.20"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: Symmetric IRB 未配置 L3-VNI
+    probability: 0.7
+    evidence: []
+    verify: show evpn irb
+    fix: 配 L3-VNI
+  - rank: 2
+    cause: 路由-target 跨 VRF
+    probability: 0.3
+    evidence: []
+    verify: show route instance
+    fix: 统一 RT
+  references:
+  - type: vendor_doc
+    url: https://www.juniper.net/documentation/junos-21.2/evpn-irb
+    version: 21.2R1
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 evpn
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

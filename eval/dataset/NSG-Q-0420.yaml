@@ -1,0 +1,50 @@
+id: NSG-Q-0420
+title: OSPF ABR 配两台同 Router-ID 冲突（华三 Comware 7）
+category: troubleshoot
+vendor: h3c
+version: Comware-7.1.070
+difficulty: 4
+tags:
+- ospf
+- router-id
+- conflict
+input:
+  symptom: OSPF 邻居反复 Up/Down
+  device_info:
+    model: ''
+    version: Comware-7.1.070
+    interfaces: []
+  evidence:
+  - config_snippet: 'ospf 1 router-id 10.0.0.1  # ⚠️ 全网两台 ABR Router-ID 一致'
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: Router-ID 冲突导致 OSPF 不收敛
+    probability: 0.85
+    evidence: []
+    verify: display ospf router-id
+    fix: 各 ABR 不同 router-id
+  - rank: 2
+    cause: 接口认证不一致
+    probability: 0.15
+    evidence: []
+    verify: display ospf
+    fix: 统一认证
+  references:
+  - type: vendor_doc
+    url: https://www.h3c.com/cn/d_202206/ospf-router-id
+    version: Comware 7.1.070
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 ospf
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

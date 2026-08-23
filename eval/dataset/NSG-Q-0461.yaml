@@ -1,0 +1,50 @@
+id: NSG-Q-0461
+title: BGP Optimal Route Reflection（Juniper 22，ORR）
+category: troubleshoot
+vendor: juniper
+version: 21.2R1
+difficulty: 4
+tags:
+- bgp
+- optimal-route-reflection
+- igp-metric
+input:
+  symptom: BGP 不优选
+  device_info:
+    model: ''
+    version: 21.2R1
+    interfaces: []
+  evidence:
+  - config_snippet: "set protocols bgp group RR internal\n # ⚠️ 漏 optimal-route-reflection"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: ORR 未配置
+    probability: 0.7
+    evidence: []
+    verify: show bgp neighbor
+    fix: 配 ORR
+  - rank: 2
+    cause: IGP metric 配置错
+    probability: 0.3
+    evidence: []
+    verify: show isis database
+    fix: 修 IGP metric
+  references:
+  - type: vendor_doc
+    url: https://www.juniper.net/documentation/junos-21.2/bgp-orr
+    version: 21.2R1
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 bgp
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

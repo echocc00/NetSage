@@ -1,0 +1,51 @@
+id: NSG-Q-0443
+title: IPv6 RA M-flag/O-flag（Cisco IOS-XE 17）
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 4
+tags:
+- ipv6
+- slaac
+- ra
+- m-flag
+input:
+  symptom: IPv6 客户机获取 IP
+  device_info:
+    model: ''
+    version: IOS-XE-17.09
+    interfaces: []
+  evidence:
+  - config_snippet: "ipv6 nd router-preference Medium\n ipv6 nd managed-config-flag"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: M-flag 强制 SLAAC 客户机失败
+    probability: 0.7
+    evidence: []
+    verify: show ipv6 interface
+    fix: 修改 M-flag
+  - rank: 2
+    cause: O-flag 设错
+    probability: 0.3
+    evidence: []
+    verify: show ipv6 router
+    fix: 修改 O-flag
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/support/ipv6-slaac-m-flag
+    version: IOS-XE-17.09
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 ipv6
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

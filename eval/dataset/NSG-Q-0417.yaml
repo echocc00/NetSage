@@ -1,0 +1,50 @@
+id: NSG-Q-0417
+title: OSPF DR/BDR 选举频繁变化（Juniper 22，dr-priority 设错）
+category: troubleshoot
+vendor: juniper
+version: 21.2R1
+difficulty: 4
+tags:
+- ospf
+- dr-priority
+- election
+input:
+  symptom: OSPF DR 反复变化
+  device_info:
+    model: ''
+    version: 21.2R1
+    interfaces: []
+  evidence:
+  - config_snippet: "set protocols ospf area 0.0.0.0 interface ge-0/0/0 priority 100\n # 优先级每次邻居 up 改一次"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: dr-priority 不稳定
+    probability: 0.7
+    evidence: []
+    verify: show ospf neighbor
+    fix: set priority 100 永久固定
+  - rank: 2
+    cause: OSPF 网络类型频繁变
+    probability: 0.3
+    evidence: []
+    verify: show ospf interface
+    fix: 统一 network-type
+  references:
+  - type: vendor_doc
+    url: https://www.juniper.net/documentation/junos-21.2/ospf-dr-priority
+    version: 21.2R1
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 ospf
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

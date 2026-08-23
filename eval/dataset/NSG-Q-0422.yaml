@@ -1,0 +1,51 @@
+id: NSG-Q-0422
+title: BGP RR 客户端无 source（华为 VRP-8.180，iBGP 邻居不达）
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 3
+tags:
+- bgp
+- rr
+- ibgp
+- connect-interface
+input:
+  symptom: BGP RR 客户端不通
+  device_info:
+    model: ''
+    version: VRP-8.180
+    interfaces: []
+  evidence:
+  - config_snippet: "bgp 65001\n router-id 10.0.0.1\n peer 10.1.1.2 as 65001  # ⚠️ 漏 connect-interface"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: BGP iBGP 默认 TTL=255 但需 connect-interface
+    probability: 0.7
+    evidence: []
+    verify: display bgp peer
+    fix: peer 10.1.1.2 connect-interface Loopback0
+  - rank: 2
+    cause: IGP 中无 Loopback
+    probability: 0.3
+    evidence: []
+    verify: display ip routing-table
+    fix: 把 Lo 通告到 IGP
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/vrp-bgp-ibgp
+    version: VRP-8.180
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 bgp
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

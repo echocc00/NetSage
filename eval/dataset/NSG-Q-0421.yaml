@@ -1,0 +1,50 @@
+id: NSG-Q-0421
+title: BGP local-as-as 取代（思科 IOS-XE 17，local-as 改对端可识别）
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 4
+tags:
+- bgp
+- local-as
+- replace
+input:
+  symptom: BGP 多 AS 替代
+  device_info:
+    model: ''
+    version: IOS-XE-17.09
+    interfaces: []
+  evidence:
+  - config_snippet: "router bgp 65001\n neighbor 10.1.1.2 local-as 65002\n # ⚠️ 漏 no-prepend replace-as"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: local-as 漏 replace
+    probability: 0.7
+    evidence: []
+    verify: show bgp summary
+    fix: neighbor 10.1.1.2 local-as 65002 replace-as
+  - rank: 2
+    cause: dual-AS 设计错
+    probability: 0.3
+    evidence: []
+    verify: show bgp peer
+    fix: 重新设计
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/support/bgp-local-as
+    version: IOS-XE-17.09
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 bgp
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

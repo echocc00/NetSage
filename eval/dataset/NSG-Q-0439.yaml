@@ -1,0 +1,50 @@
+id: NSG-Q-0439
+title: OSPFv3 type-5 互相泛洪（华为 VRP-8.180，NSSA ABR 配错）
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 4
+tags:
+- ospfv3
+- type-5
+- nssa-abr
+input:
+  symptom: OSPFv3 type-5 不转发
+  device_info:
+    model: ''
+    version: VRP-8.180
+    interfaces: []
+  evidence:
+  - config_snippet: "ospfv3 1\n area 0.0.0.1\n  nssa  # ⚠️ 漏 ABR P-bit"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: ABR P-bit 未设
+    probability: 0.7
+    evidence: []
+    verify: display ospfv3 lsdb
+    fix: 配 always-translate-7-to-5
+  - rank: 2
+    cause: NSSA ASBR 漏配
+    probability: 0.3
+    evidence: []
+    verify: display ospfv3
+    fix: 配 ASBR NSSA
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/vrp-ospfv3-nssa
+    version: VRP-8.180
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 ospfv3
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

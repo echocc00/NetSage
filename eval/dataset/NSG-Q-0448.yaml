@@ -1,0 +1,50 @@
+id: NSG-Q-0448
+title: PIM-SM RPF 失败（思科 IOS-XE 17）
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 4
+tags:
+- multicast
+- pim-sm
+- rpf
+input:
+  symptom: PIM-SM RPF 错误
+  device_info:
+    model: ''
+    version: IOS-XE-17.09
+    interfaces: []
+  evidence:
+  - config_snippet: "interface g1/0/1\n ip pim sparse-mode\n # ⚠️ 漏 mroute RPF"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: RPF 接口选择错
+    probability: 0.7
+    evidence: []
+    verify: show ip rpf
+    fix: 配正确 ip mroute
+  - rank: 2
+    cause: RPF fail 触发 PIM assert
+    probability: 0.3
+    evidence: []
+    verify: show ip pim neighbor
+    fix: 修 assert
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/support/pim-rpf
+    version: IOS-XE-17.09
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 multicast
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

@@ -1,0 +1,49 @@
+id: NSG-Q-0460
+title: EVPN Type-2 MAC 重复 IP 通告（思科 NX-OS 9.3，ARP suppression 一致性）
+category: troubleshoot
+vendor: cisco
+version: NX-OS-9.3
+difficulty: 4
+tags:
+- evpn
+- arp-suppression
+input:
+  symptom: EVPN ARP 表不稳定
+  device_info:
+    model: ''
+    version: NX-OS-9.3
+    interfaces: []
+  evidence:
+  - config_snippet: "l2vpn evpn instance 10 point-to-point\n arp suppress\n # 部分 leaf 漏配"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: 部分 leaf 漏 arp suppress
+    probability: 0.7
+    evidence: []
+    verify: show l2vpn evpn arp
+    fix: 所有 leaf 都配
+  - rank: 2
+    cause: RT 不一致
+    probability: 0.3
+    evidence: []
+    verify: show l2vpn evpn route
+    fix: 统一 RT
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/support/nx-os-evpn-arp-suppression
+    version: NX-OS-9.3
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 evpn
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

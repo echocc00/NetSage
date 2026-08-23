@@ -1,0 +1,51 @@
+id: NSG-Q-0416
+title: BGP dampening 抑制过严（思科 IOS-XE 17）
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 4
+tags:
+- bgp
+- dampening
+- reuse
+- suppress
+input:
+  symptom: 路由被反复 dampening 抑制
+  device_info:
+    model: ''
+    version: IOS-XE-17.09
+    interfaces: []
+  evidence:
+  - config_snippet: "router bgp 65001\n bgp dampening 30 750 2000 60\n # reuse 阈值 750 高"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: reuse 阈值过低
+    probability: 0.7
+    evidence: []
+    verify: show ip bgp dampening dampened-paths
+    fix: bgp dampening 30 1500 3000 60
+  - rank: 2
+    cause: 链路抖动源
+    probability: 0.3
+    evidence: []
+    verify: show interface
+    fix: 修物理链路
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/support/bgp-dampening-threshold
+    version: IOS-XE-17.09
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 bgp
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

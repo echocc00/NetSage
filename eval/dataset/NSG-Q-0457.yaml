@@ -1,0 +1,50 @@
+id: NSG-Q-0457
+title: AAA RADIUS 共享密钥不匹配（思科 IOS-XE 17）
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 3
+tags:
+- aaa
+- radius
+- shared-secret
+input:
+  symptom: AAA RADIUS 认证失败
+  device_info:
+    model: ''
+    version: IOS-XE-17.09
+    interfaces: []
+  evidence:
+  - config_snippet: "radius server R1\n key NetSys@2024  # 本端 2024，对端 2025"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: shared secret 不一致
+    probability: 0.7
+    evidence: []
+    verify: test aaa server R1
+    fix: 同步 shared key
+  - rank: 2
+    cause: RADIUS 超时
+    probability: 0.3
+    evidence: []
+    verify: show aaa stats
+    fix: 调 timeout
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/support/aaa-radius-key
+    version: IOS-XE-17.09
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 aaa
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

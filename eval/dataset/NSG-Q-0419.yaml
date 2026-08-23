@@ -1,0 +1,50 @@
+id: NSG-Q-0419
+title: BGP allow-as-in 漏（华为 VRP-8.180，CE 间重复 AS）
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 4
+tags:
+- bgp
+- allow-as-in
+- as-path
+input:
+  symptom: BGP 路由不优
+  device_info:
+    model: ''
+    version: VRP-8.180
+    interfaces: []
+  evidence:
+  - config_snippet: "bgp 65001\n peer 10.1.1.2 as-number 65001"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: allow-as-in 缺
+    probability: 0.7
+    evidence: []
+    verify: display bgp routing-table
+    fix: peer 10.1.1.2 allow-as-in 1
+  - rank: 2
+    cause: as-path loop 触发
+    probability: 0.3
+    evidence: []
+    verify: display bgp peer verbose
+    fix: 重启 peer
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/vrp-bgp-allow-as-in
+    version: VRP-8.180
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 bgp
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

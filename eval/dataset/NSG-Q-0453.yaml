@@ -1,0 +1,50 @@
+id: NSG-Q-0453
+title: MACsec CAK 错（Cisco IOS-XE 17）
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 5
+tags:
+- macsec
+- cak
+- mka
+input:
+  symptom: MACsec 密钥协商失败
+  device_info:
+    model: ''
+    version: IOS-XE-17.09
+    interfaces: []
+  evidence:
+  - config_snippet: "key chain KC1 macsec\n key 1000\n  cryptographic-algorithm aes-128-cmac\n # ⚠️ 漏 CKN"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: MACsec 漏 CKN/CAK 配对
+    probability: 0.7
+    evidence: []
+    verify: show macsec
+    fix: 正确配 CAK
+  - rank: 2
+    cause: MKA priority 错
+    probability: 0.3
+    evidence: []
+    verify: show mka
+    fix: 修 priority
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/support/macsec-mka
+    version: IOS-XE-17.09
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 macsec
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

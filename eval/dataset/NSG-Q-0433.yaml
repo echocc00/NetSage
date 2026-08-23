@@ -1,0 +1,50 @@
+id: NSG-Q-0433
+title: OSPF 卡 Init 后死掉（华为 VRP-8.180，authentication key-id 错配）
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 3
+tags:
+- ospf
+- authentication
+- key-id
+input:
+  symptom: OSPF 邻居反复 Init/Dead
+  device_info:
+    model: ''
+    version: VRP-8.180
+    interfaces: []
+  evidence:
+  - config_snippet: "ospf 1\n authentication-mode md5 1 plain NetSys@2024"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: md5 key-id 对端 2
+    probability: 0.7
+    evidence: []
+    verify: display ospf interface
+    fix: 统一 key-id 1
+  - rank: 2
+    cause: md5 key 一致 key-id 错
+    probability: 0.3
+    evidence: []
+    verify: display ospf peer
+    fix: 检查双方 key-id
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/vrp-ospf-md5
+    version: VRP-8.180
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 ospf
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启
