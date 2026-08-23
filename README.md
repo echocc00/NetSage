@@ -44,6 +44,8 @@
 | RBAC | ✅ | 五级（viewer/operator/engineer/admin/auditor，等保三权分立） |
 
 ## 快速开始
+> 📘 想要 **5 分钟完整跑通**?[看 `docs/getting-started.md`](docs/getting-started.md) — 涵盖 docker / 数据库初始化 / 验证清单。
+
 
 ### 环境要求
 
