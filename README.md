@@ -92,18 +92,76 @@ doc/                  技术方案 + 开发计划 + Phase 规划
 
 ## 架构
 
-```
-React 前端（AntD + React Flow）
-        │ REST
-FastAPI 后端网关（认证 / RBAC / 限流 / 审计）
-        │
-Agent 编排层（8 Agent · Sequential/LangGraph 后端）
-  └─ RAG 检索（pgvector）+ 三道闸（仿真+校验+审批）
-        │
-设备接入层（NAPALM / netmiko / scrapli · 多厂商）
-SourceOfTruth（NetBox 包装 / Nautobot 集成 · 双适配器）
-        │
-PostgreSQL + pgvector / Redis / Vault / 对象存储
+```mermaid
+flowchart TB
+    classDef frontend fill:#083344,stroke:#22d3ee,color:#fff
+    classDef backend fill:#064e3b,stroke:#34d399,color:#fff
+    classDef device fill:#7c2d12,stroke:#fbbf24,color:#fff
+    classDef storage fill:#4c1d95,stroke:#a78bfa,color:#fff
+    classDef security fill:#881337,stroke:#fb7185,color:#fff
+    classDef external fill:#1e293b,stroke:#94a3b8,color:#fff
+
+    Operator[("👤 运维人员<br/>Network Engineers")]:::external
+
+    subgraph Frontend["React 前端 (AntD + React Flow)"]
+        UI_Device[设备清单]:::frontend
+        UI_Design[设计工坊]:::frontend
+        UI_Trouble[排障]:::frontend
+        UI_Approve[变更审批]:::frontend
+    end
+
+    Gateway["FastAPI 网关<br/>(认证 / RBAC / 限流 / 审计)"]:::backend
+
+    subgraph AgentLayer["Agent 编排层 (8 Agent · LangGraph)"]
+        Planner[planner]:::backend
+        ConfigEng[config_engineer]:::backend
+        Validator[validator]:::backend
+        TroubleShooter[troubleshooter]:::backend
+        Deploy[deploy]:::backend
+        Observer[observer]:::backend
+        SecAuditor[security_auditor]:::backend
+        Compliance[compliance]:::backend
+    end
+
+    subgraph ThreeGates["三道闸引擎 (写通道保护)"]
+        Gate1["① Containerlab 仿真"]:::security
+        Gate2["② Batfish 校验"]:::security
+        Gate3["③ 人工审批 + 快照回滚"]:::security
+    end
+
+    MCPLayer["MCP Servers<br/>(containerlab · batfish · napalm<br/>netbox · suzieq · nautobot)"]:::frontend
+
+    subgraph DeviceLayer["设备接入层 (NAPALM / netmiko / scrapli)"]
+        Huawei[华为 VRP]:::device
+        Cisco[Cisco IOS-XE]:::device
+        H3C[H3C / Juniper]:::device
+        Arista[Arista]:::device
+    end
+
+    SoT["Source of Truth<br/>NetBox (包装) + Nautobot (Adapter)"]:::storage
+
+    subgraph Storage["存储层"]
+        PG[("PostgreSQL + pgvector<br/>RAG 知识库")]:::storage
+        Redis[("Redis<br/>Vault")]:::storage
+    end
+
+    Obs["可观测层<br/>SUZIEQ Poller<br/>ObserverAgent + Assert"]:::storage
+
+    Operator -->|HTTPS| Gateway
+    Gateway --> Frontend
+    Gateway --> AgentLayer
+
+    AgentLayer -.->|写通道<br/>审批前| ThreeGates
+    ThreeGates -.->|审批后下发| DeviceLayer
+    AgentLayer -->|读通道| DeviceLayer
+    DeviceLayer --> SoT
+
+    MCPLayer --> ThreeGates
+    MCPLayer --> AgentLayer
+
+    AgentLayer <--> Storage
+    SoT <--> Storage
+    Observer --> Obs
 ```
 
 ## 安全边界
