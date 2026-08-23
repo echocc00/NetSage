@@ -1,0 +1,23 @@
+# huawei_vrp/static_route/default 模板元数据
+template_id: huawei_vrp_static_route_default
+vendor: huawei
+os: vrp
+version_min: "8.0"
+version_max: "8.999"
+protocol: static_route
+feature: default
+input_schema:
+  - { name: dest, type: string, required: true,
+      desc: "目的 IP/子网，0.0.0.0 表示默认" }
+  - { name: mask, type: string, required: false,
+      desc: "默认 255.255.255.255（host）/ 0（default）" }
+  - { name: next_hop, type: string, required: true,
+      desc: "下一跳 IP" }
+  - { name: preference, type: int, required: false,
+      desc: "路由优先级 1-255，默认 60" }
+  - { name: description, type: string, required: false }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：华为 VRP 8.x Static Route Configuration"
+reviewers: []
+last_reviewed: "2026-08-23"

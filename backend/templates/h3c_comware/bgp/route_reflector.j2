@@ -1,0 +1,16 @@
+bgp {{ local_asn }}
+  router-id {{ router_id }}
+  group {{ group_name }} internal
+  peer {{ group_name }} reflect-client
+  peer {{ group_name }} next-hop-local
+  #
+  undo peer {{ group_name }} next-hop-unchanged
+  #
+{% for client in clients %}
+  peer {{ client.address }} group {{ group_name }} as-number {{ client.asn }}
+{% endfor %}
+#
+ipv4-family unicast
+  peer {{ group_name }} enable
+  peer {{ group_name }} reflect-client
+  peer {{ group_name }} next-hop-local

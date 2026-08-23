@@ -1,0 +1,22 @@
+# huawei_vrp/interface/vlan 模板元数据
+template_id: huawei_vrp_interface_vlan
+vendor: huawei
+os: vrp
+version_min: "8.0"
+version_max: "8.999"
+protocol: interface
+feature: vlan
+input_schema:
+  - { name: vlan_id, type: int, required: true }
+  - { name: description, type: string, required: false }
+  - { name: ip, type: string, required: true,
+      desc: "SVI IP" }
+  - { name: mask, type: string, required: true,
+      desc: "子网掩码" }
+  - { name: vrf, type: string, required: false,
+      desc: "VRF 名，默认 public" }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：华为 VRP 8.x Vlanif Configuration"
+reviewers: []
+last_reviewed: "2026-08-23"

@@ -1,0 +1,32 @@
+# cisco_iosxe/vpn/ssl_remote 模板元数据
+template_id: cisco_iosxe_vpn_ssl_remote
+vendor: cisco
+os: iosxe
+version_min: "15.6(3)M"
+version_max: "17.999"
+protocol: vpn
+feature: ssl_remote
+input_schema:
+  - { name: gateway_name, type: string, required: true }
+  - { name: gateway_ip, type: string, required: true }
+  - { name: port, type: int, required: true }
+  - { name: context_name, type: string, required: true }
+  - { name: keepalive, type: int, required: false,
+      desc: "svc 客户端 keepalive 秒数" }
+  - { name: pool_name, type: string, required: true }
+  - { name: pool_start_ip, type: string, required: true }
+  - { name: pool_end_ip, type: string, required: true }
+  - { name: policy_group_name, type: string, required: true }
+  - { name: url_list_name, type: string, required: true }
+  - { name: intranet_url, type: string, required: true,
+      desc: "内网 URL 文本" }
+  - { name: intranet_path, type: string, required: true,
+      desc: "内网 URL 资源路径" }
+  - { name: interface_name, type: string, required: true }
+  - { name: local_ip, type: string, required: true }
+  - { name: netmask, type: string, required: true }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Cisco IOS-XE 17.x WebVPN Configuration"
+reviewers: []
+last_reviewed: "2026-08-23"

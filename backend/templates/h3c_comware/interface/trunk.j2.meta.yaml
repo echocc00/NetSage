@@ -1,0 +1,18 @@
+# h3c_comware/interface/trunk 模板元数据
+template_id: h3c_comware_interface_trunk
+vendor: h3c
+os: comware
+version_min: "7.1.070"
+version_max: "7.999"
+protocol: interface
+feature: trunk
+input_schema:
+  - { name: interface_name, type: string, required: true,
+      desc: "如 FortyGigE1/0/1" }
+  - { name: vlan_id, type: int, required: true }
+  - { name: native_vlan, type: int, required: false }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：H3C Comware 7 Interface Configuration"
+reviewers: []
+last_reviewed: "2026-08-23"

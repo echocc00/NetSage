@@ -1,0 +1,17 @@
+bgp {{ local_asn }}
+  router-id {{ router_id }}
+  #
+  peer {{ cluster_id }} reflect-client
+  #
+{% for client in clients %}
+  peer {{ client.address }} as-number {{ client.asn }}
+  peer {{ client.address }} group {{ group_name }}
+{% endfor %}
+#
+ipv4-family unicast
+  peer {{ group_name }} enable
+  peer {{ group_name }} reflect-client
+  peer {{ group_name }} next-hop-local
+  # reflector cluster-id 配置在 peer 行（华为语法）
+  #
+  undo peer {{ group_name }} next-hop-unchanged

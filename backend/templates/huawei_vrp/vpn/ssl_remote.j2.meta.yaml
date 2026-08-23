@@ -1,0 +1,29 @@
+# huawei_vrp/vpn/ssl_remote 模板元数据
+template_id: huawei_vrp_vpn_ssl_remote
+vendor: huawei
+os: vrp
+version_min: "8.180"
+version_max: "8.999"
+protocol: vpn
+feature: ssl_remote
+input_schema:
+  - { name: gateway_name, type: string, required: true }
+  - { name: gateway_ip, type: string, required: true,
+      desc: "SSL VPN 网关公网 IP" }
+  - { name: port, type: int, required: true,
+      desc: "SSL VPN 端口，默认 443" }
+  - { name: policy_id, type: string, required: true }
+  - { name: pool_name, type: string, required: true,
+      desc: "VDI 虚拟 IP 池名" }
+  - { name: group_name, type: string, required: true }
+  - { name: user_domain, type: string, required: true }
+  - { name: password_hash, type: string, required: true,
+      desc: "用户密码 hash 或 cipher" }
+  - { name: remote_subnet, type: string, required: true,
+      desc: "企业内网子网" }
+  - { name: remote_mask, type: string, required: true }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：华为 VRP 8.180 SSL VPN 配置指南"
+reviewers: []
+last_reviewed: "2026-08-23"

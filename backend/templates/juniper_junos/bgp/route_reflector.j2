@@ -1,0 +1,11 @@
+set routing-options router-id {{ router_id }}
+set routing-options autonomous-system {{ local_asn }}
+edit groups
+  set protocols bgp group {{ group_name }} type internal
+  set protocols bgp group {{ group_name }} local-address {{ local_address }}
+  set protocols bgp group {{ group_name }} family inet unicast
+  set protocols bgp group {{ group_name }} cluster {{ cluster_id }}
+exit
+{% for client in clients %}
+set protocols bgp group {{ group_name }} neighbor {{ client.address }}
+{% endfor %}

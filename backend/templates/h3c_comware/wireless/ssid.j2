@@ -1,0 +1,23 @@
+wlan service-template {{ service_template }}
+  ssid {{ ssid }}
+  akm {{ akm }}
+  cipher-suite {{ cipher }}
+  security-ie {{ security_ie }}
+  pre-shared-key phrase {{ psk_passphrase }}
+#
+wlan ap-group {{ ap_group_name }}
+  ap-model {{ ap_model }}
+  radio 1 type {{ radio_type_2g }}
+  radio 1 channel {{ channel_2g }}
+  radio 1 power {{ power_2g }}
+  radio 2 type {{ radio_type_5g }}
+  radio 2 channel {{ channel_5g }}
+  radio 2 power {{ power_5g }}
+#
+wlan ap ap-id {{ ap_id }} serial-id {{ ap_serial }}
+  ap-name {{ ap_name }}
+  group {{ ap_group_name }}
+#
+wlan ap {{ ap_name }} vlan {{ vlan_id }}
+wlan ap {{ ap_name }} radio 1 service-template {{ service_template }}
+wlan ap {{ ap_name }} radio 2 service-template {{ service_template }}

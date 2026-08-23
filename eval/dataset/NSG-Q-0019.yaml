@@ -1,0 +1,57 @@
+id: NSG-Q-0019
+title: BGP route-map 应用错误导致不优（思科 IOS-XE 17）
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 4
+tags:
+- bgp
+- route-map
+- policy
+- bestpath
+input:
+  symptom: show ip bgp 显示路由条目但 neighbor table 不接收（Not Adv to any peer）
+  device_info:
+    model: ASR 1001-X
+    version: IOS-XE 17.09.04a
+    interfaces:
+    - GigabitEthernet0/0/1
+  evidence:
+  - config_snippet: "router bgp 65001\n  neighbor 10.1.1.2 remote-as 65002\n  neighbor\
+      \ 10.1.1.2 route-map BLOCK in\n!\nroute-map BLOCK deny 10\n  match ip address\
+      \ prefix-list PRIVATE-RFC1918\n!\nroute-map BLOCK permit 20\n"
+  - log_lines:
+    - 'show ip bgp neighbors 10.1.1.2 advertised-routes: 无 192.168.0.0/24'
+    - 'show ip bgp: 有 192.168.0.0/24 来自 10.1.1.3 但 Not Best（被 route-map 跳过）'
+  question: 诊断 + 验证 + 修复；解释 inbound route-map vs outbound route-map 区别。
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: Route-map BLOCK 在 inbound 段 deny 匹配上，常因 prefix-list 误配置导致合法路由被丢弃
+    probability: 0.75
+    evidence:
+    - show ip prefix-list detail：PRIVATE-RFC1918 在 10.0.0.0/8 范围误扩展
+    verify: show ip prefix-list PRIVATE-RFC1918; show ip bgp neighbors 10.1.1.2 routes
+    fix: 删除错误 deny clause 或扩展 prefix-list
+  - rank: 2
+    cause: BGP bestpath policy 优先级错误（如 LP/weight）
+    probability: 0.15
+    verify: show ip bgp <prefix> detail
+    fix: 调整 route-map 增加 set local-preference
+  - rank: 3
+    cause: BGP 邻居同步或 soft-reconfig 未触发
+    probability: 0.1
+    verify: clear ip bgp 10.1.1.2 soft in
+    fix: clear soft-reconfig
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/iproute_bgp/configuration/xe-17/irg-xe-17-book/irg-route-filter.html
+    version: IOS-XE-17.09
+    title: BGP Route Filtering with Route Map
+anti_examples:
+- 请重启设备
+grading_rubric:
+  must_have:
+  - route-map deny 误命中
+  penalty:
+  - 推荐重启

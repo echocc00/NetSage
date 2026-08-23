@@ -1,0 +1,24 @@
+management ssl policy {{ policy_name }}
+  cipher-list {{ cipher_list }}
+  session-cache-timeout {{ session_cache_timeout }}
+!
+management api http-commands
+  protocol https ssl profile {{ ssl_profile }}
+!
+ip access-list {{ acl_name }}
+  permit ip any {{ remote_subnet }}/{{ remote_mask }}
+!
+aaa authorization policy {{ auth_policy_name }}
+  default authorization
+  rule {{ rule_id }} match username {{ user_name }}
+  rule {{ rule_id }} action allow
+  rule {{ rule_id }} role network-admin
+!
+radius server {{ radius_server_name }}
+  host {{ radius_ip }}
+  key {{ radius_secret }}
+!
+aaa authentication login default group radius local
+aaa accounting commands all default start-stop group radius
+!
+ip route {{ remote_subnet }}/{{ remote_mask }} {{ next_hop }}

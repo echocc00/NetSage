@@ -1,0 +1,23 @@
+# juniper_junos/interface/vlan 模板元数据
+template_id: juniper_junos_interface_vlan
+vendor: juniper
+os: junos
+version_min: "21.2"
+version_max: "22.999"
+protocol: interface
+feature: vlan
+input_schema:
+  - { name: vlan_name, type: string, required: true,
+      desc: "VLAN 名（如 vlan-10）" }
+  - { name: vlan_id, type: int, required: true }
+  - { name: description, type: string, required: false }
+  - { name: ip, type: string, required: true }
+  - { name: mask, type: int, required: true,
+      desc: "前缀长度" }
+  - { name: vrf, type: string, required: false,
+      desc: "routing-instance 名" }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Junos 21.2R1 VLAN/IRB Configuration"
+reviewers: []
+last_reviewed: "2026-08-23"

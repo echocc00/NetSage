@@ -1,0 +1,19 @@
+# cisco_iosxe/interface/trunk 模板元数据
+template_id: cisco_iosxe_interface_trunk
+vendor: cisco
+os: iosxe
+version_min: "15.6(3)M"
+version_max: "17.999"
+protocol: interface
+feature: trunk
+input_schema:
+  - { name: interface_name, type: string, required: true,
+      desc: "如 GigabitEthernet1/0/1" }
+  - { name: vlan_id, type: int, required: true,
+      desc: "允许通过的 VLAN ID（可逗号分隔）" }
+  - { name: native_vlan, type: int, required: false }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Cisco IOS-XE 17.x Switchport Configuration"
+reviewers: []
+last_reviewed: "2026-08-23"

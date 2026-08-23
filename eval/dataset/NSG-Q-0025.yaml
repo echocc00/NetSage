@@ -1,0 +1,57 @@
+id: NSG-Q-0025
+title: IPsec Phase-2 PFS 失配（思科 IOS-XE 17）
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 4
+tags:
+- ipsec
+- phase2
+- pfs
+- crypto
+- sa
+input:
+  symptom: Phase-1 UP 但 Phase-2 反复拉起失败
+  device_info:
+    model: ISR 4451-X
+    version: IOS-XE 17.09
+  evidence:
+  - log_lines:
+    - '%CRYPTO-5-IKE_PHASE2_DOWN: Phase-2 SA down'
+    - '%CRYPTO-4-IKE_DELETE_CHILD_SA_FAILURE'
+    - 'show crypto ikev2 sa: Phase-2 lifetime expired'
+  question: 诊断 + 验证 + 修复；解释 PFS 不匹配在 Phase-2 阶段的处理。
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: IKEv2 PFS group 两端不一致
+    probability: 0.7
+    evidence:
+    - crypto map show 提到 PFS group 5，对端 PFS group 14
+    verify: show crypto map; show crypto ikev2 sa detail
+    fix: "conf t\n  crypto ipsec transform-set TSET esp-aes 256 esp-sha256-hmac\n\
+      \  mode tunnel\ncrypto map CMAP 10 ipsec-isakmp\n  set pfs group14\nend\n"
+    rollback: no set pfs; 或 set pfs group5
+  - rank: 2
+    cause: Phase-2 lifetime 设置过短（默认 60 min, 生产设为 24h）
+    probability: 0.2
+    verify: show crypto ipsec sa | include lifetime
+    fix: crypto ipsec security-association lifetime seconds 86400
+  - rank: 3
+    cause: 对端无 AES256 许可
+    probability: 0.1
+    verify: show crypto engine
+    fix: 调整为 AES-128
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/security/a1/sec-a1-xe-17-9-book.html
+    version: IOS-XE-17.09
+    title: IOS-XE 17 IPsec Phase-2 PFS
+anti_examples:
+- 请重启
+- 删除 crypto map 重建
+grading_rubric:
+  must_have:
+  - PFS group 调整
+  penalty:
+  - 推荐重启

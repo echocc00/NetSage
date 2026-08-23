@@ -1,0 +1,33 @@
+wlan
+#
+wmm-profile name {{ wmm_name }} id 1
+  qos wmm
+#
+radio-profile name {{ radio_name }} id 1
+  channel {{ channel }}
+  power {{ power }}
+  radio-type {{ radio_type | default('ieee80211ax') }}
+#
+traffic-profile name {{ traffic_name }} id 1
+  forwarding-mode {{ forwarding_mode | default('direct') }}
+#
+security-profile name {{ security_name }} id 1
+  security-policy {{ security_policy }}
+  ssid {{ ssid }}
+  psk {{ psk_passphrase }}
+  psk-pass-phrase
+#
+ap-group name {{ ap_group_name }}
+  radio-profile {{ radio_name }} radio all
+  traffic-profile {{ traffic_name }} radio all
+  security-profile {{ security_name }} radio all
+#
+ap ap-id {{ ap_id }} ap-mac {{ ap_mac }}
+  ap-name {{ ap_name }}
+  ap-group {{ ap_group_name }}
+#
+vap-profile name {{ vap_name }} id 1
+  ssid {{ ssid }}
+  traffic-profile {{ traffic_name }}
+  security-profile {{ security_name }}
+  forward-mode {{ forwarding_mode | default('direct') }}

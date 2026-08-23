@@ -1,0 +1,18 @@
+# arista_eos/interface/trunk 模板元数据
+template_id: arista_eos_interface_trunk
+vendor: arista
+os: eos
+version_min: "4.24"
+version_max: "4.999"
+protocol: interface
+feature: trunk
+input_schema:
+  - { name: interface_name, type: string, required: true,
+      desc: "如 Ethernet1" }
+  - { name: vlan_id, type: int, required: true }
+  - { name: native_vlan, type: int, required: false }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Arista EOS 4.24 Switchport Configuration"
+reviewers: []
+last_reviewed: "2026-08-23"

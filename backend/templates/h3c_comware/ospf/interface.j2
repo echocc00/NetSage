@@ -1,0 +1,7 @@
+interface {{ interface_name }}
+  ospf {{ process_id }} area {{ area_id }}
+  ospf network-type {{ network_type }}
+  ospf cost {{ cost | default(1) }}
+{% if authentication is defined and authentication %}
+  ospf authentication-mode {{ auth_type }} {{ auth_key }}
+{% endif %}

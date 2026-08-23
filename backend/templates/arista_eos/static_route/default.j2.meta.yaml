@@ -1,0 +1,19 @@
+# arista_eos/static_route/default 模板元数据
+template_id: arista_eos_static_route_default
+vendor: arista
+os: eos
+version_min: "4.24"
+version_max: "4.999"
+protocol: static_route
+feature: default
+input_schema:
+  - { name: dest, type: string, required: true }
+  - { name: mask, type: int, required: false,
+      desc: "前缀长度 1-32" }
+  - { name: next_hop, type: string, required: true }
+  - { name: preference, type: int, required: false }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Arista EOS 4.24 Static Route Configuration"
+reviewers: []
+last_reviewed: "2026-08-23"

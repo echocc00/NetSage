@@ -1,0 +1,57 @@
+# huawei_vrp/vpn/ipsec_site2site 模板元数据（v2.0 27.2 必带字段）
+template_id: huawei_vrp_vpn_ipsec_site2site
+vendor: huawei
+os: vrp
+version_min: "8.0"
+version_max: "8.999"
+protocol: vpn
+feature: ipsec_site2site
+input_schema:
+  - { name: proposal_name, type: string, required: true,
+      desc: "IKE proposal 名" }
+  - { name: encryption, type: string, required: true,
+      enum: [aes-cbc-128, aes-cbc-192, aes-cbc-256, sm4-cbc],
+      desc: "IKE Phase1 加密算法" }
+  - { name: authentication, type: string, required: true,
+      desc: "Phase1 认证算法，pre-share/rsa-signature" }
+  - { name: integrity, type: string, required: true,
+      enum: [aes-xcbc-96, sha1, sha2-256, sha2-384, sha2-512],
+      desc: "Phase1 integrity 算法（PRF）" }
+  - { name: dh_group, type: string, required: true,
+      enum: [group1, group2, group5, group14, group15, group16] }
+  - { name: peer_name, type: string, required: true,
+      desc: "IKE peer 名称" }
+  - { name: pre_shared_key, type: string, required: true,
+      desc: "预共享密钥（cipher 标识表示已加密）" }
+  - { name: remote_ip, type: string, required: true,
+      desc: "对端网关 IP" }
+  - { name: ipsec_proposal_name, type: string, required: true,
+      desc: "IPsec proposal 名" }
+  - { name: encapsulation_mode, type: string, required: false,
+      enum: [tunnel, transport], default: tunnel }
+  - { name: esp_auth, type: string, required: true,
+      enum: [sha1, sha2-256, sha2-384] }
+  - { name: esp_encrypt, type: string, required: true,
+      enum: [aes-cbc-128, aes-cbc-256, aes-gcm-128, aes-gcm-256] }
+  - { name: policy_name, type: string, required: true }
+  - { name: sequence, type: int, required: true,
+      desc: "策略序号 1-10000" }
+  - { name: acl_number, type: int, required: true,
+      desc: "用 ACL 标识感兴趣流" }
+  - { name: interface_name, type: string, required: true,
+      desc: "应用 IPsec 策略的接口（通常是公网接口）" }
+  - { name: local_ip, type: string, required: true,
+      desc: "本地接口 IP/掩码" }
+  - { name: netmask, type: string, required: true,
+      desc: "子网掩码，如 255.255.255.252" }
+  - { name: remote_subnet, type: string, required: true,
+      desc: "对端内网子网" }
+  - { name: remote_mask, type: string, required: true,
+      desc: "对端子网掩码" }
+  - { name: next_hop, type: string, required: true,
+      desc: "下一跳" }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：华为 VRP 8.x IPsec 配置指南"
+reviewers: []
+last_reviewed: "2026-08-23"

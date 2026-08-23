@@ -1,0 +1,115 @@
+id: NSG-Q-0016
+title: "VXLAN EVPN MAC/IP 不学习（思科 NX-OS 9.3，BGP update-source 错配）"
+category: troubleshoot
+vendor: cisco
+version: NX-OS-9.3
+difficulty: 4
+tags: [vxlan, evpn, type-2, bgp, update-source, nve]
+
+input:
+  symptom: "同 VLAN 同 VNI 同 Leaf 内通信正常；跨 Leaf ping 不通（VM1 ping VM2）。NVE 状态 Up 但未收到任何 Type-2 路由。"
+  device_info:
+    model: Nexus 9336C-FX2
+    version: NX-OS 9.3(8)
+    interfaces: [Ethernet1/1, Loopback0]
+  evidence:
+    - config_snippet: |
+        # Leaf-A
+        interface nve1
+          source-interface Loopback0
+          host-reachability protocol bgp
+          member vni 10010
+            ingress-replication protocol bgp
+        !
+        router bgp 65000
+          address-family l2vpn evpn
+            neighbor 10.1.1.2 activate
+            neighbor 10.1.1.2 send-community both
+    - config_snippet: |
+        # Spine（注意 update-source 错）
+        router bgp 65000
+          neighbor 10.1.1.1 remote-as 65000
+          neighbor 10.1.1.1 update-source Ethernet1/1    # ⚠️ 应是 Loopback0
+          neighbor 10.1.1.2 remote-as 65000
+          neighbor 10.1.1.2 update-source Loopback0
+    - log_lines:
+        - "show bgp l2vpn evpn summary: neighbor 10.1.1.1 state=Idle (no route to peer)"
+        - "show ip route: 路由表中没有 10.1.1.1 (Loopback) 的路径"
+        - "show nve peer: state=Down for peer 10.0.0.1 (因为它实际上是 Ethernet)"
+  question: "请给出根因假设 + 验证步骤 + 修复方案；解释为什么 iBGP 用 update-source Loopback 是生产推荐。"
+
+expected_output:
+  root_causes:
+    - rank: 1
+      cause: "Spine 与 Leaf-A 的 BGP 邻居 update-source 错配（Ethernet1/1 vs Loopback0），导致 iBGP 邻居 Idle"
+      probability: 0.7
+      evidence:
+        - "show bgp l2vpn evpn summary 显示 neighbor 10.1.1.1 state=Idle"
+        - "10.1.1.1 是 Leaf-A 的 Loopback0，但 spine 的 neighbor 配成 update-source Ethernet1/1 → 实际 BGP 来源地址是 spine 物理接口（如 10.255.1.1），Leaf-A 上若没配 neighbor ebgp-side ip 接受，且 update-source 的 IP 不能到对端就 Idle"
+        - "对端实际配 邻居 IP 是 spine 物理接口而非 Loopback0"
+      verify: |
+        # 1. 看 BGP 邻居详细状态
+        show bgp l2vpn evpn summary
+        show ip bgp neighbors 10.1.1.1
+        # 2. 看路由表确认 10.1.1.1 可达
+        show ip route 10.1.1.1
+        # 3. NVE 状态
+        show nve peer
+      fix: |
+        # 修改 Spine 配 update-source Loopback0
+        conf t
+          router bgp 65000
+          neighbor 10.1.1.1
+            update-source Loopback0
+        end
+        # 也可统一所有 EVPN iBGP 邻居都用 Loopback0
+        neighbor 10.1.1.1 update-source Loopback0
+        neighbor 10.1.1.2 update-source Loopback0
+      rollback: |
+        conf t
+          router bgp 65000
+          neighbor 10.1.1.1 update-source Ethernet1/1
+        end
+    - rank: 2
+      cause: "Evpn instance 配置不一致（Leaf-A 上有 EVI 10 配 RT，spine 上 RR 没对应 RT）"
+      probability: 0.15
+      verify: "show bgp l2vpn evpn | include RT"
+      fix: "统一 RT 格式"
+    - rank: 3
+      cause: "MTU 大小小于 VXLAN 包触发丢包"
+      probability: 0.1
+      verify: "show interface | include MTU；show forwarding route summary"
+      fix: "接口 MTU 调到 9216+"
+    - rank: 4
+      cause: "NVE 互联路径阻断"
+      probability: 0.05
+      verify: "ping 10.1.1.1 source Loopback0"
+      fix: "查 IGP，触发 Spine-Leaf 全互联 IGP"
+  references:
+    - type: vendor_doc
+      url: https://www.cisco.com/c/en/us/td/docs/switches/datacenter/sw/nx-os/nxcli/vxlan/9336c-fx2/b_nxcli_vxlan_9336c_fx2.html
+      version: NX-OS 9.3
+      title: "Cisco Nexus 9336C-FX2 VXLAN Configuration"
+    - type: vendor_kb
+      url: https://www.cisco.com/c/en/us/support/docs/switches/nexus-9000-series-switches/213972-vxlan-evpn-best-practices.html
+      title: "VXLAN EVPN Best Practices - BGP update-source"
+
+anti_examples:
+  - "BGP 邻居 Idle 是因为 protocol 没启，请重新配 feature nv overlay"
+  - "删除 nve interface 重建"
+  - "请重启 Leaf-A"
+
+grading_rubric:
+  must_have:
+    - "top 根因为 update-source 错配"
+    - "修复为 update-source Loopback0"
+    - "提供完整 BGP 邻居诊断命令链路"
+    - "解释 iBGP 推荐用 Loopback 的原因"
+  nice_to_have:
+    - "≥3 候选根因"
+    - "含 rollback"
+    - "提及生产环境 RR/Leaf iBGP 全互联用 Loopback"
+  penalty:
+    - "推荐重启设备"
+    - "删除 nve interface"
+    - "未提及 update-source 修改"

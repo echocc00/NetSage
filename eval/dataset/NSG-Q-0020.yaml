@@ -1,0 +1,56 @@
+id: NSG-Q-0020
+title: OSPF TWO-WAY 状态（思科 IOS-XE 17，DR/BDR 选举）
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 3
+tags:
+- ospf
+- dr-bdr
+- two-way
+- broadcast
+input:
+  symptom: OSPF Neighbor 卡在 TWO-WAY，部分 peer 是 DROther
+  device_info:
+    model: Catalyst 9500
+    version: IOS-XE 17.09
+    interfaces:
+    - GigabitEthernet1/0/1
+  evidence:
+  - log_lines:
+    - 'show ip ospf neighbor: 大多数 DROther 关系，TWO-WAY 状态占 60%'
+    - 'show ip ospf interface g1/0/1: state DROther'
+  question: 诊断 + 验证 + 修复；解释 BROADCAST 链路下哪些设备应该是 DR。
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: DR/BDR 选举在 BROADCAST 类型上是正常的（不是故障）—— DROther 仅与 DR/BDR 达到 FULL，与其他 DROther
+      仅 TWO-WAY
+    probability: 0.65
+    evidence:
+    - OSPF BROADCAST 类型中 DROther 之间只能 TWO-WAY
+    - 'RFC 2328: section 7.3'
+    verify: show ip ospf neighbor | include FULL/TWO-WAY; show ip ospf interface
+    fix: 无需修复（这是正常设计）。如果是 P2P 链路却显示 TWO-WAY，那是 network-type 配置错误
+  - rank: 2
+    cause: 同一接口 non-broadcast 类型但用 BROADCAST 期望 FULL
+    probability: 0.2
+    verify: show ip ospf interface | include Network
+    fix: ip ospf network broadcast
+  - rank: 3
+    cause: area type 配置为 stub 缺省不发 type-5 LSA
+    probability: 0.15
+    verify: show ip ospf | include Stub
+    fix: no stub
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/iproute_ospf/configuration/xe-17/iro-xe-17-book.html
+    version: IOS-XE-17.09
+    title: OSPF Neighbor States
+anti_examples:
+- TWO-WAY 是故障，强制所有邻居为 FULL
+grading_rubric:
+  must_have:
+  - 明确告诉用户 DROther TWO-WAY 是 design-by-design 而非故障
+  penalty:
+  - 推荐重启

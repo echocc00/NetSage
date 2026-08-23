@@ -1,0 +1,4 @@
+ip route {% if dest == '0.0.0.0' %}0.0.0.0 0.0.0.0{% else %}{{ dest }} {{ mask | default('255.255.255.255') }}{% endif %} {{ next_hop }}{% if preference %} {{ preference }}{% endif %}
+{% if description is defined and description %}
+  # {{ description }}
+{% endif %}

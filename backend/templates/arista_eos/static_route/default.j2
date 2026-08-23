@@ -1,0 +1,1 @@
+ip route {% if dest == '0.0.0.0' %}0.0.0.0/0{% else %}{{ dest }}/{{ mask | default('32') }}{% endif %} {{ next_hop }}{% if preference %} {{ preference }}{% endif %}

@@ -1,0 +1,28 @@
+# juniper_junos/ospf/interface 模板元数据
+template_id: juniper_junos_ospf_interface
+vendor: juniper
+os: junos
+version_min: "21.2"
+version_max: "22.999"
+protocol: ospf
+feature: interface
+input_schema:
+  - { name: router_id, type: string, required: true }
+  - { name: ls_name, type: string, required: true,
+      desc: "logical-systems 名" }
+  - { name: area_id, type: int, required: true,
+      desc: "OSPF area 号" }
+  - { name: interface_name, type: string, required: true,
+      desc: "如 ge-0/0/0" }
+  - { name: network_type, type: string, required: true,
+      enum: [broadcast, point-to-point, point-to-multipoint, nbma] }
+  - { name: cost, type: int, required: false,
+      desc: "metric" }
+  - { name: authentication, type: bool, required: false }
+  - { name: ospf_area_md5_key_id, type: int, required: false }
+  - { name: auth_key, type: string, required: false }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Junos 21.2R1 OSPF Interface"
+reviewers: []
+last_reviewed: "2026-08-23"

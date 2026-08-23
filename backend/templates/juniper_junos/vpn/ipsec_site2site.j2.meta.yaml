@@ -1,0 +1,36 @@
+# juniper_junos/vpn/ipsec_site2site 模板元数据
+template_id: juniper_junos_vpn_ipsec_site2site
+vendor: juniper
+os: junos
+version_min: "21.2"
+version_max: "22.999"
+protocol: vpn
+feature: ipsec_site2site
+input_schema:
+  - { name: proposal_name, type: string, required: true }
+  - { name: integrity, type: string, required: true,
+      enum: [sha-256, sha1-96, sha-384] }
+  - { name: encryption, type: string, required: true,
+      enum: [aes-cbc, aes-gcm] }
+  - { name: key_size, type: int, required: true }
+  - { name: dh_group, type: int, required: true }
+  - { name: policy_name, type: string, required: true }
+  - { name: pre_shared_key, type: string, required: true }
+  - { name: ipsec_proposal_name, type: string, required: true }
+  - { name: esp_auth, type: string, required: true }
+  - { name: esp_encrypt, type: string, required: true }
+  - { name: vpn_name, type: string, required: true }
+  - { name: gateway_name, type: string, required: true }
+  - { name: local_ip, type: string, required: true }
+  - { name: remote_ip, type: string, required: true }
+  - { name: interface_name, type: string, required: true }
+  - { name: netmask, type: string, required: true }
+  - { name: service_domain, type: string, required: false,
+      default: any }
+  - { name: remote_subnet, type: string, required: true }
+  - { name: next_hop, type: string, required: true }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Junos 21.2R1 IPsec VPN Configuration"
+reviewers: []
+last_reviewed: "2026-08-23"

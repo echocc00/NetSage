@@ -1,0 +1,23 @@
+wireless mobility group name {{ mobility_group_name }}
+wireless mobility mac-address {{ mobility_mac }}
+wireless mobility domain member {{ domain_name }}
+!
+wireless profile air-time-fairness {{ atf_name }}
+  fair-802.11n
+  fair-802.11ax
+  idle-time {{ idle_time }}
+!
+ap {{ ap_name }}
+  ap-group {{ ap_group_name }}
+  site-tag {{ site_tag_name }}
+  policy-tag {{ policy_tag_name }}
+  rf-tag {{ rf_tag_name }}
+!
+ap-group {{ ap_group_name }}
+  rf-profile {{ rf_profile_name }}
+  policy-profile {{ policy_name }}
+!
+wlan {{ wlan_id }} {{ ssid }} {{ profile_name }}
+  roam-tunnel data
+  mobility-group {{ mobility_group_name }}
+  mobility-domain {{ domain_name }}

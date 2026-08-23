@@ -1,0 +1,28 @@
+ike proposal {{ proposal_name }}
+  encryption-algorithm {{ encryption }}
+  authentication-algorithm {{ authentication }}
+  authentication-method pre-share
+  integrity-algorithm {{ integrity }}
+  dh {{ dh_group }}
+#
+ike peer {{ peer_name }}
+  pre-shared-key cipher {{ pre_shared_key }}
+  remote-address {{ remote_ip }}
+  ike-proposal {{ proposal_name }}
+#
+ipsec transform-set {{ transform_set }}
+  esp authentication-algorithm {{ esp_auth }}
+  esp encryption-algorithm {{ esp_encrypt }}
+  encapsulation-mode {{ encapsulation_mode }}
+#
+ipsec policy {{ policy_name }} {{ sequence }} isakmp
+  security acl {{ acl_number }}
+  remote-address {{ remote_ip }}
+  ike-peer {{ peer_name }}
+  transform {{ transform_set }}
+#
+interface {{ interface_name }}
+  ip address {{ local_ip }} {{ netmask }}
+  ipsec apply policy {{ policy_name }}
+#
+ip route-static {{ remote_subnet }} {{ remote_mask }} {{ next_hop }}

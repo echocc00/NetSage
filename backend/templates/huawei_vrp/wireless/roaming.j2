@@ -1,0 +1,30 @@
+wlan
+#
+wlan-group {{ wlan_group_name }}
+  roaming-mode {{ roaming_mode | default('enable') }}
+  mobility-group {{ mobility_group }}
+  mobility-domain-name {{ domain_name }}
+#
+ap-group {{ ap_group_name }}
+  radio 2.4ghz
+    channel {{ channel_24 }}
+    power {{ power_24 }}
+  radio 5ghz
+    channel {{ channel_5 }}
+    power {{ power_5 }}
+#
+ap {{ ap_mac }}
+  ap-name {{ ap_name }}
+  group {{ ap_group_name }}
+#
+wlan-security-profile name {{ security_name }} id 1
+  security-policy wpa2-psk
+  psk-pass-phrase {{ psk_passphrase }}
+#
+wlan-ssid-profile name {{ ssid_profile_name }} id 1
+  ssid {{ ssid }}
+#
+wlan-vap-profile name {{ vap_name }} id 1
+  ssid-profile {{ ssid_profile_name }}
+  security-profile {{ security_name }}
+  group {{ ap_group_name }}

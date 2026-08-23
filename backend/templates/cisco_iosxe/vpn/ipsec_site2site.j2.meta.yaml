@@ -1,0 +1,42 @@
+# cisco_iosxe/vpn/ipsec_site2site 模板元数据
+template_id: cisco_iosxe_vpn_ipsec_site2site
+vendor: cisco
+os: iosxe
+version_min: "15.6(3)M"
+version_max: "17.999"
+protocol: vpn
+feature: ipsec_site2site
+input_schema:
+  - { name: proposal_name, type: string, required: true }
+  - { name: encryption, type: string, required: true,
+      enum: [aes-cbc-128, aes-cbc-192, aes-cbc-256, aes-gcm-128, aes-gcm-256] }
+  - { name: key_size, type: int, required: false,
+      desc: "key 长度，自动从 encryption 推断" }
+  - { name: integrity, type: string, required: true,
+      enum: [sha256, sha384, sha512] }
+  - { name: dh_group, type: int, required: true,
+      enum: [14, 15, 16, 19, 20, 21, 24] }
+  - { name: policy_name, type: string, required: true }
+  - { name: keyring_name, type: string, required: true }
+  - { name: remote_ip, type: string, required: true }
+  - { name: pre_shared_key, type: string, required: true }
+  - { name: profile_name, type: string, required: true }
+  - { name: remote_subnet, type: string, required: true }
+  - { name: transform_set, type: string, required: true }
+  - { name: esp_encrypt, type: string, required: true }
+  - { name: esp_auth, type: string, required: true }
+  - { name: encapsulation_mode, type: string, required: false,
+      enum: [tunnel, transport], default: tunnel }
+  - { name: crypto_map_name, type: string, required: true }
+  - { name: seq, type: int, required: true,
+      desc: "crypto map 序号" }
+  - { name: acl_number, type: int, required: true }
+  - { name: interface_name, type: string, required: true }
+  - { name: local_ip, type: string, required: true }
+  - { name: netmask, type: string, required: true }
+  - { name: next_hop, type: string, required: true }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Cisco IOS-XE 17.x Crypto Configuration Guide"
+reviewers: []
+last_reviewed: "2026-08-23"

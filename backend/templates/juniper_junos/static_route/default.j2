@@ -1,0 +1,4 @@
+set routing-options static route {{ dest }}/{{ mask | default('32') }} next-hop {{ next_hop }} {% if preference %}metric {{ preference }}{% endif %}
+{% if description is defined and description %}
+# {{ description }}
+{% endif %}

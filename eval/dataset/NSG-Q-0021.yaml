@@ -1,0 +1,60 @@
+id: NSG-Q-0021
+title: OSPF NSSA ABR Type-7 转 Type-5 失败（华为 VRP-8.180）
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 4
+tags:
+- ospf
+- nssa
+- type-7
+- type-5
+- area-border-router
+input:
+  symptom: OSPF NSSA 区引入了外部路由，但其他区域仍学不到
+  device_info:
+    model: CE12808
+    version: VRP-8.180
+  evidence:
+  - log_lines:
+    - 'display ospf lsdb: NSSA 区域有 Type-7 路由'
+    - '其他非 NSSA 区 display ospf lsdb: 没有 Type-5 路由'
+    - ABR 设备 display ospf abr：存在
+  question: 诊断 + 验证 + 修复；解释 NSSA ABR 的 P-bit 转发规则。
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: NSSA ABR 未设置 NSSA 边界（忘记 area nssa 命令）
+    probability: 0.6
+    evidence:
+    - display current-configuration configuration ospf：area 1 上没有 nssa 关键字
+    verify: display ospf area 1; display current-configuration configuration ospf
+    fix: ospf 1 → area 0.0.0.1 → nssa → quit
+  - rank: 2
+    cause: ABR 上故意设置 no-summary 抑制 Type-3 时，其他普通区（被 stub 阻挡）也学不到
+    probability: 0.2
+    verify: display ospf abr；show area stub no-summary 配置
+    fix: no nssa default-route-advertise always
+  - rank: 3
+    cause: Type-7 路由 metric-type 2，Type-5 后变成 Type-1 成本计算错
+    probability: 0.1
+    verify: display ospf lsdb asbr-summary
+    fix: 调整 metric-type
+  - rank: 4
+    cause: ABR 上 OSPF 进程路由策略 suppress
+    probability: 0.1
+    verify: display ip ip-prefix；display route-policy
+    fix: 删除 deny
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/enterprise/zh/doc/EDOC1100188312
+    version: VRP-8.180
+    title: OSPF NSSA 区域章节
+anti_examples:
+- 请重启设备
+- 删除 OSPF 全重配
+grading_rubric:
+  must_have:
+  - 解释 ABR 的 P-bit 必须置 1 才转 Type-7→Type-5
+  penalty:
+  - 推荐整机重启

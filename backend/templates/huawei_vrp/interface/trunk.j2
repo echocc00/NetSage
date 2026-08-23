@@ -1,0 +1,9 @@
+vlan {{ vlan_id }}
+#
+interface {{ interface_name }}
+  port link-type trunk
+  port trunk allow-pass vlan {{ vlan_id }}
+{% if native_vlan is defined and native_vlan %}
+  port trunk pvid vlan {{ native_vlan }}
+{% endif %}
+  undo port trunk allow-pass vlan 1

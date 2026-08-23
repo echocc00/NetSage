@@ -1,0 +1,6 @@
+interface {{ interface_name }}
+  port link-type trunk
+  port trunk permit vlan {{ vlan_id }}
+{% if native_vlan is defined and native_vlan %}
+  port trunk pvid vlan {{ native_vlan }}
+{% endif %}

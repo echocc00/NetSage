@@ -1,0 +1,13 @@
+ssl vpn gateway {{ gateway_name }}
+  ip {{ gateway_ip }} port {{ port }}
+  service enable
+#
+ssl vpn policy {{ policy_name }}
+  client-ip-pool {{ pool_name }} {{ pool_start_ip }} {{ pool_end_ip }}
+  gateway {{ gateway_name }}
+#
+ssl vpn user @{{ user_domain }}
+  password cipher {{ password_hash }}
+  group default
+#
+ip route-static {{ remote_subnet }} {{ remote_mask }} virtual-pool {{ pool_name }}

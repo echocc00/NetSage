@@ -1,0 +1,36 @@
+# huawei_vrp/wireless/ssid 模板元数据
+template_id: huawei_vrp_wireless_ssid
+vendor: huawei
+os: vrp
+version_min: "8.180"
+version_max: "8.999"
+protocol: wireless
+feature: ssid
+input_schema:
+  - { name: wmm_name, type: string, required: false }
+  - { name: radio_name, type: string, required: true }
+  - { name: channel, type: int, required: true,
+      desc: "信道号 1-165" }
+  - { name: power, type: int, required: true,
+      desc: "1-100（百分比）" }
+  - { name: radio_type, type: string, required: false,
+      enum: [ieee80211n, ieee80211ac, ieee80211ax],
+      default: ieee80211ax }
+  - { name: traffic_name, type: string, required: true }
+  - { name: forwarding_mode, type: string, required: false,
+      enum: [direct, tunnel], default: direct }
+  - { name: security_name, type: string, required: true }
+  - { name: security_policy, type: string, required: true,
+      enum: [wpa2-psk, wpa3-sae, wpa2-psk-aes] }
+  - { name: ssid, type: string, required: true }
+  - { name: psk_passphrase, type: string, required: true }
+  - { name: ap_group_name, type: string, required: true }
+  - { name: ap_id, type: int, required: true }
+  - { name: ap_mac, type: string, required: true }
+  - { name: ap_name, type: string, required: true }
+  - { name: vap_name, type: string, required: true }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：华为 VRP 8.180 WLAN/AC 配置"
+reviewers: []
+last_reviewed: "2026-08-23"

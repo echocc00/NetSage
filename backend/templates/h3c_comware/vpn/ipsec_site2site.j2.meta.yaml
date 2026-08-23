@@ -1,0 +1,40 @@
+# h3c_comware/vpn/ipsec_site2site 模板元数据
+template_id: h3c_comware_vpn_ipsec_site2site
+vendor: h3c
+os: comware
+version_min: "7.1.070"
+version_max: "7.999"
+protocol: vpn
+feature: ipsec_site2site
+input_schema:
+  - { name: proposal_name, type: string, required: true }
+  - { name: encryption, type: string, required: true,
+      enum: [aes-cbc-128, aes-cbc-192, aes-cbc-256, sm4-cbc, 3des-cbc] }
+  - { name: authentication, type: string, required: true,
+      enum: [pre-share, rsa-signature] }
+  - { name: integrity, type: string, required: true,
+      enum: [aes-xcbc-96, sha1, sha2-256, sha2-384, sha2-512] }
+  - { name: dh_group, type: string, required: true,
+      enum: [group1, group2, group5, group14, group15, group16] }
+  - { name: peer_name, type: string, required: true }
+  - { name: pre_shared_key, type: string, required: true }
+  - { name: remote_ip, type: string, required: true }
+  - { name: transform_set, type: string, required: true }
+  - { name: esp_auth, type: string, required: true }
+  - { name: esp_encrypt, type: string, required: true }
+  - { name: encapsulation_mode, type: string, required: true,
+      enum: [tunnel, transport] }
+  - { name: policy_name, type: string, required: true }
+  - { name: sequence, type: int, required: true }
+  - { name: acl_number, type: int, required: true }
+  - { name: interface_name, type: string, required: true }
+  - { name: local_ip, type: string, required: true }
+  - { name: netmask, type: string, required: true }
+  - { name: remote_subnet, type: string, required: true }
+  - { name: remote_mask, type: string, required: true }
+  - { name: next_hop, type: string, required: true }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：H3C Comware 7 IPsec 配置指导"
+reviewers: []
+last_reviewed: "2026-08-23"

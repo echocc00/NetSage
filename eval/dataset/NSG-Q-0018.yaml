@@ -1,0 +1,55 @@
+id: NSG-Q-0018
+title: "BGP 邻居 DOWN due to admin-shutdown（华为 VRP-8.180）"
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 2
+tags: [bgp, shutdown, flap, admin]
+
+input:
+  symptom: "BGP-5-ADJCHG: Neighbor 10.1.1.2 Down - admin-shutdown"
+  device_info:
+    model: CE5880
+    version: VRP-8.180
+    interfaces: [10GE1/0/1]
+  evidence:
+    - log_lines:
+        - "%%01BGP/3/STATE_CHG(l): to Idle, reason: admin-shutdown"
+        - "对端未收到任何期望的 keepalive"
+  question: "请诊断 admin-shutdown 的可能来源 + 验证步骤 + 修复方案。"
+
+expected_output:
+  root_causes:
+    - rank: 1
+      cause: "本端配置了 peer ignore 或 peer shutdown"
+      probability: 0.7
+      evidence:
+        - "STATE_CHG reason: admin-shutdown"
+      verify: "display current-configuration configuration bgp | include peer"
+      fix: "bgp 65001 -> undo peer 10.1.1.2 ignore，或 undo peer 10.1.1.2 shutdown"
+      rollback: "重新配置 shutdown 命令"
+    - rank: 2
+      cause: "对端发来 NOTIFICATION code 2 (Admin Shutdown)"
+      probability: 0.2
+      verify: "display bgp peer 10.1.1.2 verbose"
+      fix: "协调对端恢复"
+    - rank: 3
+      cause: "本端限速/路由策略触发邻居 protective shutdown"
+      probability: 0.1
+      verify: "display traffic-policy applied-record"
+      fix: "调整或 disable limit"
+  references:
+    - type: vendor_doc
+      url: https://support.huawei.com/enterprise/zh/doc/EDOC1100188293
+      version: VRP-8.180
+      title: "VRP BGP Peer Ignore and Shutdown"
+
+anti_examples:
+  - "请重启设备"
+  - "删除 BGP 进程"
+
+grading_rubric:
+  must_have:
+    - "admin-shutdown 来源有 3 种：peer ignore / 对端 NOTIF / 本端限速"
+  penalty:
+    - "推荐重启"

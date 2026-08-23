@@ -1,0 +1,19 @@
+set security ike proposal {{ proposal_name }} authentication-method pre-shared-keys
+set security ike proposal {{ proposal_name }} authentication-algorithm {{ integrity }}
+set security ike proposal {{ proposal_name }} encryption-algorithm {{ encryption }} {{ key_size }}
+set security ike proposal {{ proposal_name }} dh-group {{ dh_group }}
+set security ike policy {{ policy_name }} proposals {{ proposal_name }}
+set security ike policy {{ policy_name }} pre-shared-key ascii-text {{ pre_shared_key }}
+set security ipsec proposal {{ ipsec_proposal_name }} protocol esp
+set security ipsec proposal {{ ipsec_proposal_name }} authentication-algorithm {{ esp_auth }}
+set security ipsec proposal {{ ipsec_proposal_name }} encryption-algorithm {{ esp_encrypt }}
+set security ipsec policy {{ policy_name }} proposals {{ ipsec_proposal_name }}
+set security ipsec vpn {{ vpn_name }} ike gateway {{ gateway_name }} local-address {{ local_ip }}
+set security ipsec vpn {{ vpn_name }} ike gateway {{ gateway_name }} {{ remote_ip }}
+set security ipsec vpn {{ vpn_name }} ike ipsec-policy {{ policy_name }}
+set security gateway {{ gateway_name }} ike policy {{ policy_name }} local-address {{ local_ip }}
+set security gateway {{ gateway_name }} ike policy {{ policy_name }} remote-address {{ remote_ip }}
+set security gateway {{ gateway_name }} ipsec-policy {{ policy_name }}
+set interfaces {{ interface_name }} unit 0 family inet address {{ local_ip }}/{{ netmask }}
+set interfaces {{ interface_name }} unit 0 family inet service domain {{ service_domain }}
+set routing options static route {{ remote_subnet }}/{{ remote_mask }} next-hop {{ next_hop }}

@@ -1,0 +1,12 @@
+ssl-vpn gateway {{ gateway_name }}
+  ip address {{ gateway_ip }} port {{ port }}     # 网关公网 IP
+  #
+  ssl policy {{ policy_id }}
+#
+vdi-pool {{ pool_name }} 192.168.10.1 192.168.10.254
+#
+user-group {{ group_name }} group-bind default
+  user @{{ user_domain }}
+  password cipher {{ password_hash }}
+#
+ip route-static {{ remote_subnet }} {{ remote_mask }} vdi-pool {{ pool_name }}

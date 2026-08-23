@@ -1,0 +1,33 @@
+crypto ikev2 proposal {{ proposal_name }}
+  encryption {{ encryption }} {{ key_size }}
+  integrity {{ integrity }}
+  group {{ dh_group }}
+!
+crypto ikev2 policy {{ policy_name }}
+  proposal {{ proposal_name }}
+!
+crypto ikev2 keyring {{ keyring_name }}
+  peer {{ remote_ip }}
+    address {{ remote_ip }}
+    pre-shared-key {{ pre_shared_key }}
+!
+crypto ikev2 profile {{ profile_name }}
+  match identity remote address {{ remote_ip }} {{ remote_subnet }}
+  authentication remote pre-share
+  authentication local pre-share
+  keyring local {{ keyring_name }}
+!
+crypto ipsec transform-set {{ transform_set }} {{ esp_encrypt }} {{ esp_auth }}
+  mode {{ encapsulation_mode }}
+!
+crypto map {{ crypto_map_name }} {{ seq }} ipsec-isakmp
+  set peer {{ remote_ip }}
+  set transform-set {{ transform_set }}
+  set ikev2-profile {{ profile_name }}
+  match address {{ acl_number }}
+!
+interface {{ interface_name }}
+  ip address {{ local_ip }} {{ netmask }}
+  crypto map {{ crypto_map_name }}
+!
+ip route {{ remote_subnet }} {{ remote_mask }} {{ next_hop }}

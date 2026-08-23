@@ -1,0 +1,18 @@
+wlan mobility-group {{ mobility_group_name }}
+  mobility-domain {{ domain_name }}
+  member controller-ip {{ member_ip }}
+#
+wlan mobility-group {{ mobility_group_name }}
+  roaming-mode enable
+  reauth-timeout {{ reauth_timeout }}
+  roam-leverage {{ roam_leverage }}
+#
+wlan ap-group {{ ap_group_name }}
+  fast-roaming
+  roam-threshold {{ roam_threshold }}
+  sticky-client-drop-threshold {{ sticky_threshold }}
+#
+wlan ap ap-id {{ ap_id }} serial-id {{ ap_serial }}
+  ap-name {{ ap_name }}
+  group {{ ap_group_name }}
+  roaming-mode enable

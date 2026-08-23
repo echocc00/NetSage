@@ -1,0 +1,30 @@
+# cisco_iosxe/wireless/roaming 模板元数据
+template_id: cisco_iosxe_wireless_roaming
+vendor: cisco
+os: iosxe
+version_min: "17.0"
+version_max: "17.999"
+protocol: wireless
+feature: roaming
+input_schema:
+  - { name: mobility_group_name, type: string, required: true }
+  - { name: mobility_mac, type: string, required: true }
+  - { name: domain_name, type: string, required: true }
+  - { name: atf_name, type: string, required: true }
+  - { name: idle_time, type: int, required: true,
+      desc: "idle-timeout 秒" }
+  - { name: ap_name, type: string, required: true }
+  - { name: ap_group_name, type: string, required: true }
+  - { name: site_tag_name, type: string, required: true }
+  - { name: policy_tag_name, type: string, required: true }
+  - { name: rf_tag_name, type: string, required: true }
+  - { name: rf_profile_name, type: string, required: true }
+  - { name: policy_name, type: string, required: true }
+  - { name: wlan_id, type: int, required: true }
+  - { name: ssid, type: string, required: true }
+  - { name: profile_name, type: string, required: true }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Cisco IOS-XE 17.x Mobility/RF"
+reviewers: []
+last_reviewed: "2026-08-23"

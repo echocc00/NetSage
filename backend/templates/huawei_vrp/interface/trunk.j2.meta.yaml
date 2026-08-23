@@ -1,0 +1,19 @@
+# huawei_vrp/interface/trunk 模板元数据
+template_id: huawei_vrp_interface_trunk
+vendor: huawei
+os: vrp
+version_min: "8.0"
+version_max: "8.999"
+protocol: interface
+feature: trunk
+input_schema:
+  - { name: vlan_id, type: int, required: true }
+  - { name: interface_name, type: string, required: true,
+      desc: "如 10GE1/0/1" }
+  - { name: native_vlan, type: int, required: false,
+      desc: "PVID（native vlan）" }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：华为 VRP 8.x Interface Configuration"
+reviewers: []
+last_reviewed: "2026-08-23"

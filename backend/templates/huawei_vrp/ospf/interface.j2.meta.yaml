@@ -1,0 +1,28 @@
+# huawei_vrp/ospf/interface 模板元数据
+template_id: huawei_vrp_ospf_interface
+vendor: huawei
+os: vrp
+version_min: "8.0"
+version_max: "8.999"
+protocol: ospf
+feature: interface
+input_schema:
+  - { name: interface_name, type: string, required: true }
+  - { name: process_id, type: int, required: true,
+      desc: "OSPF process ID" }
+  - { name: area_id, type: string, required: true,
+      desc: "如 0.0.0.0（骨干区）" }
+  - { name: network_type, type: string, required: false,
+      enum: [broadcast, p2p, p2mp, nbma], default: broadcast }
+  - { name: cost, type: int, required: false,
+      desc: "OSPF 开销 1-65535，默认 1" }
+  - { name: authentication, type: bool, required: false,
+      desc: "是否启用接口认证" }
+  - { name: auth_type, type: string, required: false,
+      enum: [simple, md5, hmac-sha-256], default: simple }
+  - { name: auth_key, type: string, required: false }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：华为 VRP 8.x OSPF Interface"
+reviewers: []
+last_reviewed: "2026-08-23"

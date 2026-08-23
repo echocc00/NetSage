@@ -1,0 +1,25 @@
+# cisco_iosxe/ospf/interface 模板元数据
+template_id: cisco_iosxe_ospf_interface
+vendor: cisco
+os: iosxe
+version_min: "15.6(3)M"
+version_max: "17.999"
+protocol: ospf
+feature: interface
+input_schema:
+  - { name: interface_name, type: string, required: true }
+  - { name: process_id, type: int, required: true }
+  - { name: area_id, type: string, required: true }
+  - { name: network_type, type: string, required: false,
+      enum: [broadcast, point-to-point, point-to-multipoint, non-broadcast],
+      default: broadcast }
+  - { name: cost, type: int, required: false }
+  - { name: authentication, type: bool, required: false }
+  - { name: auth_type, type: string, required: false,
+      enum: [message-digest, null], default: message-digest }
+  - { name: auth_key, type: string, required: false }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Cisco IOS-XE 17.x OSPF Interface"
+reviewers: []
+last_reviewed: "2026-08-23"

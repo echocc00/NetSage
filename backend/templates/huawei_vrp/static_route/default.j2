@@ -1,0 +1,1 @@
+ip route-static {{ dest }}{% if mask %} {{ mask }}{% else %} 255.255.255.255{% endif %} {{ next_hop }} {% if preference %}preference {{ preference }}{% endif %} {% if description %}description {{ description }}{% endif %}

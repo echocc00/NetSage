@@ -1,0 +1,21 @@
+# juniper_junos/static_route/default 模板元数据
+template_id: juniper_junos_static_route_default
+vendor: juniper
+os: junos
+version_min: "21.2"
+version_max: "22.999"
+protocol: static_route
+feature: default
+input_schema:
+  - { name: dest, type: string, required: true }
+  - { name: mask, type: int, required: false,
+      desc: "前缀长度 1-32" }
+  - { name: next_hop, type: string, required: true }
+  - { name: preference, type: int, required: false,
+      desc: "metric 1-255" }
+  - { name: description, type: string, required: false }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Junos 21.2R1 Static Route Configuration"
+reviewers: []
+last_reviewed: "2026-08-23"

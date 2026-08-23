@@ -1,0 +1,24 @@
+# huawei_vrp/bgp/route_reflector 模板元数据
+template_id: huawei_vrp_bgp_route_reflector
+vendor: huawei
+os: vrp
+version_min: "8.0"
+version_max: "8.999"
+protocol: bgp
+feature: route_reflector
+input_schema:
+  - { name: local_asn, type: int, required: true }
+  - { name: router_id, type: string, required: true,
+      desc: "RR 设备的 Router ID" }
+  - { name: cluster_id, type: string, required: true,
+      desc: "Cluster ID（一般用 router-id）" }
+  - { name: group_name, type: string, required: true,
+      desc: "客户机组名" }
+  - { name: clients, type: array, required: true,
+      items: { address: string, asn: int },
+      desc: "客户端 peer 列表" }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：华为 VRP 8.x BGP RR 配置指南"
+reviewers: []
+last_reviewed: "2026-08-23"

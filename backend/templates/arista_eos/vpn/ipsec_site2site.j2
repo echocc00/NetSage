@@ -1,0 +1,16 @@
+ipsec policy {{ policy_name }}
+  sa strength {{ sa_strength }}
+  pfs {{ pfs_group }}
+  proposal {{ proposal_id }}
+  remote-gateway {{ remote_ip }}
+  local-spi {{ local_spi }}
+  remote-spi {{ remote_spi }}
+  match {{ proposal_match_info }}
+  sa lifetime {{ sa_lifetime }} {{ sa_lifetime_bytes }}
+  bind-interface {{ interface_name }}
+!
+interface {{ interface_name }}
+  ip address {{ local_ip }}/{{ netmask }}
+  ipsec policy {{ policy_name }}
+!
+ip route {{ remote_subnet }}/{{ remote_mask }} {{ next_hop }}

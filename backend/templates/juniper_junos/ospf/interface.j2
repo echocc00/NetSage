@@ -1,0 +1,8 @@
+set routing-options router-id {{ router_id }}
+edit logical-systems {{ ls_name }} protocols ospf area {{ area_id }} interface {{ interface_name }}
+  set interface-type {{ network_type }}
+  set metric {{ cost | default(1) }}
+  {% if authentication %}
+  set authentication md5 {{ ospf_area_md5_key_id }} key "{{ auth_key }}"
+  {% endif %}
+top

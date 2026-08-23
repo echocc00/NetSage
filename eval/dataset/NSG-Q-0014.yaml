@@ -1,0 +1,95 @@
+id: NSG-Q-0014
+title: "BGP 邻居反复 Up/Down（华为 VRP-8.180，MD5 认证密钥不一致）"
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 3
+tags: [bgp, authentication, md5, flap, tcp]
+
+input:
+  symptom: "BGP-5-ADJCHG: Neighbor 10.1.1.2 Down - notification: Cease/Connection Reset"
+  device_info:
+    model: NE40E-X8A
+    version: VRP-8.180
+    interfaces: [10GE1/0/3]
+  evidence:
+    - config_snippet: |
+        # spine01 侧 - 已脱敏
+        bgp 65001
+          peer 10.1.1.2 as-number 65002
+          peer 10.1.1.2 password cipher %$%$hashed1%$%$
+    - config_snippet: |
+        # leaf01 侧（对端）
+        bgp 65002
+          peer 10.1.1.1 as-number 65001
+          peer 10.1.1.2 password cipher %$%$hashed_DIFFERENT%$%$
+    - log_lines:
+        - "TCP 连接被对端 RST"
+        - "%%01BGP/3/STATE_CHG: to Idle, reason: Notification received: Cease"
+        - "display bgp peer 10.1.1.2 verbose: established 0, duration 0"
+  question: "请给出根因假设 + 验证步骤 + 修复方案；说明 BGP TCP-MD5 认证与 hold-timer 不一致在告警文本上的区别。"
+
+expected_output:
+  root_causes:
+    - rank: 1
+      cause: "BGP TCP-MD5 认证密钥两端不一致（cipher hash 不同）"
+      probability: 0.75
+      evidence:
+        - "display bgp peer verbose: Established 计数 0，反复 Idle"
+        - "Received Notification Cease（最常见就是不匹配密码触发对端 Reset TCP）"
+        - "spine 和 leaf 的 cipher 实际加解密结果不同（hash 不同即使明文相同也可能因 timestamp 引起显示差异）"
+      verify: |
+        # 1. 关键命令：用 cipher key-id 同字段对比
+        display bgp peer 10.1.1.2 verbose | include MD5
+        display current-configuration configuration bgp | include password
+        # 2. 抓 179 端口（可用 tcpdump 等同或 display tcp status）
+      fix: |
+        # 方案 A：两端都用密码 plaintext 临时重置后改一致
+        bgp 65001
+          peer 10.1.1.2 password cipher <新一致密钥>
+        # 方案 B：临时在两端 delete 密码验证，看邻居是否恢复（诊断用）
+        bgp 65001
+          undo peer 10.1.1.2 password
+      rollback: "bgp 65001 → undo peer 10.1.1.2 password；再 undo rollback 配置"
+    - rank: 2
+      cause: "中间设备 ACL/防火墙阻断 TCP 179 端口（认证机制替换后）"
+      probability: 0.1
+      verify: "display acl all；检查链路路径上防火墙"
+      fix: "在 transit 设备上放开 TCP 179 / permit tcp any eq bgp"
+    - rank: 3
+      cause: "对端有 keepalive/notify 配置不一致"
+      probability: 0.1
+      verify: "对比 timer + 抓 BGP Notification 详细信息"
+      fix: "对齐两端 timer"
+    - rank: 4
+      cause: "TCP MSS/MTU 不一致导致大包丢弃"
+      probability: 0.05
+      verify: "display interface | include MTU"
+      fix: "两端 MTU 对齐"
+  references:
+    - type: vendor_doc
+      url: https://support.huawei.com/enterprise/zh/doc/EDOC1100188293
+      version: VRP-8.180
+      title: "VRP 8.180 BGP peer password 配置"
+    - type: rfc
+      url: https://datatracker.ietf.org/doc/html/rfc5925
+      title: "The TCP Authentication Option"
+
+anti_examples:
+  - "BGP 连接 reset 是物理链不稳定，建议更换模块"
+  - "请重启 spine"
+  - "删除 BGP 进程"
+
+grading_rubric:
+  must_have:
+    - "top 根因为 TCP-MD5 密码不一致"
+    - "提供诊断步骤：先删除密码看是否恢复（业界标准排查法）"
+    - "≥1 修复命令"
+  nice_to_have:
+    - "解释 Cease Notification 在认证失败时的语义"
+    - "≥3 候选根因"
+    - "含 rollback"
+  penalty:
+    - "推荐重启设备"
+    - "删除 BGP 进程"
+    - "忽略密码不一致的诊断"

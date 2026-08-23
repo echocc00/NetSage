@@ -1,0 +1,23 @@
+# h3c_comware/ospf/interface 模板元数据
+template_id: h3c_comware_ospf_interface
+vendor: h3c
+os: comware
+version_min: "7.1.070"
+version_max: "7.999"
+protocol: ospf
+feature: interface
+input_schema:
+  - { name: interface_name, type: string, required: true }
+  - { name: process_id, type: int, required: true }
+  - { name: area_id, type: string, required: true }
+  - { name: network_type, type: string, required: false,
+      enum: [broadcast, p2p, p2mp, nbma], default: broadcast }
+  - { name: cost, type: int, required: false }
+  - { name: authentication, type: bool, required: false }
+  - { name: auth_type, type: string, required: false }
+  - { name: auth_key, type: string, required: false }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：H3C Comware 7 OSPF Interface"
+reviewers: []
+last_reviewed: "2026-08-23"

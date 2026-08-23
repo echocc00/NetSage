@@ -1,0 +1,39 @@
+# h3c_comware/wireless/ssid 模板元数据
+template_id: h3c_comware_wireless_ssid
+vendor: h3c
+os: comware
+version_min: "7.1.070"
+version_max: "7.999"
+protocol: wireless
+feature: ssid
+input_schema:
+  - { name: service_template, type: string, required: true,
+      desc: "服务模板名称（绑定 SSID）" }
+  - { name: ssid, type: string, required: true }
+  - { name: akm, type: string, required: true,
+      enum: [psk, dot1x, sae] }
+  - { name: cipher, type: string, required: true,
+      enum: [tkip, aes-ccmp, aes-gcmp-256] }
+  - { name: security_ie, type: string, required: true,
+      enum: [rsn, wpa] }
+  - { name: psk_passphrase, type: string, required: true }
+  - { name: ap_group_name, type: string, required: true }
+  - { name: ap_model, type: string, required: true }
+  - { name: radio_type_2g, type: string, required: true,
+      enum: [802.11g, 802.11n, 802.11ax] }
+  - { name: channel_2g, type: int, required: true }
+  - { name: power_2g, type: int, required: true,
+      desc: "1-100" }
+  - { name: radio_type_5g, type: string, required: true,
+      enum: [802.11ac, 802.11ax] }
+  - { name: channel_5g, type: int, required: true }
+  - { name: power_5g, type: int, required: true }
+  - { name: ap_id, type: int, required: true }
+  - { name: ap_serial, type: string, required: true }
+  - { name: ap_name, type: string, required: true }
+  - { name: vlan_id, type: int, required: true }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：H3C Comware 7 WLAN AC 配置"
+reviewers: []
+last_reviewed: "2026-08-23"

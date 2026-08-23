@@ -1,0 +1,23 @@
+# juniper_junos/bgp/route_reflector 模板元数据
+template_id: juniper_junos_bgp_route_reflector
+vendor: juniper
+os: junos
+version_min: "21.2"
+version_max: "22.999"
+protocol: bgp
+feature: route_reflector
+input_schema:
+  - { name: router_id, type: string, required: true }
+  - { name: local_asn, type: int, required: true }
+  - { name: group_name, type: string, required: true }
+  - { name: local_address, type: string, required: true,
+      desc: "RR 本端地址" }
+  - { name: cluster_id, type: string, required: true,
+      desc: "Cluster ID（一般是 router-id）" }
+  - { name: clients, type: array, required: true,
+      items: { address: string } }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Junos 21.2R1 BGP RR"
+reviewers: []
+last_reviewed: "2026-08-23"

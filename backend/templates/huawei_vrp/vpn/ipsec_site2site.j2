@@ -1,0 +1,28 @@
+ike proposal {{ proposal_name }}
+  encryption-algorithm {{ encryption }}
+  authentication-algorithm {{ authentication }}
+  authentication-method pre-share
+  integrity-algorithm {{ integrity }}
+  dh {{ dh_group }}
+#
+ike peer {{ peer_name }}
+  pre-shared-key cipher {{ pre_shared_key }}
+  remote-address {{ remote_ip }}
+  ike-proposal {{ proposal_name }}
+#
+ipsec proposal {{ ipsec_proposal_name }}
+  encapsulation-mode {{ encapsulation_mode }}
+  esp authentication-algorithm {{ esp_auth }}
+  esp encryption-algorithm {{ esp_encrypt }}
+#
+ipsec policy {{ policy_name }} {{ sequence }} isakmp
+  security acl {{ acl_number }}
+  ike-peer {{ peer_name }}
+  proposal {{ ipsec_proposal_name }}
+#
+interface {{ interface_name }}
+  ip address {{ local_ip }} {{ netmask }}
+  nat outbound 2000 address-group {{ nat_group }}    # 可选：NAT 豁免需用 rule ipsec-amount
+  ipsec policy {{ policy_name }}
+#
+ip route-static {{ remote_subnet }} {{ remote_mask }} {{ next_hop }}

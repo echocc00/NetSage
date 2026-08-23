@@ -1,0 +1,21 @@
+webvpn gateway {{ gateway_name }} ip-address {{ gateway_ip }} port {{ port }}       # 公网 IP:Port
+webvpn install svc flash:/webvpn/svc.pkg      # 客户端包
+!
+webvpn context {{ context_name }}
+  gateway {{ gateway_name }}
+  inservice
+  !
+  policy group {{ policy_group_name }}
+    functions svc-enabled
+    svc keepalive {{ keepalive }}
+    address-pool {{ pool_name }} {{ pool_start_ip }} {{ pool_end_ip }}
+  !
+  default-group-policy {{ policy_group_name }}
+  !
+  url-list {{ url_list_name }}
+    url {{ intranet_url }} {{ intranet_path }}
+  end
+!
+interface {{ interface_name }}
+  ip address {{ local_ip }} {{ netmask }}
+  webvpn bind interface

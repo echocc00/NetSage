@@ -1,0 +1,8 @@
+interface {{ interface_name }}
+  switchport trunk encapsulation dot1q
+  switchport trunk allowed vlan {{ vlan_id }}
+{% if native_vlan is defined and native_vlan %}
+  switchport trunk native vlan {{ native_vlan }}
+{% endif %}
+  switchport mode trunk
+  switchport nonegotiate

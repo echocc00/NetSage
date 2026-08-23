@@ -1,0 +1,6 @@
+vlan {{ vlan_id }}
+  description {{ description }}
+#
+interface Vlanif{{ vlan_id }}
+  ip address {{ ip }} {{ mask }}
+  vrf {{ vrf | default('public') }}

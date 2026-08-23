@@ -1,0 +1,24 @@
+ap {{ ap_name }}
+  description {{ description | default('') }}
+  ap-group {{ ap_group_name }}
+!
+wlan {{ wlan_id }} {{ ssid }} {{ profile_name }}
+!
+wireless profile policy {{ profile_name }}
+  type {{ policy_type | default('wpa2') }}
+  session-timeout {{ session_timeout }}
+  vlan {{ vlan_id }}
+  no shutdown
+!
+wireless tag policy {{ tag_policy_name }}
+  wlan-profile {{ wlan_id }} policy {{ profile_name }}
+!
+wireless tag site {{ site_tag_name }}
+  ap-profile {{ ap_group_name }}
+!
+ap {{ ap_name }} site-tag {{ site_tag_name }} policy-tag {{ tag_policy_name }}
+!
+ssid mode {{ ssid_auth_mode }}
+authentication-type {{ auth_type }}
+  password {{ password }}
+ssid-security {{ ssid }} wpa2-psk ascii {{ password }}

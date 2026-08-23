@@ -1,0 +1,8 @@
+interface {{ interface_name }}
+  ip ospf area {{ area_id }}
+  ip ospf network {{ network_type }}
+  ip ospf cost {{ cost | default(1) }}
+{% if authentication is defined and authentication %}
+  ip ospf authentication message-digest
+  ip ospf message-digest-key {{ key_id }} md5 7 {{ auth_key }}
+{% endif %}

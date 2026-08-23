@@ -1,0 +1,5 @@
+set interfaces {{ interface_name }} unit {{ unit }} vlan-id-list {{ vlan_id }}
+set interfaces {{ interface_name }} unit {{ unit }} family ethernet-switching interface-mode trunk
+{% if native_vlan is defined and native_vlan %}
+set interfaces {{ interface_name }} unit {{ unit }} native-vlan-id {{ native_vlan }}
+{% endif %}

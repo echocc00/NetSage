@@ -1,0 +1,16 @@
+router bgp {{ local_asn }}
+  bgp cluster-id {{ cluster_id }}
+  neighbor {{ group_name }} peer-group
+  neighbor {{ group_name }} remote-as {{ client_asn }}
+  neighbor {{ group_name }} route-reflector-client
+  neighbor {{ group_name }} next-hop-self
+  !
+  address-family ipv4 unicast
+    neighbor {{ group_name }} activate
+    neighbor {{ group_name }} route-reflector-client
+    neighbor {{ group_name }} next-hop-self
+  !
+{% for client in clients %}
+  neighbor {{ client.address }} peer-group {{ group_name }}
+  neighbor {{ client.address }} remote-as {{ client.asn }}
+{% endfor %}

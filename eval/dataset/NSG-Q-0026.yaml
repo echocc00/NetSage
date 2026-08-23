@@ -1,0 +1,66 @@
+id: NSG-Q-0026
+title: 静态路由递归 lookup 失败（华为 VRP-8.180）
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 2
+tags:
+- static-route
+- recursive
+- lookup
+input:
+  symptom: ip route-static 配置后 display ip routing-table 显示路由 inactive
+  device_info:
+    model: S5731-S48P4X
+    version: VRP-8.180
+  evidence:
+  - config_snippet: "ip route-static 192.168.0.0 255.255.0.0 10.0.0.1\n#\ninterface\
+      \ Vlanif10\n  ip address 10.0.0.2 24\ninterface Vlanif11\n  ip address 10.0.1.2\
+      \ 24\n# 注意：10.0.0.1 应为某个对端接口，但本设备不在 10.0.0.0/24 直连段\n"
+  - log_lines:
+    - 'display ip routing-table protocol static: 192.168.0.0/16 inactive'
+    - 'display ip routing-table: 下一跳 10.0.0.1 unresolvable'
+  question: 诊断 + 验证 + 修复；解释 recursive lookup 规则。
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: 下一跳 IP 不在直连路由表中（OSPF/BGP/Static/Connected 都没 10.0.0.0/24）
+    probability: 0.8
+    evidence:
+    - ip route-static 显示 inactive；display ip routing-table next-hop 不可解析
+    verify: display ip routing-table 10.0.0.1; display interface brief
+    fix: '# 修复：增加 10.0.0.0/24 直连路由或改用出口 IP
+
+      # 方式 A：换 next-hop 到本设备直连网段内的对端 IP
+
+      ip route-static 192.168.0.0 255.255.0.0 10.0.0.2
+
+      # 方式 B：用出接口 + 下一跳
+
+      ip route-static 192.168.0.0 255.255.0.0 Vlanif10 10.0.0.1
+
+      '
+    rollback: undo ip route-static 192.168.0.0 255.255.0.0 <next>
+  - rank: 2
+    cause: 配置错误：下一跳是本端 IP
+    probability: 0.15
+    verify: display ip interface brief
+    fix: 改成正确的下一跳
+  - rank: 3
+    cause: Outbound interface 不可达（接口 DOWN）
+    probability: 0.05
+    verify: display ip interface brief | include down
+    fix: undo shutdown
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/enterprise/zh/doc/EDOC1100277311
+    version: VRP-8.180
+    title: VRP 静态路由章节
+anti_examples:
+- 请重启
+- 删除全部路由
+grading_rubric:
+  must_have:
+  - 明白 recursive lookup 必须从直连 / 已解析路由出发
+  penalty:
+  - 推荐重启

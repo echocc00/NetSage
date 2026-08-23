@@ -1,0 +1,22 @@
+# cisco_iosxe/bgp/route_reflector 模板元数据
+template_id: cisco_iosxe_bgp_route_reflector
+vendor: cisco
+os: iosxe
+version_min: "15.6(3)M"
+version_max: "17.999"
+protocol: bgp
+feature: route_reflector
+input_schema:
+  - { name: local_asn, type: int, required: true }
+  - { name: cluster_id, type: string, required: true,
+      desc: "Cluster ID 通常是 RR 的 router-id IP" }
+  - { name: group_name, type: string, required: true }
+  - { name: client_asn, type: int, required: true,
+      desc: "客户端 AS（一般和本地 AS 相同：iBGP）" }
+  - { name: clients, type: array, required: true,
+      items: { address: string, asn: int } }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Cisco IOS-XE 17.x BGP Route Reflector"
+reviewers: []
+last_reviewed: "2026-08-23"

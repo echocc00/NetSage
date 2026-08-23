@@ -1,0 +1,58 @@
+id: NSG-Q-0022
+title: VXLAN Type-3 不通（华三 Comware 7，BGP EVPN peer 漏 activate）
+category: troubleshoot
+vendor: h3c
+version: Comware-7.1.070
+difficulty: 4
+tags:
+- vxlan
+- evpn
+- type-3
+- bgp
+- activate
+input:
+  symptom: VXLAN 隧道建立，NVE Up，但跨 Leaf BUM 流量不通
+  device_info:
+    model: S9850-32B
+    version: Comware 7.1.070 R7625
+  evidence:
+  - log_lines:
+    - 'display evpn route: 仅本端 Type-3'
+    - 'display bgp l2vpn evpn peer 10.1.1.2: state=Established 但 advertised routes
+      无 type-3'
+    - 对端也未收到 type-2/type-3
+  question: 诊断 + 验证 + 修复；说明 Comware BGP EVPN peer enable 与 peer activate 区别。
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: BGP EVPN family 未在 peer 上激活（未 enable）
+    probability: 0.75
+    evidence:
+    - 'display bgp peer l2vpn-evpn 10.1.1.2 verbose: family L2VPN EVPN <miss>'
+    verify: display bgp peer verbose; display evpn route
+    fix: "bgp 65000\naddress-family l2vpn evpn\n  peer 10.1.1.2 enable\n# H3C：enable\
+      \ 表示激活 EVPN family\n"
+    rollback: address-family l2vpn evpn → undo peer 10.1.1.2 enable
+  - rank: 2
+    cause: 对端发送了 RT 而本端 EVPN instance 没配 RT import
+    probability: 0.15
+    verify: display evpn instance; display bgp l2vpn evpn rt
+    fix: display evpn instance detail 加 RT import
+  - rank: 3
+    cause: BGP 邻居 next-hop-unchanged 在 RR 上未启用
+    probability: 0.1
+    verify: display bgp peer 10.1.1.2 policy
+    fix: address-family l2vpn evpn → peer 10.1.1.2 next-hop-unchanged
+  references:
+  - type: vendor_doc
+    url: https://www.h3c.com/cn/d_202206/1506893_483005_0.htm
+    version: Comware 7.1.070
+    title: H3C Comware 7 BGP EVPN
+anti_examples:
+- 请重启
+- 重配 EVPN 全套
+grading_rubric:
+  must_have:
+  - enable family 是 H3C 关键命令
+  penalty:
+  - 推荐整机重启

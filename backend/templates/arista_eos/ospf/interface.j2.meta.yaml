@@ -1,0 +1,23 @@
+# arista_eos/ospf/interface 模板元数据
+template_id: arista_eos_ospf_interface
+vendor: arista
+os: eos
+version_min: "4.24"
+version_max: "4.999"
+protocol: ospf
+feature: interface
+input_schema:
+  - { name: interface_name, type: string, required: true }
+  - { name: area_id, type: string, required: true }
+  - { name: network_type, type: string, required: false,
+      enum: [broadcast, point-to-point, point-to-multipoint, non-broadcast],
+      default: broadcast }
+  - { name: cost, type: int, required: false }
+  - { name: authentication, type: bool, required: false }
+  - { name: key_id, type: int, required: false }
+  - { name: auth_key, type: string, required: false }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Arista EOS 4.24 OSPF Interface"
+reviewers: []
+last_reviewed: "2026-08-23"

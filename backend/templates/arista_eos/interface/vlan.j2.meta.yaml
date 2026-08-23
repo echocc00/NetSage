@@ -1,0 +1,21 @@
+# arista_eos/interface/vlan 模板元数据
+template_id: arista_eos_interface_vlan
+vendor: arista
+os: eos
+version_min: "4.24"
+version_max: "4.999"
+protocol: interface
+feature: vlan
+input_schema:
+  - { name: vlan_id, type: int, required: true }
+  - { name: description, type: string, required: false }
+  - { name: ip, type: string, required: true }
+  - { name: mask, type: int, required: true,
+      desc: "前缀长度" }
+  - { name: vrf, type: string, required: false,
+      desc: "默认 default（global）" }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Arista EOS 4.24 VLAN Configuration"
+reviewers: []
+last_reviewed: "2026-08-23"

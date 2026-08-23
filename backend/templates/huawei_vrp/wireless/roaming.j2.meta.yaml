@@ -1,0 +1,33 @@
+# huawei_vrp/wireless/roaming 模板元数据
+template_id: huawei_vrp_wireless_roaming
+vendor: huawei
+os: vrp
+version_min: "8.180"
+version_max: "8.999"
+protocol: wireless
+feature: roaming
+input_schema:
+  - { name: wlan_group_name, type: string, required: true }
+  - { name: roaming_mode, type: string, required: false,
+      enum: [enable, disable], default: enable }
+  - { name: mobility_group, type: string, required: true }
+  - { name: domain_name, type: string, required: true }
+  - { name: ap_group_name, type: string, required: true }
+  - { name: channel_24, type: int, required: true,
+      desc: "2.4G 信道" }
+  - { name: power_24, type: int, required: true }
+  - { name: channel_5, type: int, required: true,
+      desc: "5G 信道" }
+  - { name: power_5, type: int, required: true }
+  - { name: ap_mac, type: string, required: true }
+  - { name: ap_name, type: string, required: true }
+  - { name: security_name, type: string, required: true }
+  - { name: psk_passphrase, type: string, required: true }
+  - { name: ssid_profile_name, type: string, required: true }
+  - { name: ssid, type: string, required: true }
+  - { name: vap_name, type: string, required: true }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：华为 VRP 8.180 WLAN Roaming"
+reviewers: []
+last_reviewed: "2026-08-23"

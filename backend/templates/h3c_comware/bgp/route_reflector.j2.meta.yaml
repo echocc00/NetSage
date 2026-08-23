@@ -1,0 +1,19 @@
+# h3c_comware/bgp/route_reflector 模板元数据
+template_id: h3c_comware_bgp_route_reflector
+vendor: h3c
+os: comware
+version_min: "7.1.070"
+version_max: "7.999"
+protocol: bgp
+feature: route_reflector
+input_schema:
+  - { name: local_asn, type: int, required: true }
+  - { name: router_id, type: string, required: true }
+  - { name: group_name, type: string, required: true }
+  - { name: clients, type: array, required: true,
+      items: { address: string, asn: int } }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：H3C Comware 7 BGP RR"
+reviewers: []
+last_reviewed: "2026-08-23"

@@ -1,0 +1,56 @@
+id: NSG-Q-0023
+title: VXLAN EVPN ARP 表震荡（思科 NX-OS 9.3，suppression 缺配置）
+category: troubleshoot
+vendor: cisco
+version: NX-OS-9.3
+difficulty: 3
+tags:
+- vxlan
+- arp
+- suppression
+- evpn
+- type-2
+input:
+  symptom: NVE Peer Up 但 ARP 学习在多个 Leaf 都学，ARP 表频繁变化
+  device_info:
+    model: Nexus 9336C-FX2
+    version: NX-OS 9.3(8)
+  evidence:
+  - log_lines:
+    - 'show ip arp suppression-cache: 00:00:00:00:00 重复'
+    - 'show nve peers detail: 10.0.0.1, 10.0.0.2 都能学习 VM1 的 ARP'
+    - 'show bgp l2vpn evpn route-type 2: 三个 Leaf 都 advertise'
+  question: 诊断 + 验证 + 修复；解释 EVPN ARP suppression 抑制原理。
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: 未启用 ARP suppression，导致 Type-2 路由从所有 Leaf 重复学习
+    probability: 0.7
+    evidence:
+    - evpn instance 配置中无 arp suppression
+    verify: show run | include arp
+    fix: "conf t\n  l2vpn evpn instance 10 point-to-point\n    arp suppression\nend\n"
+    rollback: no arp suppression
+  - rank: 2
+    cause: L2VPN evpn ngh 邻居同步限制
+    probability: 0.2
+    verify: show l2route evpn mac-ip all
+    fix: 调整 route-target
+  - rank: 3
+    cause: NVE 多 Member VNI 配置冲突
+    probability: 0.1
+    verify: show nve vni detail
+    fix: 修复 vni-mapping
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/td/docs/switches/datacenter/sw/nx-os/nxcli/vxlan.html
+    version: NX-OS 9.3
+    title: Cisco Nexus 9.3 VXLAN ARP Suppression
+anti_examples:
+- 请重启
+- 关闭 EVPN
+grading_rubric:
+  must_have:
+  - 提到 arp suppression
+  penalty:
+  - 关闭 EVPN

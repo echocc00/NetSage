@@ -1,0 +1,20 @@
+# arista_eos/bgp/route_reflector 模板元数据
+template_id: arista_eos_bgp_route_reflector
+vendor: arista
+os: eos
+version_min: "4.24"
+version_max: "4.999"
+protocol: bgp
+feature: route_reflector
+input_schema:
+  - { name: local_asn, type: int, required: true }
+  - { name: cluster_id, type: string, required: true }
+  - { name: group_name, type: string, required: true }
+  - { name: client_asn, type: int, required: true }
+  - { name: clients, type: array, required: true,
+      items: { address: string, asn: int } }
+output_format: cli
+validated_against: []
+author: "echocc00 · 来源：Arista EOS 4.24 BGP Route Reflector"
+reviewers: []
+last_reviewed: "2026-08-23"

@@ -1,0 +1,109 @@
+id: NSG-Q-0015
+title: "OSPF 邻居卡在 EXSTART（思科 IOS-XE 17.09，MTU 不一致）"
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 3
+tags: [ospf, exstart, mtu, dd, retransmit]
+
+input:
+  symptom: "OSPF Neighbor state stuck at EXSTART with retransmission"
+  device_info:
+    model: Catalyst 9300-24P
+    version: IOS-XE 17.09.04a
+    interfaces: [GigabitEthernet1/0/5]
+  evidence:
+    - config_snippet: |
+        # Spine
+        interface GigabitEthernet1/0/5
+          ip address 10.1.5.1 255.255.255.252
+          ip ospf 1 area 0
+          ip mtu 9216
+        !
+        router ospf 1
+          router-id 10.0.0.1
+          passive-interface default
+          network 10.0.0.0 0.0.0.255 area 0
+    - config_snippet: |
+        # Leaf
+        interface GigabitEthernet1/0/5
+          ip address 10.1.5.2 255.255.255.252
+          ip ospf 1 area 0
+          ip mtu 1500
+        !
+        router ospf 1
+          router-id 10.0.0.2
+          network 10.0.0.0 0.0.0.255 area 0
+    - log_lines:
+        - "%OSPF-5-ADJCHG: Process 1, Nbr 10.0.0.2 on GigabitEthernet1/0/5 from EXSTART to DOWN"
+        - "show ip ospf neighbor: 10.0.0.2 stuck in EXSTART"
+        - "show ip ospf interface g1/0/5: MTU 9216 on local, 1500 in DD"
+  question: "请给出根因假设 + 验证步骤 + 修复方案；说明 EXSTART 阶段不转 EXCHANGE 的原因与 OSPF RFC 规则的对应关系。"
+
+expected_output:
+  root_causes:
+    - rank: 1
+      cause: "OSPF 接口 MTU 不一致（spine 9216 vs leaf 1500）"
+      probability: 0.85
+      evidence:
+        - "OSPF EXSTART 阶段发送 DD（Database Description），DD 包包含 Interface MTU"
+        - "RFC 2328/5340 要求 MTU 必须匹配，否则保持 EXSTART 状态"
+        - "本端 9216，对端 DD 报文中 MTU=1500 -> 不匹配，反复 Resync"
+      verify: |
+        # 1. 直接看邻居卡住的 state
+        show ip ospf neighbor
+        # 2. 看本端与对端报告的 MTU
+        show ip ospf interface GigabitEthernet1/0/5
+        show ip ospf neighbor 10.0.0.2 detail
+        # 3. 看接口实际 MTU
+        show interface GigabitEthernet1/0/5 | include MTU
+        # 4. 抓包
+        show ip ospf packets
+      fix: |
+        # 方案 A：物理 MTU 对齐（推荐 - 生产用 jumbo）
+        interface GigabitEthernet1/0/5
+          ip mtu 1500
+        # 方案 B：跨厂商对接场景禁用 MTU 校验（不推荐，只用于诊断或应急）
+        interface GigabitEthernet1/0/5
+          no ip ospf mtu-ignore     # Cisco 默认 disable - 'ip ospf mtu-ignore' 会显式忽略
+        # 注：在 IOS-XE 17 中，使用 'ignore lsa mpls' 系列没有此选项，OSPF 端需用 'ospf mtu-enable'/ospf mtu-ignore 在对端
+      rollback: |
+        interface GigabitEthernet1/0/5
+          ip mtu 9216
+    - rank: 2
+      cause: "OSPF 不一致网络类型（如 broadcast vs p2p）"
+      probability: 0.1
+      verify: "show ip ospf interface | include Network"
+      fix: "ip ospf network point-to-point 或对齐"
+    - rank: 3
+      cause: "Router ID 冲突"
+      probability: 0.05
+      verify: "show ip ospf | include ID"
+      fix: "router-id 更改为全网唯一"
+  references:
+    - type: vendor_doc
+      url: https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/iproute_ospf/configuration/xe-17/iro-xe-17-book/iro-ospf-xe.html
+      version: IOS-XE-17.09
+      title: "OSPF EXSTART 卡 MTU 排查"
+    - type: rfc
+      url: https://datatracker.ietf.org/doc/html/rfc2328
+      title: "OSPFv2: section 10.6 - Exchange Process"
+
+anti_examples:
+  - "请重启 leaf"
+  - "删除 OSPF 进程重配"
+  - "OSPF 卡 EXSTART 是因为 OSPF 协议 bug，更换 IOS 版本"
+
+grading_rubric:
+  must_have:
+    - "top 根因为 MTU 不一致"
+    - "解释 EXSTART 阶段需要 MTU 匹配的原因"
+    - "提供 align MTU 修复或禁用 MTU 校验的应急方案"
+  nice_to_have:
+    - "≥3 候选根因并附概率"
+    - "提及 RFC 2328/5340 对 MTU 校验的规定"
+    - "含 rollback 命令"
+  penalty:
+    - "推荐重启设备"
+    - "删除 OSPF 进程"
+    - "未解释 EXSTART 状态含义"

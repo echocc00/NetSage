@@ -1,0 +1,98 @@
+id: NSG-Q-0017
+title: "OSPF 卡在 LOADING（华三 Comware 7.1.070，LSAge 校验失败）"
+category: troubleshoot
+vendor: h3c
+version: Comware-7.1.070
+difficulty: 4
+tags: [ospf, loading, lsdb, lsa, retransmit]
+
+input:
+  symptom: "OSPF 邻居状态卡在 LOADING，display ospf peer 显示邻居 endless retransmit"
+  device_info:
+    model: S12500R-48Y8C
+    version: Comware 7.1.070 R7625
+    interfaces: [FortyGigE1/0/1]
+  evidence:
+    - config_snippet: |
+        # Switch-A
+        ospf 1 router-id 10.0.0.1
+          area 0.0.0.0
+            network 10.1.1.0 0.0.0.255
+            network 10.0.0.0 0.0.0.255
+        #
+        interface FortyGigE1/0/1
+          port link-mode route
+          ip address 10.1.1.1 24
+    - log_lines:
+        - "%%01OSPF/4/LSA_RETRANSMIT(l): Retransmitting LSA 10.0.0.2 10.1.1.0 type-3"
+        - "display ospf lsdb: LSA exists but age > MaxAge (3600s)"
+        - "display ospf peer: state=Loading, retransmit count climbing"
+  question: "请给出根因假设 + 验证步骤 + 修复方案；说明 LSA Age 校验规则与 LOADING 状态的卡死路径。"
+
+expected_output:
+  root_causes:
+    - rank: 1
+      cause: "OSPF LSA 老化超过 MaxAge (3600s)，邻居对该 LSA 在 LSDB 中存在但实际已 stale，对方重传时本端因 SeqNumber mismatch 重传"
+      probability: 0.55
+      evidence:
+        - "display ospf lsdb 显示 LSAAge >3600 + 同时存在两条不同 SeqNumber 的 type-3 LSA"
+        - "OSPF 邻居卡 Loading 是 LSU 未被 ACK，对端持续重传"
+        - "常见场景：维护期间某台设备 reboot 后回滚到老版本 OS，两端 LSA 序号错配"
+      verify: |
+        # 1. LSDB 状态
+        display ospf lsdb router 10.0.0.2
+        display ospf lsdb network 10.1.1.2
+        # 2. 看邻居详细
+        display ospf peer 10.1.1.2 verbose
+        # 3. 抓 LSU 重传
+        display ospf statistics | include retransmit
+      fix: |
+        # 方案 A：本端 flush 老化 LSA
+        reset ospf 1 process             # 重启 OSPF 进程（不重启整机）
+        # 方案 B：临时让对端不发送 type-3 summary，重启对端 OSPF
+        # 注：要避免维护期间 LSA 序号错配，可统一两端 OSPF 维护窗口
+      rollback: |
+        # 整机 restart OSPF 后观察 60s
+        # 如还卡，再尝试 noshut 接口一次
+    - rank: 2
+      cause: "OSPF 网络类型不匹配导致 LSU 重传"
+      probability: 0.2
+      verify: "display ospf interface FortyGigE1/0/1 | include Network"
+      fix: "ospf network-type broadcast 两端对齐"
+    - rank: 3
+      cause: "本端 ACL 阻断 OSPF multicast 报文（224.0.0.5/6）"
+      probability: 0.15
+      verify: "display acl all; packet-filter inbound 检查"
+      fix: "permit ospf any 224.0.0.0/4"
+    - rank: 4
+      cause: "两端接口 MTU 不一致（较少见，但会导致 DD 重传）"
+      probability: 0.1
+      verify: "display interface | include MTU"
+      fix: "ip mtu 对齐"
+  references:
+    - type: vendor_doc
+      url: https://www.h3c.com/cn/d_202206/1506893_483005_0.htm
+      version: Comware 7.1.070
+      title: "H3C Comware 7 OSPF LSDB 章节"
+    - type: rfc
+      url: https://datatracker.ietf.org/doc/html/rfc2328
+      title: "OSPFv2: section 13 - Flooding, LSA aging"
+
+anti_examples:
+  - "请重启设备"
+  - "删除 OSPF 进程重建"
+  - "OSPF 卡 Loading 是 bug，请更换版本"
+
+grading_rubric:
+  must_have:
+    - "top 根因为 LSA 老化超过 MaxAge"
+    - "修复为 reset ospf process"
+    - "提及 LSDB 重传机制"
+  nice_to_have:
+    - "≥3 候选根因"
+    - "解释 RFC 2328 LSA aging"
+    - "含 rollback"
+  penalty:
+    - "推荐整机重启"
+    - "未提及 LSA Age 校验"
+    - "无证据瞎猜"

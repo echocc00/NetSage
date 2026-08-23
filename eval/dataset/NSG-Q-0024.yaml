@@ -1,0 +1,56 @@
+id: NSG-Q-0024
+title: IPsec Phase-1 SA 起不来（华为 VRP-8.180）
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 4
+tags:
+- ipsec
+- ike
+- phase1
+- sa
+input:
+  symptom: display ike sa 显示无活跃 SA；IPsec 流量触发但不触发 Phase2 协商
+  device_info:
+    model: USG 6680
+    version: VRP-8.180
+  evidence:
+  - log_lines:
+    - 'IKE_SA_INIT: NO_PROPOSAL_CHOSEN'
+    - IKE proposal 1 encryption-algorithm aes-cbc-128, integrity sha2-256, dh group14
+      - 已脱敏
+    - '对端 SPOKE: phase1 proposal enum 仅支持 aes-gcm-128, group5'
+  question: 诊断 + 验证 + 修复；解释 IKE SA 协商的 Proposal matching 规则。
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: IKE Phase-1 proposal 与对端不重叠（no proposal chosen）
+    probability: 0.85
+    evidence:
+    - NO_PROPOSAL_CHOSEN 告警 + 两端 encryption/dh group 不匹配
+    verify: display ike proposal; display ike sa
+    fix: "# 在两端都添加共同支持的 proposal\nike proposal 1\n  encryption-algorithm aes-cbc-128\
+      \ aes-gcm-128\n  integrity sha2-256\n  dh group14 group5\n# 或选择对端支持的算法子集\n"
+    rollback: undo ike proposal 1 <新选项>
+  - rank: 2
+    cause: IKE peer pre-shared-key 不一致（Phase-1 authentication fail）
+    probability: 0.1
+    verify: display ike peer
+    fix: undo peer <name>; 重配置 shared-key 一致
+  - rank: 3
+    cause: Phase-1 identity 类型不一致（FQDN vs IP）
+    probability: 0.05
+    verify: display ike peer identity
+    fix: identity-type ip 与对端一致
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/enterprise/zh/doc/EDOC1100188293
+    version: VRP-8.180
+    title: IKE Phase-1 协商
+anti_examples:
+- 请重启设备
+grading_rubric:
+  must_have:
+  - NO_PROPOSAL_CHOSEN 是关键告警
+  penalty:
+  - 推荐重启

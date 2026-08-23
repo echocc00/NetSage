@@ -1,0 +1,12 @@
+set services ssl termination profile {{ profile_name }} server-certificate {{ cert_id }}
+set services ssl initiation profile {{ profile_name }} client-certificate {{ cert_id }}
+set access profile {{ profile_name }} client {{ client_name }} group {{ group_name }} password {{ password }}
+set access address-assignment pool {{ pool_name }} family inet network {{ pool_start_ip }}/24
+set access address-assignment pool {{ pool_name }} family inet range {{ pool_range_low }} to {{ pool_range_high }}
+set access firewall-family inet dial-in client {{ client_name }} push-interface {{ interface_name }}.0
+set access profile {{ profile_name }} address-assignment pool {{ pool_name }}
+set access profile {{ profile_name }} aaa access-profile {{ aaa_profile_name }}
+set security zones security-zone {{ zone_name }} interfaces {{ interface_name }}.0 host-inbound-traffic system-services all
+set security zones security-zone {{ zone_name }} address-book address {{ address_name }} {{ remote_subnet }}
+set security policies from-zone {{ zone_name }} to-zone {{ trust_zone }} policy {{ policy_name }} match source-address {{ address_name }} destination-address any application any
+set security policies from-zone {{ zone_name }} to-zone {{ trust_zone }} policy {{ policy_name }} then permit

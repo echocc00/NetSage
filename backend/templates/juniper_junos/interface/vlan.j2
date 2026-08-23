@@ -1,0 +1,5 @@
+set vlans {{ vlan_name }} vlan-id {{ vlan_id }}
+set vlans {{ vlan_name }} description {{ description | default('') }}
+set interfaces irb unit {{ vlan_id }} family inet address {{ ip }}/{{ mask }}
+set vlans {{ vlan_name }} l3-interface irb.{{ vlan_id }}
+set routing-instances {{ vrf | default('default') }} interface irb.{{ vlan_id }}
