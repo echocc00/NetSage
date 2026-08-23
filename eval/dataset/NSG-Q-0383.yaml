@@ -1,0 +1,47 @@
+id: NSG-Q-0383
+title: 'ECN 调优 1/8: RoCE ECN 阈值过低，触发频繁'
+category: perf
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 5
+tags:
+- ecn
+- dcqcn
+- qos
+input:
+  symptom: RoCE ECN 阈值过低，触发频繁
+  device_info:
+    model: ''
+    version: IOS-XE-17.09
+    interfaces: []
+  question: 给出瓶颈定位 + 调优参数
+expected_output:
+  bottleneck: ECN Kmin/Kmax 设错
+  tuning_params:
+    ecn_threshold_min: 150KB
+    ecn_threshold_max: 200KB
+    dcqcn_alpha: 0.3
+    dcqcn_g_init: 1024
+  verify:
+  - show qos interface ecn
+  - show dcb priority-flow-control
+  references:
+  - type: vendor_doc
+    url: https://cisco.com/ecn
+    version: IOS-XE-17.09
+    title: ecn 调优章节
+anti_examples:
+- 关闭 PFC
+- 建议重启设备
+- 无证据瞎猜
+grading_rubric:
+  must_have:
+  - PFC 优先级
+  - ECN 阈值
+  - buffer 配置
+  nice_to_have:
+  - DCQCN 调参
+  - PFC watchdog
+  - verify 命令
+  penalty:
+  - 建议关闭 PFC

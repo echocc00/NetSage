@@ -1,0 +1,32 @@
+id: NSG-Q-0152
+title: 生成 cisco wireless/roaming 配置 (WLAN 漫游组 mg1 + 多个 AP)
+category: config
+vendor: cisco
+version: 17.0+
+difficulty: 2
+tags:
+- wireless
+- roaming
+input:
+  symptom: WLAN 漫游组 mg1 + 多个 AP
+  device_info:
+    model: generic
+    version: 17.0+
+  question: 生成命令
+expected_output:
+  config: "wireless mobility group name mg1\nwireless mobility mac-address aabb.ccdd.0001\nwireless mobility domain member dom1\n!\nwireless profile air-time-fairness atf1\n  fair-802.11n\n  fair-802.11ax\n  idle-time 5\n!\nap ap01\n  ap-group\
+    \ ag1\n  site-tag ts1\n  policy-tag tp1\n  rf-tag rf1\n!\nap-group ag1\n  rf-profile rf1\n  policy-profile p1\n!\nwlan 1 corp prof1\n  roam-tunnel data\n  mobility-group mg1\n  mobility-domain dom1"
+  references:
+  - type: vendor_doc
+    url: https://support.cisco.com/wireless-roaming
+    version: '17.0'
+anti_examples:
+- 漏 wireless 必要字段
+- wireless roaming 缩进错乱（应当 cli 风格）
+grading_rubric:
+  must_have:
+  - 包含 wireless/roaming 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 cisco_iosxe_wireless_roaming 必填项

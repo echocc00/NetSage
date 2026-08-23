@@ -1,0 +1,58 @@
+id: NSG-Q-0309
+title: 设计 IPv4/IPv6 双栈 Fabric 10/10
+category: design
+vendor: cross
+version: ''
+difficulty: 4
+tags:
+- design
+- hld
+- bom
+input:
+  symptom: 新建数据中心 IPv4+IPv6 双栈 Fabric，2 spine + 6 leaf
+  device_info:
+    model: ''
+    version: ''
+    interfaces: []
+  question: 输出 HLD（拓扑 + IP 规划 + 协议选型）+ BOM
+expected_output:
+  hld:
+    topology: spine-leaf 2+6
+    underlay: OSPFv3 + ECMP
+    overlay: BGP EVPN VXLAN (IPv4/IPv6 双栈)
+    ip_plan: spine 10.0.0.x/32; leaf 10.0.1.x/32; IPv4 VNI 20000+; IPv6 VNI 30000+
+    rd: rd 10.0.0.1:10
+    rt: rt 65000:10010/10011
+  bom:
+  - role: spine
+    vendor: huawei
+    model: CE12808
+    qty: 2
+  - role: leaf
+    vendor: huawei
+    model: CE6880
+    qty: 6
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/vrp-dualstack-fabric
+    version: VRP-8.180
+    title: 双栈数据中心参考
+anti_examples:
+- 拓扑无层级
+- 无 IP 规划
+- 无 BOM
+- 缺冗余设计
+grading_rubric:
+  must_have:
+  - 拓扑描述
+  - IP 规划
+  - underlay/overlay 分离
+  - BOM
+  nice_to_have:
+  - PFC/ECN 调优
+  - 多租户 VRF
+  - 高可用设计
+  penalty:
+  - 单点故障设计
+  - 无 IP 规划
+  - BOM 数字缺

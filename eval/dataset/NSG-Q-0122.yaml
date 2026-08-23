@@ -1,0 +1,31 @@
+id: NSG-Q-0122
+title: 生成 huawei vpn/ssl_remote 配置 (SSL VPN 远程接入配置（pool + 用户）)
+category: config
+vendor: huawei
+version: 8.180+
+difficulty: 2
+tags:
+- vpn
+- ssl_remote
+input:
+  symptom: SSL VPN 远程接入配置（pool + 用户）
+  device_info:
+    model: generic
+    version: 8.180+
+  question: 生成命令
+expected_output:
+  config: '# RENDER ERROR: ''remote_subnet'' is undefined'
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/vpn-ssl_remote
+    version: '8.180'
+anti_examples:
+- 漏 vpn 必要字段
+- vpn ssl_remote 缩进错乱（应当 cli 风格）
+grading_rubric:
+  must_have:
+  - 包含 vpn/ssl_remote 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 huawei_vrp_vpn_ssl_remote 必填项

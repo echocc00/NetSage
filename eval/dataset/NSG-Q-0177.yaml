@@ -1,0 +1,48 @@
+id: NSG-Q-0177
+title: VXLAN BUM 头端复制异常（思科 NX-OS 9.3，head-end-replication-mode 错配）
+category: troubleshoot
+vendor: cisco
+version: NX-OS-9.3
+difficulty: 4
+tags:
+- vxlan
+- bum
+- head-end-replication
+input:
+  symptom: VXLAN BUM 流量丢包
+  device_info:
+    model: ''
+    version: NX-OS-9.3
+    interfaces: []
+  evidence:
+  - config_snippet: "interface nve1\n  source-interface Loopback0\n  member vni 10010\n   ingress-replication protocol static\n    peer-vtep 10.0.0.1\n  # ⚠️ 应使用 bgp，但用了 static"
+  question: 诊断 head-end-replication
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: nve 用 static 但对端用 bgp
+    probability: 0.7
+    verify: show nve vni
+    fix: member vni 10010 ingress-replication protocol bgp
+  - rank: 2
+    cause: peer-vtep 列表不全
+    probability: 0.3
+    verify: show nve peer
+    fix: 补 peer-vtep
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/support/nx-os-vxlan-bum
+    version: NX-OS-9.3
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 vxlan
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

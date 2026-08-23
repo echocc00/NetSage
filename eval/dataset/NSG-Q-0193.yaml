@@ -1,0 +1,50 @@
+id: NSG-Q-0193
+title: AAA RADIUS 超时（思科 IOS-XE 17，source-interface 错配）
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 3
+tags:
+- aaa
+- radius
+- timeout
+input:
+  symptom: AAA RADIUS 认证 timeout
+  device_info:
+    model: ''
+    version: IOS-XE-17.09
+    interfaces: []
+  evidence:
+  - config_snippet: "radius server R1\n  address ipv4 10.1.1.99 auth-port 1812"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: radius source-interface 不可达
+    probability: 0.7
+    evidence: []
+    verify: test aaa server R1
+    fix: ip radius source-interface Vlan99
+  - rank: 2
+    cause: timeout 设过短
+    probability: 0.3
+    evidence: []
+    verify: show running | include radius
+    fix: timeout 30
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/support/aaa-radius
+    version: IOS-XE-17.09
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 aaa
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

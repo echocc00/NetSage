@@ -1,0 +1,33 @@
+id: NSG-Q-0150
+title: 生成 arista wireless/ssid 配置 (WLAN SSID corp + wpa2-psk 配置)
+category: config
+vendor: arista
+version: 4.24+
+difficulty: 2
+tags:
+- wireless
+- ssid
+input:
+  symptom: WLAN SSID corp + wpa2-psk 配置
+  device_info:
+    model: generic
+    version: 4.24+
+  question: 生成命令
+expected_output:
+  config: "---\n# Arista EOS WAP/CVP（Cloud Vision Portal）无线配置\n# 通过 WAP 模式推送至 EOS 设备，然后由 WAP 推送至 AP\n---\nwireless\n!\nprofile prof1 ssid ssid-corp\n  ssid corp\n  vlan 10\n  security\n    mode wpa2-psk\n    passphrase 0 Pass@2024\n  band-steering\
+    \ enable\n!\nprofile prof1 radio radio-2.4\n  channel 6\n  power 50\n  dot11n enable\n!\nprofile prof1 radio radio-5\n  channel 36\n  power 50\n  dot11ac enable\n!\nap-group ag1\n  ap-model W-118\n  ssid-profile prof1\n  radio radio-2.4 mode\
+    \ bgn\n  radio radio-5 mode ac\n!\nap aabb.ccdd.eeff\n  ap-name ap01\n  ap-group ag1"
+  references:
+  - type: vendor_doc
+    url: https://support.arista.com/wireless-ssid
+    version: '4.24'
+anti_examples:
+- 漏 wireless 必要字段
+- wireless ssid 缩进错乱（应当 cli 风格）
+grading_rubric:
+  must_have:
+  - 包含 wireless/ssid 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 arista_eos_wireless_ssid 必填项

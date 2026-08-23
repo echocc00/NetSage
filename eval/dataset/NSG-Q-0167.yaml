@@ -1,0 +1,50 @@
+id: NSG-Q-0167
+title: OSPF 卡 Init（Juniper 21.2，passive-interface 误配）
+category: troubleshoot
+vendor: juniper
+version: 21.2R1
+difficulty: 3
+tags:
+- ospf
+- init
+- passive
+input:
+  symptom: OSPF 邻居卡 Init（收到 Hello 但无邻居 ID 列表）
+  device_info:
+    model: ''
+    version: 21.2R1
+    interfaces: []
+  evidence:
+  - config_snippet: 'set protocols ospf area 0.0.0.0 interface ge-0/0/0 passive
+
+      # ⚠️ passive 接口不发 Hello'
+  question: 诊断 passive 误配
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: ge-0/0/0 错配 passive（不发 Hello）
+    probability: 0.85
+    verify: show ospf interface ge-0/0/0 | match passive
+    fix: delete protocols ospf area 0.0.0.0 interface ge-0/0/0 passive
+  - rank: 2
+    cause: area-id 不一致
+    probability: 0.15
+    verify: show ospf neighbor
+    fix: area 0.0.0.0 一致
+  references:
+  - type: vendor_doc
+    url: https://www.juniper.net/documentation/junos-21.2/ospf-passive
+    version: 21.2R1
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 ospf
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

@@ -1,0 +1,33 @@
+id: NSG-Q-0154
+title: 生成 arista wireless/roaming 配置 (WLAN 漫游组 mg1 + 多个 AP)
+category: config
+vendor: arista
+version: 4.24+
+difficulty: 2
+tags:
+- wireless
+- roaming
+input:
+  symptom: WLAN 漫游组 mg1 + 多个 AP
+  device_info:
+    model: generic
+    version: 4.24+
+  question: 生成命令
+expected_output:
+  config: "---\n# Arista EOS 802.11r/k/v 漫游配置\n---\nwireless\n!\nmobility-group mg1\n  country-code CN\n  mobility-domain \"aabb\"\n  ft enable\n  ft-method ft-over-ds\n!\nprofile roaming profile-name\n  rapid-roaming enable\n  band-steering\
+    \ enable\n  sticky-client drop-threshold -75\n  roam-threshold -65\n  load-balance\n    neighbor-discovery enable\n    station-count window 30\n!\nap-group ag1\n  profile roaming profile-name\n  mobility-group mg1\n!\nap aabb.ccdd.eeff\n\
+    \  ap-name ap01\n  ap-group ag1\n  mobility-domain aabb"
+  references:
+  - type: vendor_doc
+    url: https://support.arista.com/wireless-roaming
+    version: '4.24'
+anti_examples:
+- 漏 wireless 必要字段
+- wireless roaming 缩进错乱（应当 cli 风格）
+grading_rubric:
+  must_have:
+  - 包含 wireless/roaming 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 arista_eos_wireless_roaming 必填项

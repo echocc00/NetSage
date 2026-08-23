@@ -1,0 +1,32 @@
+id: NSG-Q-0107
+title: 生成 huawei vxlan/evpn_l2vpn 配置 (VXLAN EVPN L2VNI 10010 + BGP EVPN peer)
+category: config
+vendor: huawei
+version: 8.180+
+difficulty: 2
+tags:
+- vxlan
+- evpn_l2vpn
+input:
+  symptom: VXLAN EVPN L2VNI 10010 + BGP EVPN peer
+  device_info:
+    model: generic
+    version: 8.180+
+  question: 生成命令
+expected_output:
+  config: "evpn-overlay enable\nbgp 65000\n\n  peer 10.1.1.1 as-number 65001\n  peer 10.1.1.1 connect-interface LoopBack0\n\n  #\n  l2vpn-family evpn\n\n    peer 10.1.1.1 enable\n    peer 10.1.1.1 advertise l2vpn evpn\n\nbridge-domain 10\n  vxlan\
+    \ vni 10010\ninterface Vbdif10\n  ip address 10.1.10.1/24\n\n  arp collect host\n"
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/vxlan-evpn_l2vpn
+    version: '8.180'
+anti_examples:
+- 漏 vxlan 必要字段
+- vxlan evpn_l2vpn 缩进错乱（应当 cli 风格）
+grading_rubric:
+  must_have:
+  - 包含 vxlan/evpn_l2vpn 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 huawei_vrp_vxlan_evpn_l2vpn 必填项

@@ -1,0 +1,32 @@
+id: NSG-Q-0109
+title: 生成 h3c vxlan/evpn_l2vpn 配置 (VXLAN EVPN L2VNI 10010 + BGP EVPN peer)
+category: config
+vendor: h3c
+version: 7.1.070+
+difficulty: 2
+tags:
+- vxlan
+- evpn_l2vpn
+input:
+  symptom: VXLAN EVPN L2VNI 10010 + BGP EVPN peer
+  device_info:
+    model: generic
+    version: 7.1.070+
+  question: 生成命令
+expected_output:
+  config: "vsi vsi10\n  gateway vsi-interface 1\n  #\n  evpn encapsulation vxlan\n  vxlan vni 10010\n  vxlan local-arp enable\n!\ninterface Vsi-interface1\n  ip address 10.1.10.1/24\n!\nbgp 65000\n\n  peer 10.1.1.1 as-number 65001\n  peer 10.1.1.1\
+    \ connect-interface LoopBack0\n\n  address-family l2vpn evpn\n\n    peer 10.1.1.1 enable\n"
+  references:
+  - type: vendor_doc
+    url: https://support.h3c.com/vxlan-evpn_l2vpn
+    version: 7.1.070
+anti_examples:
+- 漏 vxlan 必要字段
+- vxlan evpn_l2vpn 缩进错乱（应当 cli 风格）
+grading_rubric:
+  must_have:
+  - 包含 vxlan/evpn_l2vpn 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 h3c_comware_vxlan_evpn_l2vpn 必填项

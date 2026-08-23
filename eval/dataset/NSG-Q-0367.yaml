@@ -1,0 +1,51 @@
+id: NSG-Q-0367
+title: 设计 云上 VGW
+category: design
+vendor: cross
+version: ''
+difficulty: 4
+tags:
+- design
+- hld
+- bom
+input:
+  symptom: AWS VGW 直连 IDC
+  device_info:
+    model: ''
+    version: ''
+    interfaces: []
+  question: 输出 HLD（拓扑 + IP 规划 + 协议选型）+ BOM
+expected_output:
+  hld:
+    topology: IPsec BGP
+    requirement: AWS VGW 直连 IDC
+    redundancy: dual-device
+  bom:
+  - role: core
+    vendor: cisco
+    model: CSR 1000v
+    qty: 2
+  references:
+  - type: vendor_doc
+    url: https://cisco.com/design-3
+    version: ''
+    title: 云上 VGW 设计
+anti_examples:
+- 拓扑无层级
+- 无 IP 规划
+- 无 BOM
+- 缺冗余设计
+grading_rubric:
+  must_have:
+  - 拓扑描述
+  - IP 规划
+  - underlay/overlay 分离
+  - BOM
+  nice_to_have:
+  - PFC/ECN 调优
+  - 多租户 VRF
+  - 高可用设计
+  penalty:
+  - 单点故障设计
+  - 无 IP 规划
+  - BOM 数字缺

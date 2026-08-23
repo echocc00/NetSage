@@ -1,0 +1,53 @@
+id: NSG-Q-0159
+title: BGP maximum-prefix 超限（Juniper 22，prefix-limit-threshold 触发 idle）
+category: troubleshoot
+vendor: juniper
+version: 21.2R1
+difficulty: 3
+tags:
+- bgp
+- maximum-prefix
+- flap
+input:
+  symptom: 'show bgp summary: x.x.x.x Idle (Maximum-prefix)'
+  device_info:
+    model: ''
+    version: 21.2R1
+    interfaces: []
+  evidence:
+  - config_snippet: set groups BGP-LIMITS protocols bgp group EBGP family inet unicast prefix-limit maximum 1000 teardown 90
+  question: 诊断 maximum-prefix 触发
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: 路由泄漏
+    probability: 0.7
+    evidence:
+    - prefix-limit 1000
+    - 对端发 5000+
+    verify: show bgp summary
+    fix: 'edit protocols bgp group EBGP → set family inet unicast prefix-limit maximum 10000 teardown 90
+
+      commit'
+  - rank: 2
+    cause: prefix-limit teardown 阈值偏低
+    probability: 0.3
+    verify: show bgp statistics
+    fix: teardown 95
+  references:
+  - type: vendor_doc
+    url: https://www.juniper.net/documentation/junos-21.2/bgp-prefix-limit
+    version: 21.2R1
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 bgp
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

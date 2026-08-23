@@ -1,0 +1,51 @@
+id: NSG-Q-0187
+title: IPv6 BGP 卡 active（思科 neighbor transport-mode 错配）
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 4
+tags:
+- bgp
+- ipv6
+- active
+- transport
+input:
+  symptom: IPv6 BGP 卡 active
+  device_info:
+    model: ''
+    version: IOS-XE-17.09
+    interfaces: []
+  evidence:
+  - config_snippet: "router bgp 65001\n neighbor 2001:db8::2 transport connection-mode passive"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: 两端都 passive 导致 TCP 主动连接不发起
+    probability: 0.85
+    evidence: []
+    verify: show ip bgp neighbor 2001:db8::2 | include passive
+    fix: no neighbor 2001:db8::2 transport connection-mode passive
+  - rank: 2
+    cause: 防火墙阻断 179
+    probability: 0.15
+    evidence: []
+    verify: debug ip tcp
+    fix: 放行 179
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/support/bgp-passive
+    version: IOS-XE-17.09
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 bgp
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

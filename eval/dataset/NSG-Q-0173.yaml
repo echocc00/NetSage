@@ -1,0 +1,48 @@
+id: NSG-Q-0173
+title: OSPF 路由 cost 不优（Juniper 22，interface metric 设错）
+category: troubleshoot
+vendor: juniper
+version: 21.2R1
+difficulty: 3
+tags:
+- ospf
+- cost
+- metric
+input:
+  symptom: OSPF 路由选择非最优链路
+  device_info:
+    model: ''
+    version: 21.2R1
+    interfaces: []
+  evidence:
+  - config_snippet: 'set protocols ospf area 0.0.0.0 interface ge-0/0/0 metric 1000   # ⚠️ cost 过大'
+  question: 诊断 cost 错配
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: 接口 metric 被强加 1000，导致不合理路径
+    probability: 0.8
+    verify: show ospf interface ge-0/0/0 | match metric
+    fix: set metric 10
+  - rank: 2
+    cause: bandwidth reference 错配
+    probability: 0.2
+    verify: show ospf configuration
+    fix: reference-bandwidth 100000
+  references:
+  - type: vendor_doc
+    url: https://www.juniper.net/documentation/junos-21.2/ospf-cost
+    version: 21.2R1
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 ospf
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

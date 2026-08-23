@@ -1,0 +1,50 @@
+id: NSG-Q-0178
+title: VXLAN NVE 端口 down（华为 VRP-8.180，物理接口绑定错）
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 3
+tags:
+- vxlan
+- nve
+- source-interface
+input:
+  symptom: VXLAN nve interface 状态 down
+  device_info:
+    model: ''
+    version: VRP-8.180
+    interfaces: []
+  evidence:
+  - config_snippet: "interface 10GE1/0/1\n port link-type access"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: 10GE1/0/1 没配 IP 处于 DOWN
+    probability: 0.7
+    evidence: []
+    verify: display interface 10GE1/0/1
+    fix: ip address + port link-mode route
+  - rank: 2
+    cause: NVE 接口在实例中漏配置
+    probability: 0.3
+    evidence: []
+    verify: display vxlan vni
+    fix: 配置 nve source-interface
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/vrp-nve
+    version: VRP-8.180
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 vxlan
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

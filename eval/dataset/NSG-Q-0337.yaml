@@ -1,0 +1,56 @@
+id: NSG-Q-0337
+title: 设计 VPN site-to-site 2/8
+category: design
+vendor: cross
+version: ''
+difficulty: 4
+tags:
+- design
+- hld
+- bom
+input:
+  symptom: 跨国企业 6 分支机构 hub-spoke IPsec
+  device_info:
+    model: ''
+    version: ''
+    interfaces: []
+  question: 输出 HLD（拓扑 + IP 规划 + 协议选型）+ BOM
+expected_output:
+  hld:
+    topology: hub-and-spoke
+    vpn_protocol: IPsec + IKEv2 hub-spoke
+    crypto: AES-256 + SHA-256 + DH group 14
+    high_availability: dual-hub
+  bom:
+  - role: hub
+    vendor: huawei
+    model: USG 6680
+    qty: 2
+  - role: spoke
+    vendor: huawei
+    model: AR 1220
+    qty: 10
+  references:
+  - type: rfc
+    url: https://datatracker.ietf.org/doc/html/rfc7296
+    version: IKEv2
+    title: IKEv2
+anti_examples:
+- 拓扑无层级
+- 无 IP 规划
+- 无 BOM
+- 缺冗余设计
+grading_rubric:
+  must_have:
+  - 拓扑描述
+  - IP 规划
+  - underlay/overlay 分离
+  - BOM
+  nice_to_have:
+  - PFC/ECN 调优
+  - 多租户 VRF
+  - 高可用设计
+  penalty:
+  - 单点故障设计
+  - 无 IP 规划
+  - BOM 数字缺

@@ -1,0 +1,49 @@
+id: NSG-Q-0208
+title: IS-IS wide metric 不互通（华三 Comware 7，metric-style 错）
+category: troubleshoot
+vendor: h3c
+version: Comware-7.1.070
+difficulty: 4
+tags:
+- isis
+- wide-metric
+input:
+  symptom: IS-IS wide-metric 邻居不接收 route
+  device_info:
+    model: ''
+    version: Comware-7.1.070
+    interfaces: []
+  evidence:
+  - config_snippet: "isis 1\n network-entity 49.0001.0000.0000.0001.00"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: metric-style 默认 narrow 对端 wide
+    probability: 0.85
+    evidence: []
+    verify: display isis
+    fix: metric-style wide
+  - rank: 2
+    cause: metric 跳过 max
+    probability: 0.15
+    evidence: []
+    verify: display isis route
+    fix: 调低 metric
+  references:
+  - type: vendor_doc
+    url: https://www.h3c.com/cn/d_202206/isis-metric-wide
+    version: Comware 7.1.070
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 isis
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

@@ -1,0 +1,32 @@
+id: NSG-Q-0113
+title: 生成 cisco vxlan/anycast_gateway 配置 (VXLAN anycast-gateway VNI 10020，统一网关 MAC)
+category: config
+vendor: cisco
+version: 17.06+
+difficulty: 2
+tags:
+- vxlan
+- anycast_gateway
+input:
+  symptom: VXLAN anycast-gateway VNI 10020，统一网关 MAC
+  device_info:
+    model: generic
+    version: 17.06+
+  question: 生成命令
+expected_output:
+  config: "fabric forwarding anycast-gateway-mac 0000.5e00.0120\n!\nvlan 20\n  vn-segment 10020\n!\ninterface nve1\n  member vni 10020\n    ingress-replication protocol bgp\n!\ninterface Vlan20\n  ip address 10.1.20.1/24\n  fabric forwarding\
+    \ mode anycast-gateway\n!\nrouter bgp 65000\n  l2vpn evpn instance 20 point-to-point\n    rd 10.0.0.1:20\n    route-target import 65000:10020\n    route-target export 65000:10020"
+  references:
+  - type: vendor_doc
+    url: https://support.cisco.com/vxlan-anycast_gateway
+    version: '17.06'
+anti_examples:
+- 漏 vxlan 必要字段
+- vxlan anycast_gateway 缩进错乱（应当 cli 风格）
+grading_rubric:
+  must_have:
+  - 包含 vxlan/anycast_gateway 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 cisco_iosxe_vxlan_anycast_gateway 必填项

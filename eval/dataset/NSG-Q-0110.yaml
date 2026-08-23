@@ -1,0 +1,53 @@
+id: NSG-Q-0110
+title: 生成 juniper vxlan/evpn_l2vpn 配置 (VXLAN EVPN L2VNI 10010 + BGP EVPN peer)
+category: config
+vendor: juniper
+version: 21.2R1+
+difficulty: 2
+tags:
+- vxlan
+- evpn_l2vpn
+input:
+  symptom: VXLAN EVPN L2VNI 10010 + BGP EVPN peer
+  device_info:
+    model: generic
+    version: 21.2R1+
+  question: 生成命令
+expected_output:
+  config: 'set routing-instances evpn-10 instance-type evpn
+
+    set routing-instances evpn-10 vlan-id 10
+
+    set routing-instances evpn-10 l3vpn no
+
+    set routing-instances evpn-10 vxlan vni 10010
+
+    set routing-instances evpn-10 protocols evpn encapsulation vxlan
+
+    set routing-instances evpn-10 protocols evpn control-plane bgp
+
+    set routing-instances evpn-10 route-distinguisher 10.0.0.1:10
+
+    set routing-instances evpn-10 vrf-target target:65000:10010
+
+    !
+
+    set protocols bgp group RR family evpn signaling
+
+    set protocols bgp group RR neighbor 10.1.1.1
+
+    set protocols bgp group RR local-address 10.0.0.1'
+  references:
+  - type: vendor_doc
+    url: https://support.juniper.com/vxlan-evpn_l2vpn
+    version: 21.2R1
+anti_examples:
+- 漏 vxlan 必要字段
+- vxlan evpn_l2vpn 缩进错乱（应当 cli 风格）
+grading_rubric:
+  must_have:
+  - 包含 vxlan/evpn_l2vpn 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 juniper_junos_vxlan_evpn_l2vpn 必填项

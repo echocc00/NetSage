@@ -1,0 +1,43 @@
+id: NSG-Q-0277
+title: 审计 h3c SHADOWED (acl-04 章节)
+category: audit
+vendor: h3c
+version: Comware-7.1.070
+difficulty: 3
+tags:
+- shadowed
+input:
+  symptom: 审计以下配置的安全合规性
+  device_info:
+    model: ''
+    version: Comware-7.1.070
+    interfaces: []
+  question: 列出风险点 + 加固建议 + 合规分（基线 acl-04）
+  config_snippet: "acl number 3000\n rule 5 deny ip any any\n rule 10 permit ip 10.1.0.0 0.0.255.255 any"
+expected_output:
+  findings:
+  - rule_id: ACL-04
+    severity: critical
+    description: 配置违反 acl-04 基线：shadowed
+    remediation: 对照 acl-04 章节整改（清掉配置 + 启用合规配置）
+  score: 70
+  references:
+  - type: standard
+    url: https://cis-security/acl-04
+    version: Comware-7.1.070
+    title: CIS acl-04 章节
+anti_examples:
+- 请重启设备
+- 推荐清除配置
+- 遗漏 critical 项
+grading_rubric:
+  must_have:
+  - 识别 acl-04 主要风险
+  - 给整改建议
+  - severity 分级
+  nice_to_have:
+  - 引用基线规则 ID
+  - 给合规分
+  penalty:
+  - 推荐重启设备
+  - 遗漏 critical 项

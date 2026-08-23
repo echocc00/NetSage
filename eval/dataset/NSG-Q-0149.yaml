@@ -1,0 +1,33 @@
+id: NSG-Q-0149
+title: 生成 h3c wireless/ssid 配置 (WLAN SSID corp + wpa2-psk 配置)
+category: config
+vendor: h3c
+version: 7.1.070+
+difficulty: 2
+tags:
+- wireless
+- ssid
+input:
+  symptom: WLAN SSID corp + wpa2-psk 配置
+  device_info:
+    model: generic
+    version: 7.1.070+
+  question: 生成命令
+expected_output:
+  config: "wlan service-template st1\n  ssid corp\n  akm psk\n  cipher-suite aes-ccmp\n  security-ie rsn\n  pre-shared-key phrase Pass@2024\n#\nwlan ap-group ag1\n  ap-model AP-9150\n  radio 1 type 802.11ax\n  radio 1 channel 6\n  radio 1 power\
+    \ 50\n  radio 2 type 802.11ax\n  radio 2 channel 36\n  radio 2 power 50\n#\nwlan ap ap-id 1 serial-id SN123\n  ap-name ap01\n  group ag1\n#\nwlan ap ap01 vlan 10\nwlan ap ap01 radio 1 service-template st1\nwlan ap ap01 radio 2 service-template\
+    \ st1"
+  references:
+  - type: vendor_doc
+    url: https://support.h3c.com/wireless-ssid
+    version: 7.1.070
+anti_examples:
+- 漏 wireless 必要字段
+- wireless ssid 缩进错乱（应当 cli 风格）
+grading_rubric:
+  must_have:
+  - 包含 wireless/ssid 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 h3c_comware_wireless_ssid 必填项

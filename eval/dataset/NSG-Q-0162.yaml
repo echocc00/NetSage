@@ -1,0 +1,48 @@
+id: NSG-Q-0162
+title: BGP 路由频繁 flap（思科 IOS-XE 17，dampening 阈值过严）
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 3
+tags:
+- bgp
+- dampening
+- route-flap
+input:
+  symptom: BGP dampening 频繁抑制路由
+  device_info:
+    model: ''
+    version: IOS-XE-17.09
+    interfaces: []
+  evidence:
+  - config_snippet: "router bgp 65001\n bgp dampening 15 750 2000 60\n# suppress 阈值 750，路由经常被 suppress"
+  question: 诊断 dampening 过严
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: dampening 阈值过低，链路抖动即被惩罚
+    probability: 0.7
+    verify: show ip bgp dampening parameters
+    fix: bgp dampening 15 2000 4000 90
+  - rank: 2
+    cause: 链路物理不稳定
+    probability: 0.3
+    verify: show interface | include flap
+    fix: 修链路
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/support/bgp-dampening
+    version: IOS-XE-17.09
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 bgp
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

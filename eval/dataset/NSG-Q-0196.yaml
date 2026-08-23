@@ -1,0 +1,51 @@
+id: NSG-Q-0196
+title: 环路震荡（思科 MSTP，思科 Spanning-tree 实例错配）
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 3
+tags:
+- stp
+- mstp
+- instance
+- loop
+input:
+  symptom: 环路引发 ping 抖动
+  device_info:
+    model: ''
+    version: IOS-XE-17.09
+    interfaces: []
+  evidence:
+  - config_snippet: "spanning-tree mode mst\nspanning-tree mst configuration\n  name REGION1\n  instance 1 vlan 10"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: region-name 不一致
+    probability: 0.7
+    evidence: []
+    verify: show spanning-tree mst
+    fix: 统一 region-name
+  - rank: 2
+    cause: priority 错配
+    probability: 0.3
+    evidence: []
+    verify: show spanning-tree mst priority
+    fix: priority 0 root primary
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/support/mstp
+    version: IOS-XE-17.09
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 stp
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

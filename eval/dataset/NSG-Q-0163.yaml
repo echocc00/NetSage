@@ -1,0 +1,53 @@
+id: NSG-Q-0163
+title: OSPF SPF 频繁计算（Juniper 22，stub area type-3 抖动）
+category: troubleshoot
+vendor: juniper
+version: 21.2R1
+difficulty: 3
+tags:
+- ospf
+- spf
+- stub
+input:
+  symptom: OSPF SPF 计算 100/秒
+  device_info:
+    model: ''
+    version: 21.2R1
+    interfaces: []
+  evidence:
+  - config_snippet: 'set protocols ospf area 0.0.0.1 stub
+
+      set protocols ospf area 0.0.0.1 interface ge-0/0/0
+
+      # Spoke 端频繁 Up/Down'
+  - config_snippet: 'show ospf statistics extensive: SPF runs: 100/5s'
+  question: 诊断 SPF 频繁
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: stub area 接口频繁 Up/Down
+    probability: 0.65
+    verify: show interfaces ge-0/0/0 | match flap
+    fix: 提升 SPF throttle（spf-options delay 1000 holdtime 5000 max 5000）
+  - rank: 2
+    cause: SPF throttle 未配置
+    probability: 0.35
+    verify: show ospf configuration
+    fix: spf-options 配置 throttle
+  references:
+  - type: vendor_doc
+    url: https://www.juniper.net/documentation/junos-21.2/ospf-spf-options
+    version: 21.2R1
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 ospf
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

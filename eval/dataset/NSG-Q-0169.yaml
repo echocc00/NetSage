@@ -1,0 +1,50 @@
+id: NSG-Q-0169
+title: OSPFv3 邻居卡 Init（华为 VRP-8.180，instance-id 错）
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 3
+tags:
+- ospfv3
+- instance-id
+- init
+input:
+  symptom: OSPFv3 邻居卡 Init
+  device_info:
+    model: ''
+    version: VRP-8.180
+    interfaces: []
+  evidence:
+  - config_snippet: "ospfv3 1\n router-id 10.0.0.1\ninterface 10GE1/0/1\n ospfv3 1 area 0 instance 17\n# 对端 instance 18"
+  question: 诊断 instance-id 错配
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: 两端 instance-id 不一致（17 vs 18）
+    probability: 0.85
+    evidence:
+    - Init 状态说明 Hello 不匹配
+    verify: display ospfv3 interface 10GE1/0/1 | include instance
+    fix: interface 10GE1/0/1 → ospfv3 1 area 0 instance 18
+  - rank: 2
+    cause: area-id 错配
+    probability: 0.15
+    verify: display ospfv3
+    fix: 统一 area 0
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/vrp-ospfv3
+    version: VRP-8.180
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 ospfv3
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

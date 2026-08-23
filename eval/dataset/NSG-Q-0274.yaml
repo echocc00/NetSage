@@ -1,0 +1,43 @@
+id: NSG-Q-0274
+title: 审计 huawei OVERLAP (acl-05 章节)
+category: audit
+vendor: huawei
+version: VRP-8.180
+difficulty: 3
+tags:
+- overlap
+input:
+  symptom: 审计以下配置的安全合规性
+  device_info:
+    model: ''
+    version: VRP-8.180
+    interfaces: []
+  question: 列出风险点 + 加固建议 + 合规分（基线 acl-05）
+  config_snippet: "acl 3001\n rule 5 permit tcp any any eq 80\n rule 10 permit tcp any host 10.1.1.2 eq 80"
+expected_output:
+  findings:
+  - rule_id: ACL-05
+    severity: medium
+    description: 配置违反 acl-05 基线：overlap
+    remediation: 对照 acl-05 章节整改（清掉配置 + 启用合规配置）
+  score: 95
+  references:
+  - type: standard
+    url: https://cis-security/acl-05
+    version: VRP-8.180
+    title: CIS acl-05 章节
+anti_examples:
+- 请重启设备
+- 推荐清除配置
+- 遗漏 critical 项
+grading_rubric:
+  must_have:
+  - 识别 acl-05 主要风险
+  - 给整改建议
+  - severity 分级
+  nice_to_have:
+  - 引用基线规则 ID
+  - 给合规分
+  penalty:
+  - 推荐重启设备
+  - 遗漏 critical 项

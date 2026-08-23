@@ -1,0 +1,38 @@
+id: NSG-Q-0130
+title: 生成 juniper interface/trunk 配置 (Trunk 端口 VLAN 10 配置)
+category: config
+vendor: juniper
+version: 21.2+
+difficulty: 2
+tags:
+- interface
+- trunk
+input:
+  symptom: Trunk 端口 VLAN 10 配置
+  device_info:
+    model: generic
+    version: 21.2+
+  question: 生成命令
+expected_output:
+  config: 'set interfaces ge-0/0/1 unit 0 vlan-id-list 10
+
+    set interfaces ge-0/0/1 unit 0 family ethernet-switching interface-mode trunk
+
+
+    set interfaces ge-0/0/1 unit 0 native-vlan-id 1
+
+    '
+  references:
+  - type: vendor_doc
+    url: https://support.juniper.com/interface-trunk
+    version: '21.2'
+anti_examples:
+- 漏 interface 必要字段
+- interface trunk 缩进错乱（应当 cli 风格）
+grading_rubric:
+  must_have:
+  - 包含 interface/trunk 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 juniper_junos_interface_trunk 必填项

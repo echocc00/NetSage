@@ -1,0 +1,47 @@
+id: NSG-Q-0160
+title: BGP maximum-prefix 超限（Arista EOS 4.24，max-routes 触发）
+category: troubleshoot
+vendor: arista
+version: '4.24'
+difficulty: 3
+tags:
+- bgp
+- maximum-prefix
+input:
+  symptom: '%BGP-4-MAX_ROUTES: Peer 10.1.1.2 (AS 65002) exceeded maximum routes 5000'
+  device_info:
+    model: ''
+    version: '4.24'
+    interfaces: []
+  evidence:
+  - config_snippet: "router bgp 65001\n neighbor 10.1.1.2 maximum-routes 5000 80 warning-only"
+  question: 诊断 max-routes 触发
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: 对端路由泄漏
+    probability: 0.7
+    verify: show ip bgp summary
+    fix: max-routes 50000 + ip prefix-list 过滤
+  - rank: 2
+    cause: warning-only 模式
+    probability: 0.2
+    verify: show ip bgp summary | include warning
+    fix: warning-only 移除
+  references:
+  - type: vendor_doc
+    url: https://www.arista.com/en/docs/eos-4.24/bgp-max-routes
+    version: EOS 4.24
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 bgp
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

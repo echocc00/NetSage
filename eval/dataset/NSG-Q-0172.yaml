@@ -1,0 +1,48 @@
+id: NSG-Q-0172
+title: OSPF 区域内路由缺失（思科 17，db-filter 配置）
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 4
+tags:
+- ospf
+- db-filter
+- summary
+input:
+  symptom: OSPF 部分区域内路由学习不到
+  device_info:
+    model: ''
+    version: IOS-XE-17.09
+    interfaces: []
+  evidence:
+  - config_snippet: "router ospf 1\n area 0.0.0.1 filter-list prefix PL-IN in"
+  question: 诊断 db-filter
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: area 0.0.0.1 应用 prefix-list filter 误阻挡
+    probability: 0.7
+    verify: show ip ospf database
+    fix: undo filter-list
+  - rank: 2
+    cause: route-map 误配
+    probability: 0.3
+    verify: show route-map
+    fix: 调整 route-map
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/support/ospf-prefix-filter
+    version: IOS-XE-17.09
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 ospf
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

@@ -1,0 +1,31 @@
+id: NSG-Q-0133
+title: 生成 cisco interface/vlan 配置 (Vlanif 10 配置 + IP)
+category: config
+vendor: cisco
+version: 15.6(3)M+
+difficulty: 2
+tags:
+- interface
+- vlan
+input:
+  symptom: Vlanif 10 配置 + IP
+  device_info:
+    model: generic
+    version: 15.6(3)M+
+  question: 生成命令
+expected_output:
+  config: "vlan 10\n  name mgmt\n!\ninterface Vlan10\n  ip address 10.1.10.1 255.255.255.0\n  ip vrf forwarding default\n  description mgmt"
+  references:
+  - type: vendor_doc
+    url: https://support.cisco.com/interface-vlan
+    version: 15.6(3)M
+anti_examples:
+- 漏 interface 必要字段
+- interface vlan 缩进错乱（应当 cli 风格）
+grading_rubric:
+  must_have:
+  - 包含 interface/vlan 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 cisco_iosxe_interface_vlan 必填项

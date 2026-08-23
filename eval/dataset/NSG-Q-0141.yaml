@@ -1,0 +1,31 @@
+id: NSG-Q-0141
+title: 生成 arista static_route/default 配置 (默认路由 0.0.0.0/0 → 198.51.100.254)
+category: config
+vendor: arista
+version: 4.24+
+difficulty: 2
+tags:
+- static_route
+- default
+input:
+  symptom: 默认路由 0.0.0.0/0 → 198.51.100.254
+  device_info:
+    model: generic
+    version: 4.24+
+  question: 生成命令
+expected_output:
+  config: '# RENDER ERROR: ''preference'' is undefined'
+  references:
+  - type: vendor_doc
+    url: https://support.arista.com/static_route-default
+    version: '4.24'
+anti_examples:
+- 漏 static_route 必要字段
+- static_route default 缩进错乱（应当 cli 风格）
+grading_rubric:
+  must_have:
+  - 包含 static_route/default 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 arista_eos_static_route_default 必填项

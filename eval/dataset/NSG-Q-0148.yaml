@@ -1,0 +1,32 @@
+id: NSG-Q-0148
+title: 生成 cisco wireless/ssid 配置 (WLAN SSID corp + wpa2-psk 配置)
+category: config
+vendor: cisco
+version: 17.0+
+difficulty: 2
+tags:
+- wireless
+- ssid
+input:
+  symptom: WLAN SSID corp + wpa2-psk 配置
+  device_info:
+    model: generic
+    version: 17.0+
+  question: 生成命令
+expected_output:
+  config: "ap ap01\n  description office\n  ap-group ag1\n!\nwlan 1 corp prof1\n!\nwireless profile policy prof1\n  type wpa2\n  session-timeout 1800\n  vlan 10\n  no shutdown\n!\nwireless tag policy tp1\n  wlan-profile 1 policy prof1\n!\nwireless\
+    \ tag site ts1\n  ap-profile ag1\n!\nap ap01 site-tag ts1 policy-tag tp1\n!\nssid mode wpa2-psk\nauthentication-type psk\n  password Pass@2024\nssid-security corp wpa2-psk ascii Pass@2024"
+  references:
+  - type: vendor_doc
+    url: https://support.cisco.com/wireless-ssid
+    version: '17.0'
+anti_examples:
+- 漏 wireless 必要字段
+- wireless ssid 缩进错乱（应当 cli 风格）
+grading_rubric:
+  must_have:
+  - 包含 wireless/ssid 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 cisco_iosxe_wireless_ssid 必填项

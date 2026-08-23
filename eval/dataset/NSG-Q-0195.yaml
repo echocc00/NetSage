@@ -1,0 +1,50 @@
+id: NSG-Q-0195
+title: LACP fallback 单链路（思科 IOS-XE 17，LACP fallback 配置错）
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 3
+tags:
+- lacp
+- fallback
+- single-link
+input:
+  symptom: LACP 仅 single link 工作
+  device_info:
+    model: ''
+    version: IOS-XE-17.09
+    interfaces: []
+  evidence:
+  - config_snippet: "interface port-channel 10\n lacp fallback static 1G\n lacp max-bundle 2"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: lacp fallback 但对端未启
+    probability: 0.7
+    evidence: []
+    verify: show etherchannel summary
+    fix: 两端对齐
+  - rank: 2
+    cause: max-bundle < active-member
+    probability: 0.3
+    evidence: []
+    verify: show etherchannel detail
+    fix: max-bundle 配置
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/support/lacp-fallback
+    version: IOS-XE-17.09
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 lacp
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

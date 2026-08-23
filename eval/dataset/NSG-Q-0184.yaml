@@ -1,0 +1,50 @@
+id: NSG-Q-0184
+title: VRRP 双 Master（Cisco IOS-XE 17，advertise interval 抖动）
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 3
+tags:
+- vrrp
+- dual-master
+- advertise
+input:
+  symptom: VRRP 同 VRID 两个 Master
+  device_info:
+    model: ''
+    version: IOS-XE-17.09
+    interfaces: []
+  evidence:
+  - config_snippet: "interface Vlan10\n vrrp 1 ip 10.1.10.1\n vrrp 1 timers advertise msec 100"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: advertise 间隔抖动导致 split-brain
+    probability: 0.7
+    evidence: []
+    verify: show vrrp detail
+    fix: timers advertise 1
+  - rank: 2
+    cause: 认证不一致
+    probability: 0.3
+    evidence: []
+    verify: show vrrp interface
+    fix: 认证 + 间隔对齐
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/support/vrrp-dual-master
+    version: IOS-XE-17.09
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 vrrp
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

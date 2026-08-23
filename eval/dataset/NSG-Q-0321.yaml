@@ -1,0 +1,56 @@
+id: NSG-Q-0321
+title: 设计 BGP RR 2/8
+category: design
+vendor: cross
+version: ''
+difficulty: 4
+tags:
+- design
+- hld
+- bom
+input:
+  symptom: 大型 ISP 边缘 51 节点，BGP RR 设计
+  device_info:
+    model: ''
+    version: ''
+    interfaces: []
+  question: 输出 HLD（拓扑 + IP 规划 + 协议选型）+ BOM
+expected_output:
+  hld:
+    topology: RR 集群 (2 RR + 8 client)
+    protocol: BGP Route Reflector + cluster_id 双 RR 互冗
+    as_topology: transit AS 65000 + RR cluster-id 10.0.0.1/10.0.0.2
+    redundancy: RR 1+1 备份；client 双归
+  bom:
+  - role: RR
+    vendor: huawei
+    model: NE40E-X16
+    qty: 2
+  - role: RR-client
+    vendor: huawei
+    model: ATN 905
+    qty: 8
+  references:
+  - type: rfc
+    url: https://datatracker.ietf.org/doc/html/rfc4456
+    version: RFC 4456
+    title: BGP Route Reflection
+anti_examples:
+- 拓扑无层级
+- 无 IP 规划
+- 无 BOM
+- 缺冗余设计
+grading_rubric:
+  must_have:
+  - 拓扑描述
+  - IP 规划
+  - underlay/overlay 分离
+  - BOM
+  nice_to_have:
+  - PFC/ECN 调优
+  - 多租户 VRF
+  - 高可用设计
+  penalty:
+  - 单点故障设计
+  - 无 IP 规划
+  - BOM 数字缺

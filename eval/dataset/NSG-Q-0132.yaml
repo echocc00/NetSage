@@ -1,0 +1,31 @@
+id: NSG-Q-0132
+title: 生成 huawei interface/vlan 配置 (Vlanif 10 配置 + IP)
+category: config
+vendor: huawei
+version: 8.0+
+difficulty: 2
+tags:
+- interface
+- vlan
+input:
+  symptom: Vlanif 10 配置 + IP
+  device_info:
+    model: generic
+    version: 8.0+
+  question: 生成命令
+expected_output:
+  config: "vlan 10\n  description mgmt\n#\ninterface Vlanif10\n  ip address 10.1.10.1 255.255.255.0\n  vrf public"
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/interface-vlan
+    version: '8.0'
+anti_examples:
+- 漏 interface 必要字段
+- interface vlan 缩进错乱（应当 cli 风格）
+grading_rubric:
+  must_have:
+  - 包含 interface/vlan 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 huawei_vrp_interface_vlan 必填项

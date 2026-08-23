@@ -1,0 +1,50 @@
+id: NSG-Q-0206
+title: ACL 顺序错（思科 IOS-XE 17，sequence number 生效错）
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 3
+tags:
+- acl
+- sequence
+- order
+input:
+  symptom: ACL permit 后被 deny
+  device_info:
+    model: ''
+    version: IOS-XE-17.09
+    interfaces: []
+  evidence:
+  - config_snippet: "ip access-list extended ACL-1\n 10 deny ip any any\n 5 permit tcp any any eq 80"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: ACL sequence 不按数字从小到大
+    probability: 0.7
+    evidence: []
+    verify: show ip access-list
+    fix: 序列号重新组织
+  - rank: 2
+    cause: sub-ACl 被 main-ACL 短路
+    probability: 0.3
+    evidence: []
+    verify: show ip access-list
+    fix: 调整 hierarchy
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/support/acl-sequence
+    version: IOS-XE-17.09
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 acl
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

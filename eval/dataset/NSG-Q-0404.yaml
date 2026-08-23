@@ -1,0 +1,48 @@
+id: NSG-Q-0404
+title: 'InfiniBand 调优 4/6: IB 分区 (partition) 设置'
+category: perf
+vendor: mellanox
+version: MLNX-OS 4.x
+difficulty: 5
+tags:
+- infiband
+- lid
+- vl
+- partition
+input:
+  symptom: IB 分区 (partition) 设置
+  device_info:
+    model: ''
+    version: MLNX-OS 4.x
+    interfaces: []
+  question: 给出瓶颈定位 + 调优参数
+expected_output:
+  bottleneck: IB PKey 错配
+  tuning_params:
+    lid_start: 1
+    sm_priority: 5
+    vl15: management
+    pkey: '0x7FFF'
+  verify:
+  - show topology
+  - show vpath
+  references:
+  - type: vendor_doc
+    url: https://mellanox.com/infiband
+    version: MLNX-OS 4.x
+    title: infiband 调优章节
+anti_examples:
+- 关闭 PFC
+- 建议重启设备
+- 无证据瞎猜
+grading_rubric:
+  must_have:
+  - PFC 优先级
+  - ECN 阈值
+  - buffer 配置
+  nice_to_have:
+  - DCQCN 调参
+  - PFC watchdog
+  - verify 命令
+  penalty:
+  - 建议关闭 PFC

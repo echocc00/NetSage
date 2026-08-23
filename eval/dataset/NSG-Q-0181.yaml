@@ -1,0 +1,52 @@
+id: NSG-Q-0181
+title: MPLS LDP 邻居不建（思科 IOS-XE 17，mpls label-range 错配）
+category: troubleshoot
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 4
+tags:
+- mpls
+- ldp
+- label-range
+input:
+  symptom: MPLS LDP 邻居不建立
+  device_info:
+    model: ''
+    version: IOS-XE-17.09
+    interfaces: []
+  evidence:
+  - config_snippet: 'mpls label range 100 199
+
+      mpls ldp router-id Loopback0 force'
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: label-range 后 router-id 改变
+    probability: 0.5
+    evidence: []
+    verify: show mpls ldp neighbor
+    fix: clear mpls ldp neighbor *
+  - rank: 2
+    cause: IGP 中 router-id Lo 不通
+    probability: 0.5
+    evidence: []
+    verify: show ip route 10.0.0.1
+    fix: 修 IGP
+  references:
+  - type: vendor_doc
+    url: https://www.cisco.com/c/en/us/support/mpls-ldp
+    version: IOS-XE-17.09
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 mpls
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

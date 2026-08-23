@@ -1,0 +1,43 @@
+id: NSG-Q-0267
+title: 审计 h3c PERMIT ANY (acl-01 章节)
+category: audit
+vendor: h3c
+version: Comware-7.1.070
+difficulty: 3
+tags:
+- permit-any
+input:
+  symptom: 审计以下配置的安全合规性
+  device_info:
+    model: ''
+    version: Comware-7.1.070
+    interfaces: []
+  question: 列出风险点 + 加固建议 + 合规分（基线 acl-01）
+  config_snippet: "acl number 3000\n rule 5 permit ip"
+expected_output:
+  findings:
+  - rule_id: ACL-01
+    severity: critical
+    description: 配置违反 acl-01 基线：permit-any
+    remediation: 对照 acl-01 章节整改（清掉配置 + 启用合规配置）
+  score: 70
+  references:
+  - type: standard
+    url: https://cis-security/acl-01
+    version: Comware-7.1.070
+    title: CIS acl-01 章节
+anti_examples:
+- 请重启设备
+- 推荐清除配置
+- 遗漏 critical 项
+grading_rubric:
+  must_have:
+  - 识别 acl-01 主要风险
+  - 给整改建议
+  - severity 分级
+  nice_to_have:
+  - 引用基线规则 ID
+  - 给合规分
+  penalty:
+  - 推荐重启设备
+  - 遗漏 critical 项

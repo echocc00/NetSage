@@ -1,0 +1,55 @@
+id: NSG-Q-0164
+title: OSPF 邻居卡 Loading（Huawei VRP-8.180，LSACK 重传不停）
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 4
+tags:
+- ospf
+- loading
+- lsack
+- retransmit
+input:
+  symptom: OSPF neighbor 10.0.0.2 卡 Loading，retransmit 持续上升
+  device_info:
+    model: ''
+    version: VRP-8.180
+    interfaces: []
+  evidence:
+  - config_snippet: "ospf 1\n area 0.0.0.0\n  network 10.1.1.0 0.0.0.255"
+  - config_snippet: '%OSPF-4-LSACK_RETRANSMIT: OSPF 1: Retransmitting LSA 10.0.0.2 type-3'
+  question: 诊断 LSACK 重传
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: 中间设备 multicast 阻断（224.0.0.5/6）
+    probability: 0.6
+    verify: display acl | include 224
+    fix: 放行 multicast
+  - rank: 2
+    cause: 邻居网卡驱动 bug
+    probability: 0.2
+    verify: display device
+    fix: 升级驱动
+  - rank: 3
+    cause: 存在大量同步重传
+    probability: 0.2
+    verify: display ospf statistics
+    fix: reset ospf 1 process
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/vrp-ospf-loading
+    version: VRP-8.180
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 ospf
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

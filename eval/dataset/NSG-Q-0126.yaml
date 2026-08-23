@@ -1,0 +1,33 @@
+id: NSG-Q-0126
+title: 生成 arista vpn/ssl_remote 配置 (SSL VPN 远程接入配置（pool + 用户）)
+category: config
+vendor: arista
+version: 4.24+
+difficulty: 2
+tags:
+- vpn
+- ssl_remote
+input:
+  symptom: SSL VPN 远程接入配置（pool + 用户）
+  device_info:
+    model: generic
+    version: 4.24+
+  question: 生成命令
+expected_output:
+  config: "management ssl policy pol1\n  cipher-list AES256-SHA256:ECDHE-RSA-AES256-GCM-SHA384\n  session-cache-timeout 600\n!\nmanagement api http-commands\n  protocol https ssl profile ssl1\n!\nip access-list acl1\n  permit ip any 10.0.0.0/16\n\
+    !\naaa authorization policy auth1\n  default authorization\n  rule 1 match username u1\n  rule 1 action allow\n  rule 1 role network-admin\n!\nradius server r1\n  host 10.1.1.99\n  key sec1\n!\naaa authentication login default group radius\
+    \ local\naaa accounting commands all default start-stop group radius\n!\nip route 10.0.0.0/16 198.51.100.254"
+  references:
+  - type: vendor_doc
+    url: https://support.arista.com/vpn-ssl_remote
+    version: '4.24'
+anti_examples:
+- 漏 vpn 必要字段
+- vpn ssl_remote 缩进错乱（应当 cli 风格）
+grading_rubric:
+  must_have:
+  - 包含 vpn/ssl_remote 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 arista_eos_vpn_ssl_remote 必填项

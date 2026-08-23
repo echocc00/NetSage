@@ -1,0 +1,51 @@
+id: NSG-Q-0197
+title: VXLAN VTEP peer 不可达（华三 Comware 7，IGP 路由缺）
+category: troubleshoot
+vendor: h3c
+version: Comware-7.1.070
+difficulty: 4
+tags:
+- vxlan
+- vtep
+- igp
+- reachability
+input:
+  symptom: VXLAN VTEP peer list 为空
+  device_info:
+    model: ''
+    version: Comware-7.1.070
+    interfaces: []
+  evidence:
+  - config_snippet: "bgp 65000\n  peer 10.0.0.2 connect-interface Loopback0"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: IGP 中无 VTEP loopback 路由
+    probability: 0.75
+    evidence: []
+    verify: display ip routing-table
+    fix: 把 Loopback0 通告到 OSPF
+  - rank: 2
+    cause: Loopback 自身未配置 IP
+    probability: 0.25
+    evidence: []
+    verify: display interface Loopback0
+    fix: ip address
+  references:
+  - type: vendor_doc
+    url: https://www.h3c.com/cn/d_202206/vtep-igp
+    version: Comware 7.1.070
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 vxlan
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

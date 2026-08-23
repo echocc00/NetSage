@@ -1,0 +1,51 @@
+id: NSG-Q-0180
+title: IPv6 BGP link-local 误配（华三 Comware 7，connect-interface 错）
+category: troubleshoot
+vendor: h3c
+version: Comware-7.1.070
+difficulty: 4
+tags:
+- bgp
+- ipv6
+- link-local
+- connect-interface
+input:
+  symptom: IPv6 BGP peer 卡 Active
+  device_info:
+    model: ''
+    version: Comware-7.1.070
+    interfaces: []
+  evidence:
+  - config_snippet: "bgp 65000\n peer fe80::1 as-number 65000"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: IPv6 BGP link-local 必须配 connect-interface
+    probability: 0.9
+    evidence: []
+    verify: display bgp ipv6 peer fe80::1
+    fix: peer fe80::1 connect-interface 40GE1/0/1
+  - rank: 2
+    cause: fe80::1 是对端 link-local 本端不一定可达
+    probability: 0.1
+    evidence: []
+    verify: display ipv6 neighbors
+    fix: 同步接口
+  references:
+  - type: vendor_doc
+    url: https://www.h3c.com/cn/d_202206/bgp-ipv6-link-local
+    version: Comware 7.1.070
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 bgp
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

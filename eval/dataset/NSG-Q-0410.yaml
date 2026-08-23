@@ -1,0 +1,47 @@
+id: NSG-Q-0410
+title: 'GPU Direct 调优 4/6: Multi-GPU NCCL 慢'
+category: perf
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 5
+tags:
+- gpu-direct
+- rdma
+- dpdk
+- nccl
+input:
+  symptom: Multi-GPU NCCL 慢
+  device_info:
+    model: ''
+    version: IOS-XE-17.09
+    interfaces: []
+  question: 给出瓶颈定位 + 调优参数
+expected_output:
+  bottleneck: IB plugin 缺失
+  tuning_params:
+    nccl_ib_disable: false
+    nccl_p2p_level: sys
+    cuda_cache_config: cudaFuncCachePreferL1
+  verify:
+  - show rdma
+  - show gpu-direct
+  references:
+  - type: vendor_doc
+    url: https://cisco.com/gpu-direct
+    version: IOS-XE-17.09
+    title: gpu-direct 调优章节
+anti_examples:
+- 关闭 PFC
+- 建议重启设备
+- 无证据瞎猜
+grading_rubric:
+  must_have:
+  - PFC 优先级
+  - ECN 阈值
+  - buffer 配置
+  nice_to_have:
+  - DCQCN 调参
+  - PFC watchdog
+  - verify 命令
+  penalty:
+  - 建议关闭 PFC

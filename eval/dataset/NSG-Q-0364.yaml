@@ -1,0 +1,58 @@
+id: NSG-Q-0364
+title: 设计 RDMA RoCEv2 fabric 10/10
+category: design
+vendor: cross
+version: ''
+difficulty: 4
+tags:
+- design
+- hld
+- bom
+input:
+  symptom: AI 训练集群 13 节点，RoCEv2 无损网络
+  device_info:
+    model: ''
+    version: ''
+    interfaces: []
+  question: 输出 HLD（拓扑 + IP 规划 + 协议选型）+ BOM
+expected_output:
+  hld:
+    topology: lossless spine-leaf for AI
+    roce: RoCEv2
+    pfc: PFC priority 3
+    ecn: ECN threshold 150KB
+    dcqcn: true
+    buffer: headroom 10KB / shared dynamic
+  bom:
+  - role: spine
+    vendor: huawei
+    model: CE5880-CEI
+    qty: 2
+  - role: leaf
+    vendor: huawei
+    model: CE9860-CEI
+    qty: 4
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/vrp-roce
+    version: VRP-8.180
+    title: RoCEv2 lossless 部署
+anti_examples:
+- 拓扑无层级
+- 无 IP 规划
+- 无 BOM
+- 缺冗余设计
+grading_rubric:
+  must_have:
+  - 拓扑描述
+  - IP 规划
+  - underlay/overlay 分离
+  - BOM
+  nice_to_have:
+  - PFC/ECN 调优
+  - 多租户 VRF
+  - 高可用设计
+  penalty:
+  - 单点故障设计
+  - 无 IP 规划
+  - BOM 数字缺

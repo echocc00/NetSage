@@ -1,0 +1,56 @@
+id: NSG-Q-0353
+title: 设计 WLAN AC+AP 4/5
+category: design
+vendor: cross
+version: ''
+difficulty: 4
+tags:
+- design
+- hld
+- bom
+input:
+  symptom: 办公园区无线 AP 13 部署
+  device_info:
+    model: ''
+    version: ''
+    interfaces: []
+  question: 输出 HLD（拓扑 + IP 规划 + 协议选型）+ BOM
+expected_output:
+  hld:
+    topology: WLC 集中式 13 AP
+    wlc_protocol: CAPWAP
+    ap_distribution: 13 AP 部署在 6 楼宇
+    roaming: 802.11r FT
+  bom:
+  - role: WLC
+    vendor: huawei
+    model: AC 6808
+    qty: 1
+  - role: AP
+    vendor: huawei
+    model: AP 9150
+    qty: 13
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/vrp-wlan-deploy
+    version: VRP-8.180
+    title: AC+AP 部署
+anti_examples:
+- 拓扑无层级
+- 无 IP 规划
+- 无 BOM
+- 缺冗余设计
+grading_rubric:
+  must_have:
+  - 拓扑描述
+  - IP 规划
+  - underlay/overlay 分离
+  - BOM
+  nice_to_have:
+  - PFC/ECN 调优
+  - 多租户 VRF
+  - 高可用设计
+  penalty:
+  - 单点故障设计
+  - 无 IP 规划
+  - BOM 数字缺

@@ -1,0 +1,49 @@
+id: NSG-Q-0171
+title: OSPF ABR 不通告 type-3 summary（华三 Comware 7）
+category: troubleshoot
+vendor: h3c
+version: Comware-7.1.070
+difficulty: 3
+tags:
+- ospf
+- abr
+- summary
+- nssa
+input:
+  symptom: OSPF ABR 不通告某些 inter-area route
+  device_info:
+    model: ''
+    version: Comware-7.1.070
+    interfaces: []
+  evidence:
+  - config_snippet: "ospf 1\n area 0.0.0.1\n  stub no-summary  # ⚠️ 完全末梢"
+  question: 诊断 type-3 summary 缺
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: stub no-summary 抑制 type-3
+    probability: 0.85
+    verify: display ospf lsdb | include Summary
+    fix: undo stub no-summary → stub
+  - rank: 2
+    cause: ABR 上 area-range 误配
+    probability: 0.15
+    verify: display ospf abr
+    fix: 调整 area-range
+  references:
+  - type: vendor_doc
+    url: https://www.h3c.com/cn/d_202206/ospf-stub-summary
+    version: Comware 7.1.070
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 ospf
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

@@ -1,0 +1,32 @@
+id: NSG-Q-0085
+title: 生成 juniper bgp/route_reflector 配置 (iBGP Route Reflector 配置，本地 AS 65000 + 集群 ID 10.0.0.1)
+category: config
+vendor: juniper
+version: 21.2+
+difficulty: 2
+tags:
+- bgp
+- route_reflector
+input:
+  symptom: iBGP Route Reflector 配置，本地 AS 65000 + 集群 ID 10.0.0.1
+  device_info:
+    model: generic
+    version: 21.2+
+  question: 生成命令
+expected_output:
+  config: "set routing-options router-id 10.0.0.1\nset routing-options autonomous-system 65000\nedit groups\n  set protocols bgp group iBGP-RR type internal\n  set protocols bgp group iBGP-RR local-address 10.0.0.1\n  set protocols bgp group\
+    \ iBGP-RR family inet unicast\n  set protocols bgp group iBGP-RR cluster 10.0.0.1\nexit\n\nset protocols bgp group iBGP-RR neighbor 10.1.1.10\n"
+  references:
+  - type: vendor_doc
+    url: https://support.juniper.com/bgp-route_reflector
+    version: '21.2'
+anti_examples:
+- 漏 bgp 必要字段
+- bgp route_reflector 缩进错乱（应当 cli 风格）
+grading_rubric:
+  must_have:
+  - 包含 bgp/route_reflector 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 juniper_junos_bgp_route_reflector 必填项

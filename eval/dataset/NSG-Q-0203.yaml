@@ -1,0 +1,53 @@
+id: NSG-Q-0203
+title: NAT 网关切换后丢包（华为 VRP-8.180，HRP 备机丢包）
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 4
+tags:
+- nat
+- hrp
+- backup
+- drop
+input:
+  symptom: NAT HRP 备机切换后丢包
+  device_info:
+    model: ''
+    version: VRP-8.180
+    interfaces: []
+  evidence:
+  - config_snippet: 'hrp enable
+
+      hrp interface 10GE1/0/1 remote 198.51.100.2'
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: HRP 备份端口流量回放延迟
+    probability: 0.7
+    evidence: []
+    verify: display hrp state
+    fix: 调优 hrp preempt delay
+  - rank: 2
+    cause: NAT 转换日志大量
+    probability: 0.3
+    evidence: []
+    verify: display nat
+    fix: 清表
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/vrp-nat-hrp
+    version: VRP-8.180
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 nat
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

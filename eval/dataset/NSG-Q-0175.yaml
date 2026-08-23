@@ -1,0 +1,49 @@
+id: NSG-Q-0175
+title: OSPF 卡 Init（华为 VRP-8.180，区域认证 key-id 不一致）
+category: troubleshoot
+vendor: huawei
+version: VRP-8.180
+difficulty: 3
+tags:
+- ospf
+- authentication
+- md5
+- init
+input:
+  symptom: OSPF 卡 Init
+  device_info:
+    model: ''
+    version: VRP-8.180
+    interfaces: []
+  evidence:
+  - config_snippet: "ospf 1\n area 0.0.0.0\n  authentication-mode md5 1 plain Huawei@2024   # ⚠️ key-id 1\n # 对端 md5 2 plain Huawei@2024"
+  question: 诊断 authentication key-id 错
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: md5 key-id 不一致
+    probability: 0.8
+    verify: display ospf interface | include Auth
+    fix: 统一 key-id 1
+  - rank: 2
+    cause: plain vs cipher 错配
+    probability: 0.2
+    verify: display ospf interface | include Auth
+    fix: 统一 cipher / plain
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/vrp-ospf-authentication
+    version: VRP-8.180
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 ospf
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

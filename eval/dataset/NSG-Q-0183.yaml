@@ -1,0 +1,50 @@
+id: NSG-Q-0183
+title: VRRP 不切换（华三 Comware 7，BFD 会话未启）
+category: troubleshoot
+vendor: h3c
+version: Comware-7.1.070
+difficulty: 3
+tags:
+- vrrp
+- bfd
+- high-availability
+input:
+  symptom: VRRP 主设备 dead 后未切换
+  device_info:
+    model: ''
+    version: Comware-7.1.070
+    interfaces: []
+  evidence:
+  - config_snippet: "interface Vlan-interface10\n vrrp vrid 1 virtual-ip 10.1.10.1\n vrrp vrid 1 priority 110"
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: switchover 触发依赖 BFD 未配 track
+    probability: 0.7
+    evidence: []
+    verify: display vrrp verbose
+    fix: vrrp vrid 1 track bfd-session 1 reduce 30
+  - rank: 2
+    cause: 上行 down 但 VRRP 未感知
+    probability: 0.3
+    evidence: []
+    verify: display bfd session
+    fix: 启用 bfd
+  references:
+  - type: vendor_doc
+    url: https://www.h3c.com/cn/d_202206/vrrp-bfd
+    version: Comware 7.1.070
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 vrrp
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

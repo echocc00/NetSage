@@ -1,0 +1,32 @@
+id: NSG-Q-0153
+title: 生成 h3c wireless/roaming 配置 (WLAN 漫游组 mg1 + 多个 AP)
+category: config
+vendor: h3c
+version: 7.1.070+
+difficulty: 2
+tags:
+- wireless
+- roaming
+input:
+  symptom: WLAN 漫游组 mg1 + 多个 AP
+  device_info:
+    model: generic
+    version: 7.1.070+
+  question: 生成命令
+expected_output:
+  config: "wlan mobility-group mg1\n  mobility-domain dom1\n  member controller-ip 10.1.2.1\n#\nwlan mobility-group mg1\n  roaming-mode enable\n  reauth-timeout 60\n  roam-leverage 5\n#\nwlan ap-group ag1\n  fast-roaming\n  roam-threshold -65\n\
+    \  sticky-client-drop-threshold -75\n#\nwlan ap ap-id 1 serial-id SN123\n  ap-name ap01\n  group ag1\n  roaming-mode enable"
+  references:
+  - type: vendor_doc
+    url: https://support.h3c.com/wireless-roaming
+    version: 7.1.070
+anti_examples:
+- 漏 wireless 必要字段
+- wireless roaming 缩进错乱（应当 cli 风格）
+grading_rubric:
+  must_have:
+  - 包含 wireless/roaming 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 h3c_comware_wireless_roaming 必填项

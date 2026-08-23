@@ -1,0 +1,31 @@
+id: NSG-Q-0101
+title: 生成 arista ospf/interface 配置 (OSPF 接口配置 + 网络类型 broadcast)
+category: config
+vendor: arista
+version: 4.24+
+difficulty: 2
+tags:
+- ospf
+- interface
+input:
+  symptom: OSPF 接口配置 + 网络类型 broadcast
+  device_info:
+    model: generic
+    version: 4.24+
+  question: 生成命令
+expected_output:
+  config: "interface Ethernet1\n  ip ospf area 0.0.0.0\n  ip ospf network broadcast\n  ip ospf cost 1\n"
+  references:
+  - type: vendor_doc
+    url: https://support.arista.com/ospf-interface
+    version: '4.24'
+anti_examples:
+- 漏 ospf 必要字段
+- ospf interface 缩进错乱（应当 cli 风格）
+grading_rubric:
+  must_have:
+  - 包含 ospf/interface 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 arista_eos_ospf_interface 必填项

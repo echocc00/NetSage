@@ -1,0 +1,50 @@
+id: NSG-Q-0210
+title: IPv6 SLAAC 不工作（Juniper 21.2，managed-config-flag 错配）
+category: troubleshoot
+vendor: juniper
+version: 21.2R1
+difficulty: 3
+tags:
+- ipv6
+- slaac
+- managed
+input:
+  symptom: IPv6 客户端获取不到 IPv6
+  device_info:
+    model: ''
+    version: 21.2R1
+    interfaces: []
+  evidence:
+  - config_snippet: set protocols router-advertisement interface ge-0/0/1 managed-configuration
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: router-advertisement 模式错配
+    probability: 0.8
+    evidence: []
+    verify: show ipv6 router-advertisement
+    fix: managed-configuration 关掉
+  - rank: 2
+    cause: 链路 down
+    probability: 0.2
+    evidence: []
+    verify: show interface
+    fix: 物理修链路
+  references:
+  - type: vendor_doc
+    url: https://www.juniper.net/documentation/junos-21.2/slaac
+    version: 21.2R1
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 ipv6
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

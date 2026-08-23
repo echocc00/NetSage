@@ -1,0 +1,31 @@
+id: NSG-Q-0100
+title: 生成 juniper ospf/interface 配置 (OSPF 接口配置 + 网络类型 broadcast)
+category: config
+vendor: juniper
+version: 21.2+
+difficulty: 2
+tags:
+- ospf
+- interface
+input:
+  symptom: OSPF 接口配置 + 网络类型 broadcast
+  device_info:
+    model: generic
+    version: 21.2+
+  question: 生成命令
+expected_output:
+  config: '# RENDER ERROR: ''authentication'' is undefined'
+  references:
+  - type: vendor_doc
+    url: https://support.juniper.com/ospf-interface
+    version: '21.2'
+anti_examples:
+- 漏 ospf 必要字段
+- ospf interface 缩进错乱（应当 cli 风格）
+grading_rubric:
+  must_have:
+  - 包含 ospf/interface 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 juniper_junos_ospf_interface 必填项

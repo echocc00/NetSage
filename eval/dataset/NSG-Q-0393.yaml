@@ -1,0 +1,46 @@
+id: NSG-Q-0393
+title: 'Buffer 调优 3/6: 设备 buffer 模式 dynamic vs static'
+category: perf
+vendor: huawei
+version: VRP-8.180
+difficulty: 5
+tags:
+- buffer
+- headroom
+- qos
+input:
+  symptom: 设备 buffer 模式 dynamic vs static
+  device_info:
+    model: ''
+    version: VRP-8.180
+    interfaces: []
+  question: 给出瓶颈定位 + 调优参数
+expected_output:
+  bottleneck: 配置模式选错
+  tuning_params:
+    headroom: 10KB
+    shared_dynamic: true
+    pause_threshold: auto
+  verify:
+  - display queue
+  - display buffer
+  references:
+  - type: vendor_doc
+    url: https://huawei.com/buffer
+    version: VRP-8.180
+    title: buffer 调优章节
+anti_examples:
+- 关闭 PFC
+- 建议重启设备
+- 无证据瞎猜
+grading_rubric:
+  must_have:
+  - PFC 优先级
+  - ECN 阈值
+  - buffer 配置
+  nice_to_have:
+  - DCQCN 调参
+  - PFC watchdog
+  - verify 命令
+  penalty:
+  - 建议关闭 PFC

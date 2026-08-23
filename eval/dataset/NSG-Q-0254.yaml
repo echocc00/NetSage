@@ -1,0 +1,43 @@
+id: NSG-Q-0254
+title: 审计 cisco EIGRP NO AUTH (proto-03 章节)
+category: audit
+vendor: cisco
+version: IOS-XE-17.09
+difficulty: 3
+tags:
+- eigrp-no-auth
+input:
+  symptom: 审计以下配置的安全合规性
+  device_info:
+    model: ''
+    version: IOS-XE-17.09
+    interfaces: []
+  question: 列出风险点 + 加固建议 + 合规分（基线 proto-03）
+  config_snippet: "router eigrp 1\n network 10.1.1.0 0.0.0.255"
+expected_output:
+  findings:
+  - rule_id: PROTO-03
+    severity: medium
+    description: 配置违反 proto-03 基线：eigrp-no-auth
+    remediation: 对照 proto-03 章节整改（清掉配置 + 启用合规配置）
+  score: 95
+  references:
+  - type: standard
+    url: https://cis-security/proto-03
+    version: IOS-XE-17.09
+    title: CIS proto-03 章节
+anti_examples:
+- 请重启设备
+- 推荐清除配置
+- 遗漏 critical 项
+grading_rubric:
+  must_have:
+  - 识别 proto-03 主要风险
+  - 给整改建议
+  - severity 分级
+  nice_to_have:
+  - 引用基线规则 ID
+  - 给合规分
+  penalty:
+  - 推荐重启设备
+  - 遗漏 critical 项

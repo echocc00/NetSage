@@ -1,0 +1,49 @@
+id: NSG-Q-0168
+title: OSPF LSA 风暴（Arista EOS 4.24，type-2 频繁泛洪）
+category: troubleshoot
+vendor: arista
+version: '4.24'
+difficulty: 3
+tags:
+- ospf
+- lsa
+- network-type
+- storm
+input:
+  symptom: OSPF LSA 刷新异常频繁（type-2）
+  device_info:
+    model: ''
+    version: '4.24'
+    interfaces: []
+  evidence:
+  - config_snippet: "interface Ethernet1\n ip ospf network broadcast\n ip ospf priority 255\n# 端点持续 Down/Up"
+  question: 诊断 LSA 风暴
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: 端点物理不稳定导致 type-2 (Network LSA) 频繁刷新
+    probability: 0.7
+    verify: show ip ospf database | include LSAge
+    fix: bpduguard + 限速 + 改为 p2p 类型
+  - rank: 2
+    cause: OSPF LSA Throttle 未配置
+    probability: 0.3
+    verify: show ip ospf | include throttle
+    fix: timers throttle lsa 配置
+  references:
+  - type: vendor_doc
+    url: https://www.arista.com/en/docs/eos-4.24/ospf-lsa-throttle
+    version: EOS 4.24
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 ospf
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

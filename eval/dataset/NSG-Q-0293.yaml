@@ -1,0 +1,57 @@
+id: NSG-Q-0293
+title: 设计 spine-leaf 2+4 10 租户 VXLAN Fabric 1/15
+category: design
+vendor: cross
+version: ''
+difficulty: 4
+tags:
+- design
+- hld
+- bom
+input:
+  symptom: 新建数据中心 spine-leaf 2+4，承载 10 租户 VLAN，要求 EVPN VXLAN，带宽 100G，延迟 <5μs
+  device_info:
+    model: ''
+    version: ''
+    interfaces: []
+  question: 输出 HLD（拓扑 + IP 规划 + 协议选型）+ BOM
+expected_output:
+  hld:
+    topology: spine-leaf 2+4
+    underlay: OSPF + ECMP
+    overlay: BGP EVPN VXLAN
+    ip_plan: spine 10.0.0.x/32 (x=1-2); leaf 10.0.1.x/32 (x=1-4); tenant VLAN 100-109 → VNI 10100-10109
+    redundancy: spine 冗余 + leaf 双归 to spine
+  bom:
+  - role: spine
+    vendor: huawei
+    model: CE12808
+    qty: 2
+  - role: leaf
+    vendor: huawei
+    model: CE6880
+    qty: 4
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/vrp-vxlan-design-1
+    version: VRP-8.180
+    title: 华为 VXLAN spine-leaf 2+4 参考设计
+anti_examples:
+- 拓扑无层级
+- 无 IP 规划
+- 无 BOM
+- 缺冗余设计
+grading_rubric:
+  must_have:
+  - 拓扑描述
+  - IP 规划
+  - underlay/overlay 分离
+  - BOM
+  nice_to_have:
+  - PFC/ECN 调优
+  - 多租户 VRF
+  - 高可用设计
+  penalty:
+  - 单点故障设计
+  - 无 IP 规划
+  - BOM 数字缺

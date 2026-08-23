@@ -1,0 +1,33 @@
+id: NSG-Q-0151
+title: 生成 huawei wireless/roaming 配置 (WLAN 漫游组 mg1 + 多个 AP)
+category: config
+vendor: huawei
+version: 8.180+
+difficulty: 2
+tags:
+- wireless
+- roaming
+input:
+  symptom: WLAN 漫游组 mg1 + 多个 AP
+  device_info:
+    model: generic
+    version: 8.180+
+  question: 生成命令
+expected_output:
+  config: "wlan\n#\nwlan-group wg1\n  roaming-mode enable\n  mobility-group mg1\n  mobility-domain-name dom1\n#\nap-group ag1\n  radio 2.4ghz\n    channel 6\n    power 50\n  radio 5ghz\n    channel 36\n    power 50\n#\nap aabb.ccdd.eeff\n  ap-name\
+    \ ap01\n  group ag1\n#\nwlan-security-profile name sec1 id 1\n  security-policy wpa2-psk\n  psk-pass-phrase Pass@2024\n#\nwlan-ssid-profile name sp1 id 1\n  ssid corp\n#\nwlan-vap-profile name v1 id 1\n  ssid-profile sp1\n  security-profile\
+    \ sec1\n  group ag1"
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/wireless-roaming
+    version: '8.180'
+anti_examples:
+- 漏 wireless 必要字段
+- wireless roaming 缩进错乱（应当 cli 风格）
+grading_rubric:
+  must_have:
+  - 包含 wireless/roaming 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 huawei_vrp_wireless_roaming 必填项

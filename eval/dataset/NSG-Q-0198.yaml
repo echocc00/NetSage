@@ -1,0 +1,51 @@
+id: NSG-Q-0198
+title: OSPF NSSA 不接收 type-7（Juniper 22，asbr 不宣告 type-7）
+category: troubleshoot
+vendor: juniper
+version: 21.2R1
+difficulty: 4
+tags:
+- ospf
+- nssa
+- type-7
+- asbr
+input:
+  symptom: OSPF NSSA 上 ASBR 未注入 type-7
+  device_info:
+    model: ''
+    version: 21.2R1
+    interfaces: []
+  evidence:
+  - config_snippet: set protocols ospf area 0.0.0.1 nssa
+  question: 诊断修复
+expected_output:
+  root_causes:
+  - rank: 1
+    cause: 未 policy-statement 引入 static
+    probability: 0.7
+    evidence: []
+    verify: show ospf database nssa-external
+    fix: set policy-options policy-statement t1 from protocol static; then accept
+  - rank: 2
+    cause: OSPF NSSA 区域 type 错
+    probability: 0.3
+    evidence: []
+    verify: show ospf configuration
+    fix: 确认 nssa 配置
+  references:
+  - type: vendor_doc
+    url: https://www.juniper.net/documentation/junos-21.2/ospf-nssa-export
+    version: 21.2R1
+anti_examples:
+- 请重启设备
+- 删除进程
+- 推荐全局清除配置
+grading_rubric:
+  must_have:
+  - top 根因为 ospf
+  - ≥1 验证命令
+  - ≥1 修复命令
+  nice_to_have:
+  - 含 rollback
+  penalty:
+  - 推荐重启

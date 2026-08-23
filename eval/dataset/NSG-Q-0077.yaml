@@ -1,0 +1,31 @@
+id: NSG-Q-0077
+title: 生成 huawei bgp/peering 配置 (eBGP peer 建立，与对端 AS 65001 互联)
+category: config
+vendor: huawei
+version: 8.0+
+difficulty: 2
+tags:
+- bgp
+- peering
+input:
+  symptom: eBGP peer 建立，与对端 AS 65001 互联
+  device_info:
+    model: generic
+    version: 8.0+
+  question: 生成命令
+expected_output:
+  config: "bgp 65000\n\n  router-id 10.0.0.1\n\n\n  peer 10.1.1.1 as-number 65001\n\n\n\n\n  ipv4-family unicast\n    import-route direct   # static / direct / ospf\n"
+  references:
+  - type: vendor_doc
+    url: https://support.huawei.com/bgp-peering
+    version: '8.0'
+anti_examples:
+- 漏 bgp 必要字段
+- bgp peering 缩进错乱（应当 cli 风格）
+grading_rubric:
+  must_have:
+  - 包含 bgp/peering 必要段
+  nice_to_have:
+  - 输入参数与 schema 一致
+  penalty:
+  - 漏 huawei_vrp_bgp_peering 必填项
