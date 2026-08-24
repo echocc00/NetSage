@@ -8,6 +8,7 @@ import {
   LogoutOutlined,
   SafetyOutlined,
   ThunderboltOutlined,
+  WifiOutlined,
 } from '@ant-design/icons'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 
@@ -20,6 +21,7 @@ const MENU_ITEMS = [
   { key: '/changes', icon: <CheckCircleOutlined />, label: '变更审批' },
   { key: '/audit', icon: <SafetyOutlined />, label: '配置审计' },
   { key: '/rdma', icon: <ThunderboltOutlined />, label: 'RDMA 专项' },
+  { key: '/wireless', icon: <WifiOutlined />, label: '无线专项' },
 ]
 
 function getStoredRole(): string {

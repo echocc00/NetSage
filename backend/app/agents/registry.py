@@ -223,6 +223,30 @@ def build_runner() -> AgentRunner:
             "suggest_tuning": partial(rdma_suggest_tuning, tools=tools),
         },
     )
+
+    # WirelessAgent（Phase 4 M10）
+    from app.agents.wireless_handlers import (
+        WIRELESS_AGENT_DEFINITION,
+        wireless_collect,
+        wireless_plan,
+        wireless_suggest_config,
+    )
+
+    runner.register(
+        AgentDefinition(
+            name=WIRELESS_AGENT_DEFINITION["name"],
+            role=WIRELESS_AGENT_DEFINITION["role"],
+            system_prompt=WIRELESS_AGENT_DEFINITION["system_prompt"],
+            tools=WIRELESS_AGENT_DEFINITION["tools"],
+            state_schema=WIRELESS_AGENT_DEFINITION["state_schema"],
+            transitions=[Transition(t["from"], t["to"]) for t in WIRELESS_AGENT_DEFINITION["transitions"]],
+        ),
+        {
+            "collect": partial(wireless_collect, tools=tools),
+            "plan": partial(wireless_plan, tools=tools),
+            "suggest_config": partial(wireless_suggest_config, tools=tools),
+        },
+    )
     return runner
 
 

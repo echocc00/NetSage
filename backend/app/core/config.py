@@ -70,6 +70,12 @@ class Settings(BaseSettings):
     # CORS（从环境读取，生产必填具体域名）
     cors_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"]
 
+    # SSO（OIDC/Keycloak，Phase 4 M11；未配置时降级 dev-token）
+    oidc_discovery_url: str = ""
+    oidc_client_id: str = ""
+    oidc_client_secret: str = ""
+    oidc_redirect_base: str = "http://localhost:5173"
+
     # Source of Truth（NetBox，Phase 2）
     netbox_url: str = ""
     netbox_token: str = ""

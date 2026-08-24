@@ -6,6 +6,7 @@ from app.models.design import NetworkDesign, RdmaFabric
 from app.models.device import Credential, Device
 from app.models.kb import KbChunk
 from app.models.security import BaselineRule, ComplianceReport
+from app.models.tenant import Tenant
 
 __all__ = [
     "Base", "TimestampMixin",
@@ -15,4 +16,5 @@ __all__ = [
     "Credential", "Device",
     "KbChunk",
     "BaselineRule", "ComplianceReport",
+    "Tenant",
 ]
