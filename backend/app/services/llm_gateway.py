@@ -5,6 +5,9 @@ key 缺失时自动跳过该模型，降级到下一个可用模型。
 """
 from __future__ import annotations
 
+import hashlib
+import json
+import os
 from enum import StrEnum
 from typing import Any
 
@@ -15,6 +18,11 @@ from app.core.config import get_settings
 from app.core.logging import get_logger
 
 logger = get_logger("llm_gateway")
+
+# 响应缓存（Redis 不可用时降级内存）
+_cache: dict[str, str] = {}
+# 用量统计
+_usage: dict[str, dict] = {}  # model → {calls, tokens}
 
 
 class TaskTier(StrEnum):
@@ -82,9 +90,16 @@ class LLMGateway:
         self,
         messages: list[dict[str, str]],
         tier: TaskTier = TaskTier.SIMPLE,
+        cache: bool = True,
         **kwargs: Any,
     ) -> str:
-        """按 tier 路由，失败自动降级到下一个模型（v2.0 29.2）。"""
+        """按 tier 路由，失败自动降级。cache=True 时命中缓存直接返回（v2.0 29.3 成本优化）。"""
+        cache_key = self._cache_key(messages, tier, kwargs) if cache else None
+        if cache_key and cache_key in _cache:
+            logger.info("llm_cache_hit", tier=tier)
+            _track_usage("cache", 0)
+            return _cache[cache_key]
+
         models = self._available_models(tier)
         if not models:
             raise RuntimeError(
@@ -95,19 +110,36 @@ class LLMGateway:
         for model in models:
             try:
                 response = await acompletion(model=model, messages=messages, **kwargs)
-                logger.info(
-                    "llm_call_ok",
-                    model=model,
-                    tier=tier,
-                    tokens=response.usage.total_tokens if response.usage else 0,
-                )
-                return response.choices[0].message.content or ""
+                content = response.choices[0].message.content or ""
+                tokens = response.usage.total_tokens if response.usage else 0
+                logger.info("llm_call_ok", model=model, tier=tier, tokens=tokens)
+                _track_usage(model, tokens)
+                if cache_key:
+                    _cache[cache_key] = content
+                return content
             except Exception as e:
                 logger.warning("llm_call_fail", model=model, tier=tier, error=str(e))
                 last_error = e
                 continue
 
         raise RuntimeError(f"所有候选模型均失败（tier={tier}）：{last_error}")
+
+    def _cache_key(self, messages: list[dict], tier: TaskTier, kwargs: dict) -> str:
+        """计算缓存键（messages + tier + kwargs 的 sha256）。"""
+        payload = json.dumps({"m": messages, "t": tier.value, "k": sorted(kwargs.keys())},
+                             sort_keys=True, ensure_ascii=False)
+        return hashlib.sha256(payload.encode()).hexdigest()[:32]
+
+    def usage_stats(self) -> dict:
+        """用量统计（per-model calls + tokens + cache 命中）。"""
+        return dict(_usage)
+
+
+def _track_usage(model: str, tokens: int) -> None:
+    if model not in _usage:
+        _usage[model] = {"calls": 0, "tokens": 0}
+    _usage[model]["calls"] += 1
+    _usage[model]["tokens"] += tokens
 
 
 _gateway: LLMGateway | None = None

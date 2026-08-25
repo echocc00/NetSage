@@ -5,6 +5,7 @@ import {
   ApartmentOutlined,
   BugOutlined,
   CheckCircleOutlined,
+  DashboardOutlined,
   LogoutOutlined,
   SafetyOutlined,
   ThunderboltOutlined,
@@ -15,6 +16,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 const { Sider, Content } = Layout
 
 const MENU_ITEMS = [
+  { key: '/dashboard', icon: <DashboardOutlined />, label: '运营大屏' },
   { key: '/devices', icon: <AppstoreOutlined />, label: '设备管理' },
   { key: '/design', icon: <ApartmentOutlined />, label: '设计工坊' },
   { key: '/troubleshoot', icon: <BugOutlined />, label: '排障工坊' },

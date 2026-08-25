@@ -1,6 +1,6 @@
 # NetSage · AI 网络工程师智能平台
 
-> **v0.1.1** · AI 辅助网络工程平台：让 AI 承担设计、配置生成、故障排查、安全审计等专业工作。
+> **v1.0.0** · AI 辅助网络工程平台：让 AI 承担设计、配置生成、故障排查、安全审计、RDMA 调优等专业工作。
 >
 
 [![Latest Release](https://img.shields.io/github/v/release/echocc00/NetSage?display_name=tag&style=flat-square)](https://github.com/echocc00/NetSage/releases/latest)
@@ -28,18 +28,21 @@
 
 > 基线文档：[最终技术方案 v2.0](doc/NetSage-最终技术方案-v2.0.md) · [开发计划](doc/NetSage-开发计划与详细设计-v1.0.md) · [Phase 2 规划](doc/NetSage-Phase2-规划-v1.0.md) · [Phase 3 规划](doc/NetSage-Phase3-规划-v1.0.md)
 
-## 能力总览（v0.1.1）
+## 能力总览（v1.0.0）
 
 | 模块 | 状态 | 说明 |
 |---|---|---|
-| Agent 编排 | ✅ | 8 Agent：planner / config_engineer / validator / troubleshooter / deploy / observer / security_auditor / compliance |
+| Agent 编排 | ✅ | 10 Agent：planner / config_engineer / validator / troubleshooter / deploy / observer / security_auditor / compliance / rdm_agent / wireless_agent |
 | 三道闸引擎 | ✅ | Containerlab 仿真 → Batfish 校验 → 人工审批 + 快照回滚 |
 | 多厂商接入 | ✅ | 华为 VRP / Cisco IOS-XE / H3C / Juniper / Arista（NAPALM + netmiko + scrapli） |
 | SourceOfTruth 双适配器 | ✅ | NetBox（包装）+ Nautobot（Adapter + 自研 App v0.1） |
 | 安全合规 | ✅ | SecurityAuditor + 30 条基线规则（CIS + 厂商加固）+ Batfish ACL 分析（Cisco + 华为） |
 | 故障排障 | ✅ | RCA 引擎（规则 + 概率 + RAG 关联）+ Troubleshooter Agent |
 | 自动化闭环 | ✅ | 诊断→修复→验证→审批→下发→监控，自动化率 100%（演示）/ 83%（生产，仅 approve 人工） |
-| SUZIEQ 可观测 | ✅ | Poller + ObserverAgent + Assert 框架 |
+| RDMA 专项 | ✅ | OpenSM 容器化 + RdmAgent（PFC/ECN/DCQCN 配置诊断） |
+| 无线专项 | ✅ | WirelessAgent（AP 布放/信道/漫游域/安全策略） |
+| 多租户 + SSO | ✅ | Tenant 隔离 + OIDC（Keycloak） |
+| 生产化 | ✅ | 运营大屏 + DR/备份（RPO 24h/RTO 2h）+ LLM 缓存 + 生产 Docker + OpenAPI |
 | RAG 知识库 | ✅ | 混合检索 + 重排序（pgvector） |
 | 数据脱敏 | ✅ | Layer1/3 四层模型 + 审计哈希链 |
 | React 前端 | ✅ | 设备 / 设计工坊（React Flow）/ 排障 / 变更审批 / 配置审计 |
@@ -180,13 +183,13 @@ flowchart TB
 - ✅ **Phase 1**（M1-M2）：平台骨架 + 核心链路（10/10）
 - ✅ **Phase 2**（M3-M4）：多厂商 + 数据闭环 + 排障链路（核心 10/14，验收 12/12）
 - ✅ **Phase 3**（M5-M6）：Nautobot 集成 + 安全合规 + 自动化闭环（10/10，验收 12/12）
-- ⏳ **Phase 4**（M7-M12）：RDMA/IB + 无线 + 多租户 + SSO + 生产化
+- ✅ **Phase 4**（M7-M12）：RDMA + 无线 + 多租户 + SSO + 生产化（v1.0.0）
 
-### v0.1.0 遗留 TODO
+### v1.0.0 遗留 TODO
 
-- P2-5：多厂商模板库扩展至 ~80（当前 2 个骨架）
-- P2-11：排障闭环 3 场景评测题
-- P2-13：RAG 500 题 + hit_rate ≥85%（需厂商手册语料）
+- RAG hit_rate ≥85%（待厂商手册语料 ingest）
+- IB 硬件验证（OpenSM/perftest 真实模式）
+- OpenSM 法务 memo（工程隔离已做，法务意见待出具）
 
 ## 许可证
 

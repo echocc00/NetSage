@@ -1,0 +1,86 @@
+# NetSage 生产部署 compose（Phase 4 M12 生产化，v2.0 二十五章）
+# 用法：docker compose -f infra/docker-compose.prod.yml up -d
+#
+# 包含：后端 + 前端 + PG + pgvector + Redis +（可选 NetBox/OpenSM）
+# 生产前必填：JWT_SECRET / POSTGRES_PASSWORD / LLM key（见 .env.example）
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: netsage-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-netsage}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?必填}
+      POSTGRES_DB: ${POSTGRES_DB:-netsage}
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-netsage}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits: { memory: 2G }
+
+  redis:
+    image: redis:7-alpine
+    container_name: netsage-redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits: { memory: 512M }
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: netsage-backend
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-netsage}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-netsage}
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: ${JWT_SECRET:?必填}
+      ENV: prod
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      MINIMAX_API_KEY: ${MINIMAX_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      NETBOX_URL: ${NETBOX_URL:-}
+      NETBOX_TOKEN: ${NETBOX_TOKEN:-}
+      NAUTOBOT_MOCK: "true"
+      CORS_ORIGINS: '["${CORS_ORIGIN:-https://netsage.example.com}"]'
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits: { memory: 2G, cpus: "4" }
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: netsage-frontend
+    depends_on: [backend]
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits: { memory: 256M }
+
+volumes:
+  pg-data:

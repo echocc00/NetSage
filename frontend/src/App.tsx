@@ -1,6 +1,7 @@
 import React from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import BasicLayout from './layouts/BasicLayout'
+import DashboardPage from './pages/dashboard'
 import DevicesPage from './pages/devices'
 import DesignPage from './pages/design'
 import TroubleshootPage from './pages/troubleshoot'
@@ -28,7 +29,8 @@ const App: React.FC = () => {
           </AuthGuard>
         }
       >
-        <Route index element={<Navigate to="/devices" replace />} />
+        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route path="dashboard" element={<DashboardPage />} />
         <Route path="devices" element={<DevicesPage />} />
         <Route path="design" element={<DesignPage />} />
         <Route path="troubleshoot" element={<TroubleshootPage />} />
