@@ -1,0 +1,76 @@
+name: security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "37 4 * * 1"  # 每周一凌晨扫描
+
+jobs:
+  codeql:
+    name: CodeQL
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [python, javascript-typescript]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan for hardcoded secrets
+        run: |
+          set +e
+          PATTERNS='sk-[a-zA-Z0-9]{20,}|gho_[a-zA-Z0-9]{30,}|nbt_[a-zA-Z0-9]{20,}|AKIA[0-9A-Z]{16}|-----BEGIN (RSA |EC )?PRIVATE KEY-----'
+          HITS=$(git ls-files -z | xargs -0 grep -nEI "$PATTERNS" 2>/dev/null | grep -vE '\.example|test_|tests/|_archive/')
+          if [ -n "$HITS" ]; then
+            echo "::error::发现疑似硬编码密钥"
+            echo "$HITS"
+            exit 1
+          fi
+          echo "未发现硬编码密钥"
+
+      - name: Verify .env not tracked
+        run: |
+          if git ls-files | grep -qE '^\.env$|/\.env$'; then
+            echo "::error::.env 被提交到仓库"
+            exit 1
+          fi
+          echo ".env 未被跟踪"
+
+  bandit:
+    name: Bandit (Python SAST)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install bandit
+        run: pip install bandit[toml]
+
+      - name: Run bandit
+        run: bandit -r backend/app -ll -f txt
+        continue-on-error: true  # 渐进式：先报告不阻塞

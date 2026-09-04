@@ -1,13 +1,11 @@
 """检索器：向量 + BM25 混合检索 + HyDE 多路召回（v2.0 七章 7.2）。"""
 from __future__ import annotations
 
-import asyncio
 from dataclasses import dataclass
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.rag.chunker import Chunk
 from app.rag.embedder import Embedder
 
 

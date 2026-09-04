@@ -1,8 +1,6 @@
 """DeployAgent 测试（Phase 2 P2-8）。"""
 from __future__ import annotations
 
-from typing import Any
-
 import pytest
 
 from app.agents.deploy_handlers import DEPLOY_DEFINITION
@@ -37,8 +35,6 @@ def _approved_state(devices=None, configs=None, fail_device=None):
 @pytest.mark.asyncio
 async def test_deploy_full_success():
     """单设备下发成功（pre_check → deploy_loop → verify）。"""
-    from app.agents import deploy_handlers as dh
-    from app.agents.registry import _deploy_definition
 
     tools = _tools()
     runner = build_runner()
@@ -83,8 +79,9 @@ async def test_deploy_failure_triggers_rollback(monkeypatch):
     tools.stub("napalm.rollback", lambda **kw: {"status": "rolled_back"})
 
     # 注入 tools 到 deploy handlers
-    from app.agents import deploy_handlers as dh
     from functools import partial
+
+    from app.agents import deploy_handlers as dh
 
     devices = [
         {"id": 1, "name": "spine01", "vendor": "huawei", "host": "10.1.1.1", "username": "a", "password": "b"},

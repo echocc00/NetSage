@@ -6,7 +6,7 @@ DeviceAdapter 协议统一 get_facts/get_config/load_merge/commit/rollback。
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Protocol
+from typing import Protocol
 
 
 @dataclass

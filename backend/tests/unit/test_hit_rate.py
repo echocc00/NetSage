@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import pytest
-
 from eval.runner import EvalQuestion, load_dataset
 
 
@@ -26,8 +25,8 @@ def test_url_key_extracts_protocol():
 
 @pytest.mark.asyncio
 async def test_eval_one_hit():
-    from scripts.eval_hit_rate import eval_one
     from app.rag.retriever import RetrievedChunk
+    from scripts.eval_hit_rate import eval_one
 
     class MockRetriever:
         async def search(self, query, top_k=5, tier_filter=None):
@@ -45,8 +44,8 @@ async def test_eval_one_hit():
 
 @pytest.mark.asyncio
 async def test_eval_one_miss():
-    from scripts.eval_hit_rate import eval_one
     from app.rag.retriever import RetrievedChunk
+    from scripts.eval_hit_rate import eval_one
 
     class MockRetriever:
         async def search(self, query, top_k=5, tier_filter=None):

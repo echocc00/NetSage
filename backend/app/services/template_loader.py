@@ -9,7 +9,6 @@ from __future__ import annotations
 import re
 from functools import lru_cache
 from pathlib import Path
-from typing import Any
 
 import yaml
 from jinja2 import Environment, FileSystemLoader, StrictUndefined

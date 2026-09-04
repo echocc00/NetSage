@@ -1,0 +1,12 @@
+# NetSage 代码所有者
+# 单人维护（bus factor = 1），欢迎协作者加入 → 提 Issue 申请
+
+* @echocc00
+
+# 安全敏感区域（改动需额外审慎）
+/backend/app/redact/          @echocc00
+/backend/app/gates/           @echocc00
+/backend/app/core/security.py @echocc00
+/backend/app/audit/           @echocc00
+/SECURITY.md                  @echocc00
+/.github/workflows/           @echocc00

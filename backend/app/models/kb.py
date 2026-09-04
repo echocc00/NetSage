@@ -4,9 +4,9 @@
 """
 from __future__ import annotations
 
-from sqlalchemy import Column, Integer, String, Text, TIMESTAMP
-from sqlalchemy.orm import Mapped, mapped_column
 from pgvector.sqlalchemy import Vector
+from sqlalchemy import TIMESTAMP, Column, Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
 

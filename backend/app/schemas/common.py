@@ -22,9 +22,9 @@ class Envelope(BaseModel, Generic[T]):
     meta: Meta = Field(default_factory=Meta)
 
     @classmethod
-    def ok(cls, data: T, meta: Meta | None = None) -> "Envelope[T]":
+    def ok(cls, data: T, meta: Meta | None = None) -> Envelope[T]:
         return cls(success=True, data=data, meta=meta or Meta())
 
     @classmethod
-    def err(cls, error: str, meta: Meta | None = None) -> "Envelope[T]":
+    def err(cls, error: str, meta: Meta | None = None) -> Envelope[T]:
         return cls(success=False, data=None, error=error, meta=meta or Meta())

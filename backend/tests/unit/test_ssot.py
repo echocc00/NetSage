@@ -1,22 +1,17 @@
 """SourceOfTruth + NetBoxAdapter 测试（Phase 2 P2-1）。"""
 from __future__ import annotations
 
-from typing import Any
-
 import httpx
 import pytest
 
 from app.access.netbox_adapter import NetBoxAdapter
 from app.access.source_of_truth import (
     ChangeRecord,
-    Device,
-    IPAM,
     NullSSoT,
     SSoTError,
     configure_ssot,
     get_ssot,
 )
-
 
 # ===== SourceOfTruth 抽象 =====
 

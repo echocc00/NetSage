@@ -8,13 +8,11 @@ GET  /changes/{id}/impact   影响范围报告（自动推演+人工确认）
 """
 from __future__ import annotations
 
-from typing import Annotated
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
 from app.core.deps import CurrentUser, CurrentUserDep, require_permission
-from app.gates.impact import ImpactAnalyzer, ImpactReport
+from app.gates.impact import ImpactAnalyzer
 from app.gates.pipeline import GatePipeline, PipelineContext
 from app.schemas.common import Envelope
 from app.tools.registry import MockToolRegistry

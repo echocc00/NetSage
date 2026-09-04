@@ -15,8 +15,8 @@ from app.core.security import (
     APPROVE_ROLES,
     AUDIT_ROLES,
     ROLE_PERMISSIONS,
-    Role,
     WRITE_ROLES,
+    Role,
 )
 
 
@@ -51,8 +51,8 @@ def test_admin_full_write():
 
 def test_role_groups():
     """WRITE_ROLES/APPROVE_ROLES/AUDIT_ROLES 分组正确。"""
-    assert WRITE_ROLES == {Role.ENGINEER, Role.ADMIN}
-    assert APPROVE_ROLES == {Role.ADMIN}
+    assert {Role.ENGINEER, Role.ADMIN} == WRITE_ROLES
+    assert {Role.ADMIN} == APPROVE_ROLES
     assert Role.AUDITOR in AUDIT_ROLES
     assert Role.ADMIN in AUDIT_ROLES
 

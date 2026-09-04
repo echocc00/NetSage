@@ -5,8 +5,8 @@ Planner 用此矩阵路由到对应 Agent + 工具集。
 """
 from __future__ import annotations
 
-from enum import StrEnum
 from dataclasses import dataclass
+from enum import StrEnum
 
 
 class Intent(StrEnum):
@@ -106,7 +106,7 @@ def classify(query: str) -> ClassifiedIntent:
 
 
 def _match_enum[T: StrEnum](text: str, table: dict[T, list[str]], default: T) -> T:
-    scores: dict[T, int] = {k: 0 for k in table}
+    scores: dict[T, int] = dict.fromkeys(table, 0)
     for key, words in table.items():
         for w in words:
             if w in text:

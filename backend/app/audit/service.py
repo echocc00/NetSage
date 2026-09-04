@@ -8,9 +8,9 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
-from sqlalchemy import func, select, text
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logging import get_logger
@@ -60,7 +60,7 @@ class AuditService:
             sort_keys=True,
         )
         entry = AuditLog(
-            ts=datetime.now(timezone.utc).isoformat(),
+            ts=datetime.now(UTC).isoformat(),
             user_id=user_id,
             action=action,
             resource_type=resource_type,

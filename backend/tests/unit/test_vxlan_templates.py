@@ -5,7 +5,6 @@ import pytest
 
 from app.services.template_loader import TemplateError, list_by_vendor, load_template, render
 
-
 VXLAN_TEMPLATES = [
     ("huawei_vrp_vxlan_evpn_l2vpn", {
         "local_asn": 65000,

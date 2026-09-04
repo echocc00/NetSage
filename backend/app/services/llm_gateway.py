@@ -11,11 +11,12 @@ import os
 from enum import StrEnum
 from typing import Any
 
-import litellm
 from litellm import acompletion
 
 from app.core.config import get_settings
 from app.core.logging import get_logger
+from app.redact.interceptor import RedactingInterceptor
+from app.redact.mapping import MappingTable
 
 logger = get_logger("llm_gateway")
 
@@ -53,7 +54,6 @@ class LLMGateway:
 
     def _configure_keys(self) -> None:
         """注入 API key 到环境变量，litellm 自动读取。"""
-        import os
 
         s = self.settings
         if s.deepseek_api_key:
@@ -91,14 +91,31 @@ class LLMGateway:
         messages: list[dict[str, str]],
         tier: TaskTier = TaskTier.SIMPLE,
         cache: bool = True,
+        content_type: str = "general_qa",
+        redact: bool = True,
         **kwargs: Any,
     ) -> str:
-        """按 tier 路由，失败自动降级。cache=True 时命中缓存直接返回（v2.0 29.3 成本优化）。"""
+        """按 tier 路由，失败自动降级。
+
+        脱敏（v2.0 二十章）：redact=True 时先过 Layer1/Layer3 拦截器——
+        黑盒内容（running_config/credentials/raw_logs）直接阻断，灰盒强制脱敏，
+        返回后还原占位符。content_type 决定敏感度等级。
+
+        缓存（v2.0 29.3）：cache=True 时按脱敏后 messages 计算 key。
+        """
+        mapping: MappingTable | None = None
+        if redact:
+            mapping = MappingTable()
+            interceptor = RedactingInterceptor()
+            # 黑盒/灰盒未脱敏会在此抛异常（BlackboxBlockError / GreyboxNotRedactedError）
+            messages = interceptor.before_llm_call(messages, content_type, mapping)
+
         cache_key = self._cache_key(messages, tier, kwargs) if cache else None
         if cache_key and cache_key in _cache:
             logger.info("llm_cache_hit", tier=tier)
             _track_usage("cache", 0)
-            return _cache[cache_key]
+            cached = _cache[cache_key]
+            return mapping.restore(cached) if mapping else cached
 
         models = self._available_models(tier)
         if not models:
@@ -112,11 +129,12 @@ class LLMGateway:
                 response = await acompletion(model=model, messages=messages, **kwargs)
                 content = response.choices[0].message.content or ""
                 tokens = response.usage.total_tokens if response.usage else 0
-                logger.info("llm_call_ok", model=model, tier=tier, tokens=tokens)
+                logger.info("llm_call_ok", model=model, tier=tier, tokens=tokens,
+                            redacted=mapping.size if mapping else 0)
                 _track_usage(model, tokens)
                 if cache_key:
-                    _cache[cache_key] = content
-                return content
+                    _cache[cache_key] = content  # 缓存脱敏态响应
+                return mapping.restore(content) if mapping else content
             except Exception as e:
                 logger.warning("llm_call_fail", model=model, tier=tier, error=str(e))
                 last_error = e

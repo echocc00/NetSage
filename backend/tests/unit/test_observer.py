@@ -20,8 +20,9 @@ async def test_observer_no_anomaly():
 @pytest.mark.asyncio
 async def test_observer_detects_anomaly():
     """状态含 down/notEstab → 检测异常并告警。"""
-    from app.agents import observer_handlers as oh
     from functools import partial
+
+    from app.agents import observer_handlers as oh
 
     tools = MockToolRegistry()
     tools.stub("suzieq.poll_once", lambda **kw: {"status": "polled"})
@@ -42,8 +43,9 @@ async def test_observer_detects_anomaly():
 @pytest.mark.asyncio
 async def test_observer_poll_failure_handled():
     """SUZIEQ 不可达时不崩溃（记录错误继续）。"""
-    from app.agents import observer_handlers as oh
     from functools import partial
+
+    from app.agents import observer_handlers as oh
 
     tools = MockToolRegistry()
     tools.stub("suzieq.poll_once", lambda **kw: (_ for _ in ()).throw(RuntimeError("suzieq down")))

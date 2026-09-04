@@ -157,8 +157,8 @@ def build_runner() -> AgentRunner:
 
     # SecurityAuditor + Compliance（Phase 3）
     from app.agents.security_handlers import (
-        SECURITY_AUDITOR_DEFINITION,
         COMPLIANCE_DEFINITION,
+        SECURITY_AUDITOR_DEFINITION,
         compliance_aggregate,
         compliance_gather,
         compliance_render,

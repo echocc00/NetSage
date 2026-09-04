@@ -7,9 +7,7 @@
 """
 from __future__ import annotations
 
-import pytest
-
-from app.access.base import DeviceTarget, NAPALM_DRIVER_MAP
+from app.access.base import NAPALM_DRIVER_MAP, DeviceTarget
 from app.access.factory import AdapterFactory
 from app.access.napalm_adapter import NapalmAdapter
 from app.access.netmiko_adapter import NETMIKO_TYPE_MAP, NetmikoAdapter

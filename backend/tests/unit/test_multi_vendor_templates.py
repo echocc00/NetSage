@@ -9,7 +9,6 @@ import pytest
 
 from app.services.template_loader import list_by_vendor, render
 
-
 # ===== BGP peering 跨厂商 =====
 
 

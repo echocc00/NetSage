@@ -17,8 +17,8 @@ class ChangeRequest(Base, TimestampMixin):
     status: Mapped[str] = mapped_column(String(32), default="draft")
     created_by: Mapped[int] = mapped_column(Integer)
     # status 流转见 app.gates.models.ChangeStatus
-    steps: Mapped[list["ChangeStep"]] = relationship(back_populates="request")
-    approvals: Mapped[list["Approval"]] = relationship(back_populates="request")
+    steps: Mapped[list[ChangeStep]] = relationship(back_populates="request")
+    approvals: Mapped[list[Approval]] = relationship(back_populates="request")
 
 
 class ChangeStep(Base, TimestampMixin):
@@ -31,7 +31,7 @@ class ChangeStep(Base, TimestampMixin):
     config_diff: Mapped[str] = mapped_column(Text, default="")
     rollback_config: Mapped[str] = mapped_column(Text, default="")
     status: Mapped[str] = mapped_column(String(32), default="pending")
-    request: Mapped["ChangeRequest"] = relationship(back_populates="steps")
+    request: Mapped[ChangeRequest] = relationship(back_populates="steps")
 
 
 class Approval(Base, TimestampMixin):
@@ -42,7 +42,7 @@ class Approval(Base, TimestampMixin):
     approver_id: Mapped[int] = mapped_column(Integer)
     decision: Mapped[str] = mapped_column(String(16))  # approved / rejected
     comment: Mapped[str] = mapped_column(Text, default="")
-    request: Mapped["ChangeRequest"] = relationship(back_populates="approvals")
+    request: Mapped[ChangeRequest] = relationship(back_populates="approvals")
 
 
 class ConfigSnapshot(Base, TimestampMixin):

@@ -7,8 +7,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
-from typing import Any
 
 from app.core.logging import get_logger
 
@@ -260,12 +258,9 @@ class RCAEngine:
         return min(issues, 3)
 
     def _correlate_changes(self, rule: dict, changes: list[dict]) -> int:
-        """变更事件关联：24h 内有匹配 rule 的变更。"""
-        now = datetime.now(timezone.utc)
-        window = now - timedelta(hours=24)
+        """变更事件关联：调用方已按 24h 窗口过滤，此处只做关键词匹配加权。"""
         count = 0
         for ch in changes:
-            # 变更涉及 rule 关键词 → 加权
             ch_str = str(ch).lower()
             if any(kw in ch_str for kw in rule["keywords"]):
                 count += 1

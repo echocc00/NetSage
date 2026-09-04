@@ -34,19 +34,22 @@
 |---|---|---|
 | Agent 编排 | ✅ | 10 Agent：planner / config_engineer / validator / troubleshooter / deploy / observer / security_auditor / compliance / rdm_agent / wireless_agent |
 | 三道闸引擎 | ✅ | Containerlab 仿真 → Batfish 校验 → 人工审批 + 快照回滚 |
-| 多厂商接入 | ✅ | 华为 VRP / Cisco IOS-XE / H3C / Juniper / Arista（NAPALM + netmiko + scrapli） |
-| SourceOfTruth 双适配器 | ✅ | NetBox（包装）+ Nautobot（Adapter + 自研 App v0.1） |
-| 安全合规 | ✅ | SecurityAuditor + 30 条基线规则（CIS + 厂商加固）+ Batfish ACL 分析（Cisco + 华为） |
-| 故障排障 | ✅ | RCA 引擎（规则 + 概率 + RAG 关联）+ Troubleshooter Agent |
-| 自动化闭环 | ✅ | 诊断→修复→验证→审批→下发→监控，自动化率 100%（演示）/ 83%（生产，仅 approve 人工） |
-| RDMA 专项 | ✅ | OpenSM 容器化 + RdmAgent（PFC/ECN/DCQCN 配置诊断） |
-| 无线专项 | ✅ | WirelessAgent（AP 布放/信道/漫游域/安全策略） |
-| 多租户 + SSO | ✅ | Tenant 隔离 + OIDC（Keycloak） |
+| 多厂商接入 | ✅ | 华为 VRP / Cisco IOS-XE / H3C / Juniper / Arista（NAPALM + netmiko + scrapli），86 配置模板 |
+| SourceOfTruth 双适配器 | ✅ | NetBox（真实 REST）+ Nautobot（Adapter，mock 模式默认）+ 自研 App v0.1 |
+| 安全合规 | ✅ | SecurityAuditor + 30 条基线规则（CIS + 厂商加固）+ ACL 分析（Cisco + 华为） |
+| 故障排障 | ✅ | RCA 引擎（26 条规则 + 概率排序）+ Troubleshooter Agent |
+| 自动化闭环 | ✅ | 诊断→修复→验证→审批→下发→监控，自动化率 83%（生产，仅 approve 人工） |
+| 数据脱敏 | ✅ | Layer1/3 四层模型，**已接入 LLM 网关**（黑盒阻断 + 灰盒强制脱敏 + 响应还原） |
+| 审计合规 | ✅ | sha256 哈希链 + INSERT ONLY + 五级 RBAC（等保三权分立） |
 | 生产化 | ✅ | 运营大屏 + DR/备份（RPO 24h/RTO 2h）+ LLM 缓存 + 生产 Docker + OpenAPI |
-| RAG 知识库 | ✅ | 混合检索 + 重排序（pgvector） |
-| 数据脱敏 | ✅ | Layer1/3 四层模型 + 审计哈希链 |
-| React 前端 | ✅ | 设备 / 设计工坊（React Flow）/ 排障 / 变更审批 / 配置审计 |
-| RBAC | ✅ | 五级（viewer/operator/engineer/admin/auditor，等保三权分立） |
+| React 前端 | ✅ | 9 页面：大屏 / 设备 / 设计工坊 / 排障 / 审批 / 审计 / RDMA / 无线 / 登录 |
+| RDMA 专项 | 🟡 | RdmAgent（PFC/ECN/DCQCN 配置诊断）+ OpenSM 容器化。**默认 mock 模式，真实 IB 硬件未验证** |
+| 无线专项 | 🟡 | WirelessAgent（AP 布放 + 信道规划 + 漫游域 + 安全策略）。**WLC API 未接入** |
+| 多租户 + SSO | 🟡 | Tenant model + OIDC（PKCE + nonce + state）。**未接真实 Keycloak 验证** |
+| RAG 知识库 | 🟡 | 混合检索 + 重排序（pgvector）已实现。**语料仅 3 份华为手册样本，hit_rate 待实测** |
+| NetAI-Bench | 🟡 | 513 题 schema 100% 通过。**90% 为程序生成，人工复审进行中** |
+
+> **状态说明**：✅ = 完整实现且测试覆盖 · 🟡 = 代码就绪但依赖外部条件（硬件/语料/第三方服务）未端到端验证
 
 ## 快速开始
 > 📘 想要 **5 分钟完整跑通**?[看 `docs/getting-started.md`](docs/getting-started.md) — 涵盖 docker / 数据库初始化 / 验证清单。
@@ -87,14 +90,15 @@ PYTHONIOENCODING=utf-8 python scripts/phase3_acceptance.py
 ## 仓库结构
 
 ```
-backend/              FastAPI 后端（Python 3.11+，8 Agent + 三道闸 + 双 SSoT）
-mcp-servers/          MCP Server（containerlab / batfish / napalm / netbox / suzieq / nautobot）
+backend/              FastAPI 后端（Python 3.11+，10 Agent + 三道闸 + 双 SSoT）
+mcp-servers/          MCP Server ×7（containerlab / batfish / napalm / netbox / suzieq / nautobot / opensm）
 nautobot-app-designs/ 自研 Nautobot App v0.1（NetworkDesign 持久化）
-frontend/             React + AntD + React Flow
-cli/                  nsc CLI（typer）
-eval/                 NetAI-Bench 评测集
-infra/                docker-compose / Vault / NetBox / SUZIEQ
-doc/                  技术方案 + 开发计划 + Phase 规划
+frontend/             React + AntD + React Flow（9 页面）
+cli/                  nsc CLI（typer，6 命令）
+eval/                 NetAI-Bench 评测集（513 题）
+infra/                docker-compose（dev / prod / netbox / suzieq / opensm）+ Vault
+scripts/              运维脚本（backup / restore）+ _build_archive（历史构建脚本）
+doc/                  技术方案 + 开发计划 + Phase 规划 + DR Runbook
 ```
 
 ## 架构
@@ -119,7 +123,7 @@ flowchart TB
 
     Gateway["FastAPI 网关<br/>(认证 / RBAC / 限流 / 审计)"]:::backend
 
-    subgraph AgentLayer["Agent 编排层 (8 Agent · LangGraph)"]
+    subgraph AgentLayer["Agent 编排层 (10 Agent · SequentialBackend)"]
         Planner[planner]:::backend
         ConfigEng[config_engineer]:::backend
         Validator[validator]:::backend
@@ -128,6 +132,8 @@ flowchart TB
         Observer[observer]:::backend
         SecAuditor[security_auditor]:::backend
         Compliance[compliance]:::backend
+        RdmAgent[rdm_agent]:::backend
+        WirelessAgent[wireless_agent]:::backend
     end
 
     subgraph ThreeGates["三道闸引擎 (写通道保护)"]
@@ -136,7 +142,7 @@ flowchart TB
         Gate3["③ 人工审批 + 快照回滚"]:::security
     end
 
-    MCPLayer["MCP Servers<br/>(containerlab · batfish · napalm<br/>netbox · suzieq · nautobot)"]:::frontend
+    MCPLayer["MCP Servers ×7<br/>(containerlab · batfish · napalm<br/>netbox · suzieq · nautobot · opensm)"]:::frontend
 
     subgraph DeviceLayer["设备接入层 (NAPALM / netmiko / scrapli)"]
         Huawei[华为 VRP]:::device
@@ -185,11 +191,17 @@ flowchart TB
 - ✅ **Phase 3**（M5-M6）：Nautobot 集成 + 安全合规 + 自动化闭环（10/10，验收 12/12）
 - ✅ **Phase 4**（M7-M12）：RDMA + 无线 + 多租户 + SSO + 生产化（v1.0.0）
 
-### v1.0.0 遗留 TODO
+### v1.0.0 已知限制（诚实清单）
 
-- RAG hit_rate ≥85%（待厂商手册语料 ingest）
-- IB 硬件验证（OpenSM/perftest 真实模式）
-- OpenSM 法务 memo（工程隔离已做，法务意见待出具）
+| 项 | 现状 | 解锁条件 |
+|---|---|---|
+| RAG hit_rate | 语料仅 3 份华为手册样本（543 行），hit_rate 未达 85% 目标 | 厂商手册全量 ingest（需版权授权） |
+| RDMA 真实验证 | OpenSM/RdmAgent 默认 mock 模式，2 节点硬编码数据 | IB 硬件测试床 + perftest |
+| OpenSM 法务 | 工程隔离已做（不链接/不分发/不修改），法务 memo 未出具 | 法务团队签字 |
+| Nautobot | Adapter 完整但默认 mock，未部署真实 Nautobot 服务 | 部署 Nautobot v2 |
+| OIDC/SSO | PKCE + nonce + state 完整，未接真实 Keycloak 端到端验证 | Keycloak 实例 |
+| 评测集质量 | 513 题 schema 100% 通过，但 90% 为程序生成 | 人工复审（进行中，见 `source` 字段） |
+| WLC API | WirelessAgent 生成配置，未接厂商 WLC 控制器 API | 厂商 API 凭据 |
 
 ## 许可证
 

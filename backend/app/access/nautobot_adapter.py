@@ -8,18 +8,16 @@ Nautobot 与 NetBox 同源 fork，REST API 高度兼容。本适配器：
 """
 from __future__ import annotations
 
-from typing import Any
-
 import httpx
 
 from app.access.source_of_truth import (
+    IPAM,
+    VRF,
     ChangeRecord,
     Device,
-    IPAM,
-    SSoTError,
     SourceOfTruth,
+    SSoTError,
     Topology,
-    VRF,
 )
 from app.core.logging import get_logger
 

@@ -10,8 +10,7 @@ from typing import Any
 
 from app.core.logging import get_logger
 from app.gates.approval import ApprovalGate
-from app.gates.base import GateContext
-from app.gates.models import ChangeStatus, GateResult, assert_transition
+from app.gates.models import ChangeStatus, assert_transition
 from app.gates.simulation import SimulationGate
 from app.gates.snapshot import SnapshotService
 from app.gates.validation import ValidationGate

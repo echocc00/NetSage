@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.deps import CurrentUser, get_current_user, require_permission
 from app.db import get_session
 from app.schemas.common import Envelope
+
 router = APIRouter(prefix="/devices", tags=["devices"])
 
 

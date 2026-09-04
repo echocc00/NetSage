@@ -13,10 +13,10 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.agents.classifier import (
+    INTENT_AGENT_MAP,
     Intent,
     Scenario,
     classify,
-    INTENT_AGENT_MAP,
 )
 from app.main import app
 from app.runtime.base import AgentDefinition, Transition
@@ -224,6 +224,7 @@ async def test_config_engineer_generates_config():
 # ===== API 端点 =====
 
 from app.core.security import CurrentUser, Role, encode_token
+
 
 def _auth() -> dict[str, str]:
     token = encode_token(CurrentUser(id=1, name="test", role=Role.ENGINEER))

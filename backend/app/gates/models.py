@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import Any
 
 
 class ChangeStatus(StrEnum):
@@ -68,9 +67,9 @@ class GateResult:
     error: str | None = None
 
     @classmethod
-    def ok(cls, gate: str, evidence: list[dict] | None = None) -> "GateResult":
+    def ok(cls, gate: str, evidence: list[dict] | None = None) -> GateResult:
         return cls(passed=True, gate=gate, evidence=evidence or [])
 
     @classmethod
-    def fail(cls, gate: str, error: str, evidence: list[dict] | None = None) -> "GateResult":
+    def fail(cls, gate: str, error: str, evidence: list[dict] | None = None) -> GateResult:
         return cls(passed=False, gate=gate, error=error, evidence=evidence or [])

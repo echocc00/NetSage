@@ -9,7 +9,6 @@ GET /reports/dashboard   大屏聚合数据
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
 
 from app.core.deps import CurrentUser, get_current_user
 from app.schemas.common import Envelope

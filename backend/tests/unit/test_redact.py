@@ -15,7 +15,6 @@ from app.redact.interceptor import RedactingInterceptor
 from app.redact.layer1_dict import Layer1Redactor
 from app.redact.layer3_router import (
     BlackboxBlockError,
-    ContentTier,
     GreyboxNotRedactedError,
     Layer3Router,
     Route,

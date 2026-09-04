@@ -7,9 +7,9 @@
 """
 from __future__ import annotations
 
-from app.access.base import DeviceAdapter, DeviceTarget, NAPALM_DRIVER_MAP
+from app.access.base import NAPALM_DRIVER_MAP, DeviceAdapter, DeviceTarget
 from app.access.napalm_adapter import NapalmAdapter
-from app.access.netmiko_adapter import NetmikoAdapter, NETMIKO_TYPE_MAP
+from app.access.netmiko_adapter import NetmikoAdapter
 from app.access.scrapli_adapter import ScrapliAdapter
 from app.core.logging import get_logger
 

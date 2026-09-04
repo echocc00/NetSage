@@ -6,7 +6,6 @@ GET  /agents/sessions/{id}/stream  SSE 流式推送 DAG 进度
 from __future__ import annotations
 
 import uuid
-from typing import Annotated
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
@@ -147,20 +146,25 @@ class TroubleshootRequest(BaseModel):
 async def run_troubleshooter(
     session_id: str,
     req: TroubleshootRequest,
-    user: CurrentUser = Depends(get_current_user),
+    user: CurrentUser = Depends(require_permission("troubleshoot")),
 ) -> Envelope[dict]:
     """执行 Troubleshooter Agent（RCA 根因排序，v2.0 五章 8.4）。
 
-    返回候选根因 + 证据链 + 验证步骤 + 修复方案。
+    collect → analyze(RCA) → suggest_fixes
+    返回 ≥3 候选根因 + 证据链 + 验证命令 + 修复方案。
     """
     runner = build_runner()
     symptom = req.symptom or req.query or ""
+    ctx = req.context
     state = {
         "query": symptom,
         "symptom": symptom,
         "vendor": req.vendor,
-        "device": req.device,
-        "context": req.context,
+        "device": req.device or ctx.get("device", {}),
+        "scenario": ctx.get("scenario", "bgp"),
+        "protocol_state": ctx.get("protocol_state", {}),
+        "recent_changes": ctx.get("recent_changes", []),
+        "context": ctx,
     }
     result = await runner.run("troubleshooter", state, session_id=session_id)
     return Envelope.ok({
@@ -168,33 +172,6 @@ async def run_troubleshooter(
         "evidence": result.get("evidence", []),
         "fixes": result.get("fixes", []),
         "references": result.get("references", []),
-    })
-
-
-@router.post("/sessions/{session_id}/troubleshoot", response_model=Envelope[dict])
-async def run_troubleshooter(
-    session_id: str,
-    req: AgentRequest,
-    user: CurrentUser = Depends(require_permission("troubleshoot")),
-) -> Envelope[dict]:
-    """执行 Troubleshooter Agent（Phase 2 P2-10）。
-
-    collect → analyze(RCA) → suggest_fixes
-    返回 ≥3 候选根因 + 证据链 + 验证命令 + 修复方案。
-    """
-    runner = build_runner()
-    state = {
-        "query": req.query,
-        "vendor": req.vendor,
-        "device": req.context.get("device", {}),
-        "scenario": req.context.get("scenario", "bgp"),
-        "protocol_state": req.context.get("protocol_state", {}),
-        "recent_changes": req.context.get("recent_changes", []),
-    }
-    result = await runner.run("troubleshooter", state, session_id=session_id)
-    return Envelope.ok({
-        "root_causes": result.get("root_causes", []),
-        "fixes": result.get("fixes", []),
         "can_auto_fix": result.get("can_auto_fix", False),
     })
 

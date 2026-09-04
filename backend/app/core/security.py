@@ -6,6 +6,7 @@ Phase 1 W1 占位：JWT 解码 + 角色枚举。OIDC（Keycloak）Phase 3 接入
 """
 from __future__ import annotations
 
+from datetime import UTC
 from enum import IntEnum
 
 from jose import JWTError, jwt
@@ -72,14 +73,14 @@ def decode_token(token: str) -> CurrentUser | None:
 
 def encode_token(user: CurrentUser) -> str:
     """生成 JWT（开发态登录用）。"""
-    from datetime import datetime, timedelta, timezone
+    from datetime import datetime, timedelta
 
     settings = get_settings()
     payload = {
         "sub": str(user.id),
         "name": user.name,
         "role": user.role.value,
-        "exp": datetime.now(timezone.utc) + timedelta(minutes=settings.jwt_expire_minutes),
+        "exp": datetime.now(UTC) + timedelta(minutes=settings.jwt_expire_minutes),
         "iss": "netsage",
     }
     return jwt.encode(payload, settings.jwt_secret, algorithm="HS256")

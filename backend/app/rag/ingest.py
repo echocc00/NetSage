@@ -6,14 +6,14 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logging import get_logger
-from app.rag.chunker import Chunk, ManualChunker
+from app.rag.chunker import ManualChunker
 from app.rag.embedder import Embedder
 
 logger = get_logger("rag_ingest")
@@ -48,7 +48,6 @@ class IngestService:
         embeddings = self.embedder.encode(texts)
 
         # 批量插入
-        from datetime import datetime
 
         now = datetime.utcnow()
         rows = [

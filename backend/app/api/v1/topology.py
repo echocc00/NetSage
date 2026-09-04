@@ -4,7 +4,7 @@ GET /topology?scope=<site> → NetBox 真实拓扑（React Flow 格式），不�
 """
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 
 from app.access.netbox_adapter import NetBoxAdapter
@@ -106,7 +106,7 @@ async def get_topology(
         return Envelope.ok(
             TopologyOut(nodes=nodes, links=links, scope=scope, source="netbox")
         )
-    except Exception as e:
+    except Exception:
         # NetBox 不可达时降级 mock（不阻断前端）
         return Envelope.ok(MOCK_TOPOLOGY)
     finally:

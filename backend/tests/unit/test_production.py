@@ -1,7 +1,6 @@
 """Phase 4 M12 生产化测试：报表/DR/LLM 缓存/OpenAPI。"""
 from __future__ import annotations
 
-import pytest
 from fastapi.testclient import TestClient
 
 from app.core.security import CurrentUser, Role, encode_token

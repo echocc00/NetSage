@@ -1,9 +1,10 @@
 """NetAI-Bench 评测 Runner 测试。"""
 from __future__ import annotations
 
+from pathlib import Path
+
 from eval.runner import grade, load_dataset, run_eval
 from eval.runner.schema import validate_dataset
-from pathlib import Path
 
 
 def test_load_dataset_finds_questions():

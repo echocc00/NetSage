@@ -6,8 +6,6 @@ pre_check → deploy_loop → verify → rollback
 """
 from __future__ import annotations
 
-from typing import Any
-
 from app.core.logging import get_logger
 from app.tools.registry import ToolRegistry
 

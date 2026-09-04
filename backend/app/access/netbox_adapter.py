@@ -5,19 +5,16 @@
 """
 from __future__ import annotations
 
-import asyncio
-from typing import Any
-
 import httpx
 
 from app.access.source_of_truth import (
+    IPAM,
+    VRF,
     ChangeRecord,
     Device,
-    IPAM,
-    SSoTError,
     SourceOfTruth,
+    SSoTError,
     Topology,
-    VRF,
 )
 from app.core.logging import get_logger
 
@@ -141,7 +138,7 @@ class NetBoxAdapter(SourceOfTruth):
         """变更记录回写 NetBox（custom_field 或 journal entry）。"""
         # NetBox journal entries（v4 原生）
         await self._post(
-            "/api/dcim/devices/{}/journal-entries/".format(record.device_id),
+            f"/api/dcim/devices/{record.device_id}/journal-entries/",
             {
                 "assigned_object_type": "dcim.device",
                 "assigned_object_id": record.device_id,
@@ -153,10 +150,8 @@ class NetBoxAdapter(SourceOfTruth):
 
     async def update_device_status(self, device_id: int, status: str) -> None:
         """更新设备状态（active/maintenance/failed）。"""
-        # 状态需用 status id，先查
-        statuses = await self._get("/api/dcim/devices/{}/".format(device_id))
         await self.client.patch(
-            "/api/dcim/devices/{}/".format(device_id),
+            f"/api/dcim/devices/{device_id}/",
             json={"status": status},
         )
         logger.info("netbox_status_updated", device=device_id, status=status)

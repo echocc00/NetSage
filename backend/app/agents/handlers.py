@@ -9,7 +9,6 @@ from typing import Any
 
 from app.agents.classifier import ClassifiedIntent, classify
 from app.core.logging import get_logger
-from app.services.llm_gateway import TaskTier, get_llm_gateway
 from app.tools.registry import ToolRegistry
 
 logger = get_logger("agent_handlers")

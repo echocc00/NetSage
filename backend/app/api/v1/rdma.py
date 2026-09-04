@@ -82,7 +82,6 @@ async def save_fabric(
 ) -> Envelope[dict]:
     """保存 RdmaFabric 设计（Phase 4，需 draft_change 权限）。"""
     try:
-        from sqlalchemy import select
         from app.db import get_session
         from app.models.design import RdmaFabric
 

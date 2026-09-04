@@ -11,12 +11,10 @@ DB 依赖的检索/入库测试放 integration（需 pgvector）。
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 from app.rag.chunker import ManualChunker
 from app.rag.embedder import HashEmbedder
-from app.rag.retriever import rewrite_query, SYNONYMS
-
+from app.rag.retriever import SYNONYMS, rewrite_query
 
 # ===== Chunker =====
 

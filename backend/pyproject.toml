@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "netsage-backend"
 version = "0.1.0"
 description = "NetSage AI 网络工程师智能平台后端"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 readme = "README.md"
 
 dependencies = [
@@ -56,11 +56,19 @@ include = ["app*"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py311"
+target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM"]
-ignore = ["E501"]
+ignore = [
+    "E501",    # 行长由 line-length 控制
+    "B008",    # FastAPI Depends() 惯用法：函数调用作默认参数
+    "E701",    # Protocol stub 的 `def f(): ...` 单行写法
+    "UP046",   # PEP695 泛型语法（渐进迁移）
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["F841", "E402", "N802", "C400"]  # 测试：断言中间变量 / 延迟导入 / 命名
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
@@ -72,6 +80,6 @@ markers = [
 ]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
 strict = true
 ignore_missing_imports = true

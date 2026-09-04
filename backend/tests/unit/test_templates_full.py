@@ -3,9 +3,14 @@ from __future__ import annotations
 
 import pytest
 import yaml
-from pathlib import Path
 
-from app.services.template_loader import TEMPLATES_ROOT, TemplateError, list_by_vendor, load_template, render
+from app.services.template_loader import (
+    TEMPLATES_ROOT,
+    TemplateError,
+    list_by_vendor,
+    load_template,
+    render,
+)
 
 
 def _all_template_ids() -> list[str]:

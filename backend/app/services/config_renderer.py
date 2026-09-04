@@ -73,7 +73,11 @@ class ConfigRenderer:
             f"设备:{json.dumps(device or {}, ensure_ascii=False)}\n"
             "输出格式: {\"name\": ...}（按 input_schema 字段填充）"
         )
-        raw = await self.llm.complete([{"role": "user", "content": prompt}], tier=TaskTier.CODE)
+        raw = await self.llm.complete(
+            [{"role": "user", "content": prompt}],
+            tier=TaskTier.CODE,
+            content_type="topology_abstraction",  # 灰盒：设备信息强制脱敏（v2.0 二十章）
+        )
         params = _extract_json(raw)
         if params is None:
             raise TemplateError(f"LLM 参数提取失败，非 JSON 输出: {raw[:200]}")

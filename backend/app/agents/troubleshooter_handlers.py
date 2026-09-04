@@ -5,9 +5,6 @@ collect → analyze(RCA) → rank_causes → suggest_fixes
 """
 from __future__ import annotations
 
-from typing import Any
-
-from app.agents.classifier import Scenario, classify
 from app.agents.rca_engine import RCAEngine, SymptomContext
 from app.core.logging import get_logger
 from app.tools.registry import ToolRegistry

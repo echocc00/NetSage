@@ -6,8 +6,6 @@ SUZIEQ Assert 框架做配置 vs 状态断言。
 """
 from __future__ import annotations
 
-from typing import Any
-
 from app.core.logging import get_logger
 from app.tools.registry import ToolRegistry
 

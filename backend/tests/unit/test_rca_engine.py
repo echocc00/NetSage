@@ -1,8 +1,6 @@
 """RCA 引擎测试（Phase 2 P2-9，规则+概率轻量版）。"""
 from __future__ import annotations
 
-import pytest
-
 from app.agents.rca_engine import RCAEngine, SymptomContext
 
 
