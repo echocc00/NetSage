@@ -2,6 +2,32 @@
 
 本项目遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [v1.0.1] - 2026-09-06
+
+### 第三方审计问题修复（P7-1 ~ P7-8）
+
+**安全修复**
+- **脱敏接入 LLM 网关（P0）**：`redact/` 模块此前无调用方，配置原文直发 LLM。现 `LLMGateway.complete()` 强制过 `RedactingInterceptor`——黑盒内容（running-config）抛 `BlackboxBlockError` 阻断，灰盒强制脱敏，缓存存脱敏态，响应按 `MappingTable` 还原
+- **OIDC 补齐 OAuth 2.1 要求**：PKCE S256（RFC 7636）+ nonce 防重放（OIDC Core 3.1.3.7）+ JWKS 验签（此前未校验 id_token 签名）+ state TTL 600s 单次使用；角色映射默认最小权限 VIEWER
+
+**Agent 代码深度（此前 README 声明与实现不符）**
+- WirelessAgent 3→5 节点：新增射频规划（信道复用 + 层间偏移 + 功率）、漫游安全（802.11r/k/v + PMF + RADIUS），AP 定容改为容量/覆盖双约束
+- RdmAgent 3→4 节点：新增 Fabric 设计（Spine-Leaf 规模 + buffer 预算 + RoCE underlay 选型 / IB 分区键 + VL 映射 + SM 配置）
+- SecurityAuditor 4→6 节点：新增攻击面测绘（8 正向 + 4 反向探测）、加固优先级（按风险分降序）
+
+**质量门禁**
+- CI：`.github/workflows/test.yml`（ruff + mypy + 单元 + e2e + 513 题 schema + 86 模板渲染 + Docker 构建）、`security.yml`（CodeQL + 密钥扫描 + bandit）、`CODEOWNERS`
+- E2E：`backend/tests/e2e/test_full_flow.py` 18 测试 / 8 场景，TestClient 跑真实 HTTP 链路（中间件 + RBAC + 审计）
+- ruff 清零 193 项，其中修 3 个真实缺陷：重复 `run_troubleshooter` 路由（后者静默覆盖前者）、`update_device_status` 多余 GET、`_correlate_changes` 死变量
+
+**可审计性**
+- 513 道评测题补 `source` 溯源字段（manual 30 / template_derived 81 / auto_generated 402），schema 强校验；`eval/README.md` 按来源分层说明引用权重
+- 24 个一次性生成脚本归档到 `scripts/_build_archive/`，仓库根 `scripts/` 只留运维脚本
+- **RAG hit_rate 首次实测**：bge-m3 真实向量 + 本地构建 pgvector，全量 33.9%（174/513）、语料内 99.4%（174/175）。瓶颈为语料覆盖（3 份华为手册 54 chunks，上限 34.1%）而非检索算法。报告见 `eval/reports/hit_rate-v1.0.md`
+- `SECURITY.md` 改为 NetSage 专用（此前为模板残留），README 能力表引入 ✅/🟡 分级 + "已知限制（诚实清单）"
+
+**测试**：518 单元 + 18 e2e 通过，ruff 零告警
+
 ## [v1.0.0] - 2026-08-26
 
 ### 生产化（Phase 4 M12）

@@ -1,6 +1,6 @@
 # NetSage · AI 网络工程师智能平台
 
-> **v1.0.0** · AI 辅助网络工程平台：让 AI 承担设计、配置生成、故障排查、安全审计、RDMA 调优等专业工作。
+> **v1.0.1** · AI 辅助网络工程平台：让 AI 承担设计、配置生成、故障排查、安全审计、RDMA 调优等专业工作。
 >
 
 [![Latest Release](https://img.shields.io/github/v/release/echocc00/NetSage?display_name=tag&style=flat-square)](https://github.com/echocc00/NetSage/releases/latest)
@@ -28,7 +28,7 @@
 
 > 基线文档：[最终技术方案 v2.0](doc/NetSage-最终技术方案-v2.0.md) · [开发计划](doc/NetSage-开发计划与详细设计-v1.0.md) · [Phase 2 规划](doc/NetSage-Phase2-规划-v1.0.md) · [Phase 3 规划](doc/NetSage-Phase3-规划-v1.0.md)
 
-## 能力总览（v1.0.0）
+## 能力总览（v1.0.1）
 
 | 模块 | 状态 | 说明 |
 |---|---|---|
@@ -190,8 +190,9 @@ flowchart TB
 - ✅ **Phase 2**（M3-M4）：多厂商 + 数据闭环 + 排障链路（核心 10/14，验收 12/12）
 - ✅ **Phase 3**（M5-M6）：Nautobot 集成 + 安全合规 + 自动化闭环（10/10，验收 12/12）
 - ✅ **Phase 4**（M7-M12）：RDMA + 无线 + 多租户 + SSO + 生产化（v1.0.0）
+- ✅ **审计修复**（P7-1~P7-8）：脱敏接入 LLM 网关 + OIDC 补齐 + CI 门禁 + Agent 深度 + E2E + hit_rate 实测（v1.0.1）
 
-### v1.0.0 已知限制（诚实清单）
+### v1.0.1 已知限制（诚实清单）
 
 | 项 | 现状 | 解锁条件 |
 |---|---|---|
