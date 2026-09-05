@@ -1,4 +1,5 @@
 id: NSG-Q-0160
+source: auto_generated
 title: BGP maximum-prefix 超限（Arista EOS 4.24，max-routes 触发）
 category: troubleshoot
 vendor: arista

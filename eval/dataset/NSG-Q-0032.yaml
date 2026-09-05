@@ -1,4 +1,5 @@
 id: NSG-Q-0032
+source: manual
 title: IPv6 BGP peer 卡 Active（华为 VRP-8.180，link-local 地址被选为 neighbor + IPv4 AFI 不匹配）
 category: troubleshoot
 vendor: huawei

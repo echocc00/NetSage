@@ -1,4 +1,5 @@
 id: NSG-Q-0004
+source: manual
 title: "配置审计：BGP 路由黑洞检测（华为 VRP）"
 category: audit
 vendor: huawei

@@ -1,4 +1,5 @@
 id: NSG-Q-0017
+source: manual
 title: "OSPF 卡在 LOADING（华三 Comware 7.1.070，LSAge 校验失败）"
 category: troubleshoot
 vendor: h3c

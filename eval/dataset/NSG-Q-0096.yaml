@@ -1,4 +1,5 @@
 id: NSG-Q-0096
+source: template_derived
 title: 生成 arista ospf/area_config 配置 (OSPF area 0 配置 + 网段通告)
 category: config
 vendor: arista

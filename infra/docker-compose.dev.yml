@@ -2,7 +2,8 @@
 # 用法：docker compose -f infra/docker-compose.dev.yml up -d
 services:
   postgres:
-    image: pgvector/pgvector:pg16
+    # 官方镜像不可达时用 infra/pgvector/Dockerfile 本地构建 netsage/pgvector:pg16 替代
+    image: ${PGVECTOR_IMAGE:-pgvector/pgvector:pg16}
     container_name: netsage-pg
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-netsage}

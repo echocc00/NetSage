@@ -1,4 +1,5 @@
 id: NSG-Q-0416
+source: auto_generated
 title: BGP dampening 抑制过严（思科 IOS-XE 17）
 category: troubleshoot
 vendor: cisco

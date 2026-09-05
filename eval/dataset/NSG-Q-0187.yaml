@@ -1,4 +1,5 @@
 id: NSG-Q-0187
+source: auto_generated
 title: IPv6 BGP 卡 active（思科 neighbor transport-mode 错配）
 category: troubleshoot
 vendor: cisco

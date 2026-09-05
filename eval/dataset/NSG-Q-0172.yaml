@@ -1,4 +1,5 @@
 id: NSG-Q-0172
+source: auto_generated
 title: OSPF 区域内路由缺失（思科 17，db-filter 配置）
 category: troubleshoot
 vendor: cisco

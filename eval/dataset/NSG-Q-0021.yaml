@@ -1,4 +1,5 @@
 id: NSG-Q-0021
+source: manual
 title: OSPF NSSA ABR Type-7 转 Type-5 失败（华为 VRP-8.180）
 category: troubleshoot
 vendor: huawei

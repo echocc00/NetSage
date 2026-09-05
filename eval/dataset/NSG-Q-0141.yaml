@@ -1,4 +1,5 @@
 id: NSG-Q-0141
+source: template_derived
 title: 生成 arista static_route/default 配置 (默认路由 0.0.0.0/0 → 198.51.100.254)
 category: config
 vendor: arista

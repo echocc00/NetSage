@@ -1,4 +1,5 @@
 id: NSG-Q-0430
+source: auto_generated
 title: VXLAN ARP 不学（华为 VRP-8.180, VBDif 缺 ARP）
 category: troubleshoot
 vendor: huawei

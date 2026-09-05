@@ -1,4 +1,5 @@
 id: NSG-Q-0384
+source: auto_generated
 title: 'ECN 调优 2/8: ECN 阈值过高无作用'
 category: perf
 vendor: cisco

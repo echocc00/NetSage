@@ -1,4 +1,5 @@
 id: NSG-Q-0080
+source: template_derived
 title: 生成 juniper bgp/peering 配置 (eBGP peer 建立，与对端 AS 65001 互联)
 category: config
 vendor: juniper

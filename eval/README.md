@@ -16,12 +16,26 @@
 | 厂商 | 6 | cisco 128 / huawei 116 / h3c 82 / juniper 61 / arista 40 / mellanox 6 |
 | 难度 | 1-5 | 2 级 147 / 3 级 162 / 4 级 162 / 5 级 42 |
 
+## 题目来源（source 溯源）
+
+每题带 `source` 字段标注构造方式，引用时请按来源区分权重：
+
+| source | 数量 | 含义 |
+|---|---|---|
+| `manual` | 30 | 人工逐题构造，证据链（日志/配置片段/计时器）经网络工程师审校 |
+| `template_derived` | 81 | config 类，期望输出由 `backend/templates/` 下的 Jinja2 模板真实渲染得出 |
+| `auto_generated` | 402 | 由参数化脚本批量生成（脚本见 `scripts/_build_archive/build_batch*.py`），故障模式与验证命令来自公开厂商文档，未逐题人工复核 |
+| `customer_case` | 0 | 预留：脱敏真实客户案例 |
+
+`auto_generated` 题目结构与 schema 一致、可用于回归与检索评测，但**不宜单独作为专家级能力的权威基线**；作横向对比时建议按 source 分层报告。
+
 ## 题目格式
 
 每题一个 YAML 文件（`eval/dataset/NSG-Q-XXXX.yaml`），schema 见 `eval/runner/schema.py`。
 
 ```yaml
 id: NSG-Q-0001
+source: manual                # manual/template_derived/auto_generated/customer_case
 title: "OSPF 邻居反复震荡"
 category: troubleshoot        # troubleshoot/config/design/audit/perf
 vendor: huawei
@@ -45,12 +59,15 @@ grading_rubric:
 
 ### 1. RAG hit_rate（检索准确率）
 
-每题用 `input.symptom` 检索 RAG，检查 top-5 是否命中 `references.url`。
+每题用 `input.symptom + input.question` 检索 RAG，检查 top-5 是否命中 `references.url`。
 
 ```bash
-python eval/runner/hit_rate.py
+cd backend && python scripts/eval_hit_rate.py
 # 输出：hit_rate = 命中题数 / 总题数（目标 ≥85%）
 ```
+
+**实测（2026-09-06，bge-m3 + 3 份华为手册 54 chunks）**：全量 174/513 = 33.9%，语料内 174/175 = 99.4%。
+瓶颈是语料覆盖（上限 34.1%）而非检索算法，详见 [reports/hit_rate-v1.0.md](reports/hit_rate-v1.0.md)。
 
 ### 2. Agent 能力评测（LLM-as-judge）
 
@@ -96,4 +113,4 @@ eval/
 
 ## 许可
 
-评测集遵循仓库 Apache-2.0 许可。题目内容为 NetSage 团队原创 + 脱敏真实案例。
+评测集遵循仓库 Apache-2.0 许可。题目按 `source` 字段标注构造方式：30 题人工构造、81 题模板渲染、402 题脚本批量生成（见"题目来源"章节）。

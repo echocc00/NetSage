@@ -14,12 +14,14 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # 仓库根，供 eval.runner 导入
+
+from eval.runner import load_dataset
 
 from app.core.logging import get_logger
 from app.db import get_session
 from app.rag.embedder import get_embedder
 from app.rag.retriever import HybridRetriever
-from eval.runner import load_dataset
 
 logger = get_logger("hit_rate")
 
@@ -95,9 +97,9 @@ async def main() -> None:
         for q in questions:
             r = await eval_one(retriever, q)
             results.append(r)
-            status_icon = {"hit": "✓", "miss": "✗", "skipped": "-"}[r["status"]]
+            status_icon = {"hit": "HIT ", "miss": "MISS", "skipped": "SKIP"}[r["status"]]
             print(f"  {status_icon} {r['id']}: {r['status']}"
-                  + (f" → {r['hit_doc']}" if r["status"] == "hit" else ""))
+                  + (f" -> {r['hit_doc']}" if r["status"] == "hit" else ""))
         break
 
     evaluated = [r for r in results if r["status"] != "skipped"]
@@ -112,9 +114,9 @@ async def main() -> None:
         print(f"跳过（无 references）: {skipped}")
 
     if hit_rate >= 0.85:
-        print(f"✓ 达标（≥85%）")
+        print("[PASS] 达标（≥85%）")
     else:
-        print(f"✗ 未达标（<85%），需调参：同义词扩展 / HyDE / 重排序")
+        print("[FAIL] 未达标（<85%），需调参：同义词扩展 / HyDE / 重排序")
     print("=" * 60)
 
     # 保存详细报告

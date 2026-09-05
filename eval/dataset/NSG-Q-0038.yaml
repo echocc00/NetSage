@@ -1,4 +1,5 @@
 id: NSG-Q-0038
+source: auto_generated
 title: BGP 路由进入但转发丢包（Arista EOS 4.24，next-hop IGP 不可达）
 category: troubleshoot
 vendor: arista

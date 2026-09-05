@@ -1,4 +1,5 @@
 id: NSG-Q-0439
+source: auto_generated
 title: OSPFv3 type-5 互相泛洪（华为 VRP-8.180，NSSA ABR 配错）
 category: troubleshoot
 vendor: huawei

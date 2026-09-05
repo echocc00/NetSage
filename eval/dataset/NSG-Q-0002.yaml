@@ -1,4 +1,5 @@
 id: NSG-Q-0002
+source: manual
 title: "eBGP peering 配置生成（华为 VRP，上海-广州专线）"
 category: config
 vendor: huawei

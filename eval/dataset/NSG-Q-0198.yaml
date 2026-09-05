@@ -1,4 +1,5 @@
 id: NSG-Q-0198
+source: auto_generated
 title: OSPF NSSA 不接收 type-7（Juniper 22，asbr 不宣告 type-7）
 category: troubleshoot
 vendor: juniper

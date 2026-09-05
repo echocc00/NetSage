@@ -1,4 +1,5 @@
 id: NSG-Q-0060
+source: auto_generated
 title: VRRP 频繁主备切换（Juniper 21.2，preempt 配置错配）
 category: troubleshoot
 vendor: juniper

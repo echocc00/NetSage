@@ -1,4 +1,5 @@
 id: NSG-Q-0058
+source: auto_generated
 title: VXLAN ARP 表振荡（思科 NX-OS 9.3，ARP suppression 配置不一致）
 category: troubleshoot
 vendor: cisco

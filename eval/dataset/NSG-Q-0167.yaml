@@ -1,4 +1,5 @@
 id: NSG-Q-0167
+source: auto_generated
 title: OSPF 卡 Init（Juniper 21.2，passive-interface 误配）
 category: troubleshoot
 vendor: juniper

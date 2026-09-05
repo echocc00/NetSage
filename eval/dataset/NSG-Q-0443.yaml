@@ -1,4 +1,5 @@
 id: NSG-Q-0443
+source: auto_generated
 title: IPv6 RA M-flag/O-flag（Cisco IOS-XE 17）
 category: troubleshoot
 vendor: cisco

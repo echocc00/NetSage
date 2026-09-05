@@ -1,4 +1,5 @@
 id: NSG-Q-0181
+source: auto_generated
 title: MPLS LDP 邻居不建（思科 IOS-XE 17，mpls label-range 错配）
 category: troubleshoot
 vendor: cisco

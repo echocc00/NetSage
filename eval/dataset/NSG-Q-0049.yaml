@@ -1,4 +1,5 @@
 id: NSG-Q-0049
+source: auto_generated
 title: VXLAN Type-2 MAC 不互通（思科 NX-OS 9.3，EVPN instance 漏配 l2vpn evpn instance）
 category: troubleshoot
 vendor: cisco

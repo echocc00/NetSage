@@ -1,4 +1,5 @@
 id: NSG-Q-0159
+source: auto_generated
 title: BGP maximum-prefix 超限（Juniper 22，prefix-limit-threshold 触发 idle）
 category: troubleshoot
 vendor: juniper

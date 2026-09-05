@@ -1,4 +1,5 @@
 id: NSG-Q-0046
+source: auto_generated
 title: OSPF 卡 Init 状态（华三 Comware 7，area ID 不一致 + 认证 MD5 错配）
 category: troubleshoot
 vendor: h3c

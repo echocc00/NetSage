@@ -1,4 +1,5 @@
 id: NSG-Q-0291
+source: auto_generated
 title: 审计 arista PLAIN CREDS (attack-09 章节)
 category: audit
 vendor: arista

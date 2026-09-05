@@ -1,4 +1,5 @@
 id: NSG-Q-0164
+source: auto_generated
 title: OSPF 邻居卡 Loading（Huawei VRP-8.180，LSACK 重传不停）
 category: troubleshoot
 vendor: huawei

@@ -1,4 +1,5 @@
 id: NSG-Q-0054
+source: auto_generated
 title: Trunk 不通过 VNI（Juniper 21.2，VLAN ID 不一致）
 category: troubleshoot
 vendor: juniper

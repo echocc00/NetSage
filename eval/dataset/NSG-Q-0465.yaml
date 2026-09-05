@@ -1,4 +1,5 @@
 id: NSG-Q-0465
+source: auto_generated
 title: '生成 huawei bgp/peering 配 (变体 #2): eBGP 建立，多对端 AS 65002+65003'
 category: config
 vendor: huawei

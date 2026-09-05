@@ -1,4 +1,5 @@
 id: NSG-Q-0067
+source: auto_generated
 title: IS-IS 邻居震荡（华三 Comware 7，L1/L2 level mismatch）
 category: troubleshoot
 vendor: h3c

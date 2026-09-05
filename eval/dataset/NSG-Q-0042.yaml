@@ -1,4 +1,5 @@
 id: NSG-Q-0042
+source: auto_generated
 title: eBGP/iBGP 邻居混淆（华三 Comware 7，next-hop-self 缺失）
 category: troubleshoot
 vendor: h3c

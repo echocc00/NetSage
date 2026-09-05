@@ -1,4 +1,5 @@
 id: NSG-Q-0419
+source: auto_generated
 title: BGP allow-as-in 漏（华为 VRP-8.180，CE 间重复 AS）
 category: troubleshoot
 vendor: huawei

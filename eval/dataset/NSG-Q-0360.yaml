@@ -1,4 +1,5 @@
 id: NSG-Q-0360
+source: auto_generated
 title: 设计 RDMA RoCEv2 fabric 6/10
 category: design
 vendor: cross

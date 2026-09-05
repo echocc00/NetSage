@@ -46,8 +46,8 @@
 | RDMA 专项 | 🟡 | RdmAgent（PFC/ECN/DCQCN 配置诊断）+ OpenSM 容器化。**默认 mock 模式，真实 IB 硬件未验证** |
 | 无线专项 | 🟡 | WirelessAgent（AP 布放 + 信道规划 + 漫游域 + 安全策略）。**WLC API 未接入** |
 | 多租户 + SSO | 🟡 | Tenant model + OIDC（PKCE + nonce + state）。**未接真实 Keycloak 验证** |
-| RAG 知识库 | 🟡 | 混合检索 + 重排序（pgvector）已实现。**语料仅 3 份华为手册样本，hit_rate 待实测** |
-| NetAI-Bench | 🟡 | 513 题 schema 100% 通过。**90% 为程序生成，人工复审进行中** |
+| RAG 知识库 | 🟡 | 混合检索（bge-m3 + BM25）已实测：**语料内 hit_rate 99.4%，全量 33.9%**（语料仅 3 份华为手册，覆盖上限 34.1%）。见 [报告](eval/reports/hit_rate-v1.0.md) |
+| NetAI-Bench | 🟡 | 513 题 schema 100% 通过，每题带 `source` 溯源。**人工构造 30 / 模板渲染 81 / 脚本生成 402，后者未逐题人工复核** |
 
 > **状态说明**：✅ = 完整实现且测试覆盖 · 🟡 = 代码就绪但依赖外部条件（硬件/语料/第三方服务）未端到端验证
 
@@ -195,12 +195,12 @@ flowchart TB
 
 | 项 | 现状 | 解锁条件 |
 |---|---|---|
-| RAG hit_rate | 语料仅 3 份华为手册样本（543 行），hit_rate 未达 85% 目标 | 厂商手册全量 ingest（需版权授权） |
+| RAG hit_rate | 语料仅 3 份华为手册（543 行 / 54 chunks），全量 33.9%；语料内 99.4%，瓶颈是语料覆盖非检索算法 | 厂商手册全量 ingest（需版权授权）+ RFC 全文 |
 | RDMA 真实验证 | OpenSM/RdmAgent 默认 mock 模式，2 节点硬编码数据 | IB 硬件测试床 + perftest |
 | OpenSM 法务 | 工程隔离已做（不链接/不分发/不修改），法务 memo 未出具 | 法务团队签字 |
 | Nautobot | Adapter 完整但默认 mock，未部署真实 Nautobot 服务 | 部署 Nautobot v2 |
 | OIDC/SSO | PKCE + nonce + state 完整，未接真实 Keycloak 端到端验证 | Keycloak 实例 |
-| 评测集质量 | 513 题 schema 100% 通过，但 90% 为程序生成 | 人工复审（进行中，见 `source` 字段） |
+| 评测集质量 | 513 题 schema 100% 通过，402 题为脚本生成未逐题人工复核 | 按 `source` 分层人工复审 |
 | WLC API | WirelessAgent 生成配置，未接厂商 WLC 控制器 API | 厂商 API 凭据 |
 
 ## 许可证

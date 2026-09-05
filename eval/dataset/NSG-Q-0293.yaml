@@ -1,4 +1,5 @@
 id: NSG-Q-0293
+source: auto_generated
 title: 设计 spine-leaf 2+4 10 租户 VXLAN Fabric 1/15
 category: design
 vendor: cross

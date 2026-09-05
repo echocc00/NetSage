@@ -1,4 +1,5 @@
 id: NSG-Q-0074
+source: auto_generated
 title: 生成 Juniper EX4300 IPv6 默认路由（next-hop 2001:db8::1）
 category: config
 vendor: juniper

@@ -1,4 +1,5 @@
 id: NSG-Q-0375
+source: auto_generated
 title: 'RoCEv2 PFC 调优 3/10: 多租户 RoCE，noisy neighbor 影响'
 category: perf
 vendor: huawei

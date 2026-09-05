@@ -14,7 +14,6 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-import yaml
 from sqlalchemy import text
 
 from app.core.logging import get_logger
@@ -100,11 +99,11 @@ async def main() -> None:
           f"chunks {stats['chunks']}")
 
     verify = await verify_ingest()
-    print(f"\n[验证] 入库分布:")
+    print("\n[验证] 入库分布:")
     for v in verify["vendors"]:
         print(f"  {v['vendor']}: {v['chunks']} chunks")
 
-    print("\n✓ ingest 完成。可跑 hit_rate 评测：python scripts/eval_hit_rate.py")
+    print("\n[OK] ingest 完成。可跑 hit_rate 评测：python scripts/eval_hit_rate.py")
     print("=" * 60)
 
 

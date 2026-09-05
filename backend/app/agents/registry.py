@@ -164,6 +164,8 @@ def build_runner() -> AgentRunner:
         compliance_render,
         sec_analyze_acl,
         sec_collect_config,
+        sec_map_attack_surface,
+        sec_prioritize,
         sec_report,
         sec_scan_baseline,
     )
@@ -181,6 +183,8 @@ def build_runner() -> AgentRunner:
             "collect_config": partial(sec_collect_config, tools=tools),
             "scan_baseline": partial(sec_scan_baseline, tools=tools),
             "analyze_acl": partial(sec_analyze_acl, tools=tools),
+            "map_attack_surface": partial(sec_map_attack_surface, tools=tools),
+            "prioritize": partial(sec_prioritize, tools=tools),
             "report": partial(sec_report, tools=tools),
         },
     )
@@ -204,6 +208,7 @@ def build_runner() -> AgentRunner:
     from app.agents.rdma_handlers import (
         RDMA_AGENT_DEFINITION,
         rdma_collect,
+        rdma_design_fabric,
         rdma_diagnose,
         rdma_suggest_tuning,
     )
@@ -221,6 +226,7 @@ def build_runner() -> AgentRunner:
             "collect": partial(rdma_collect, tools=tools),
             "diagnose": partial(rdma_diagnose, tools=tools),
             "suggest_tuning": partial(rdma_suggest_tuning, tools=tools),
+            "design_fabric": partial(rdma_design_fabric, tools=tools),
         },
     )
 
@@ -229,6 +235,8 @@ def build_runner() -> AgentRunner:
         WIRELESS_AGENT_DEFINITION,
         wireless_collect,
         wireless_plan,
+        wireless_rf_plan,
+        wireless_roaming_security,
         wireless_suggest_config,
     )
 
@@ -244,6 +252,8 @@ def build_runner() -> AgentRunner:
         {
             "collect": partial(wireless_collect, tools=tools),
             "plan": partial(wireless_plan, tools=tools),
+            "rf_plan": partial(wireless_rf_plan, tools=tools),
+            "roaming_security": partial(wireless_roaming_security, tools=tools),
             "suggest_config": partial(wireless_suggest_config, tools=tools),
         },
     )

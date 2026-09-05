@@ -1,4 +1,5 @@
 id: NSG-Q-0013
+source: manual
 title: "VXLAN EVPN Type-2 路由不通（思科 IOS-XE 17.09，RT 配置错误）"
 category: troubleshoot
 vendor: cisco

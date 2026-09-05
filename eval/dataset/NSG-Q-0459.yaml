@@ -1,4 +1,5 @@
 id: NSG-Q-0459
+source: auto_generated
 title: VXLAN ESI 多归属（华为 VRP-8.180）
 category: troubleshoot
 vendor: huawei

@@ -1,4 +1,5 @@
 id: NSG-Q-0212
+source: auto_generated
 title: OSPFv3 AS-external 不互通（华为 VRP-8.180，import-route 漏 type）
 category: troubleshoot
 vendor: huawei

@@ -1,4 +1,5 @@
 id: NSG-Q-0432
+source: auto_generated
 title: IPsec transform-set 漏 ah（华三 Comware 7）
 category: troubleshoot
 vendor: h3c

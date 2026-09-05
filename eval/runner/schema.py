@@ -9,9 +9,12 @@ from typing import Any
 
 import yaml
 
-REQUIRED_FIELDS = {"id", "title", "category", "vendor", "difficulty", "input", "expected_output"}
+REQUIRED_FIELDS = {"id", "title", "category", "vendor", "difficulty", "input",
+                   "expected_output", "source"}
 VALID_CATEGORIES = {"troubleshoot", "config", "design", "audit", "perf"}
 VALID_VENDORS = {"huawei", "cisco", "h3c", "juniper", "arista", "mellanox", "cross"}
+# 溯源：manual 人工构造 / template_derived 模板渲染产物 / auto_generated 参数化批量生成
+VALID_SOURCES = {"manual", "template_derived", "auto_generated", "customer_case"}
 
 INPUT_REQUIRED = {"symptom", "question"} if False else set()  # 占位，实际按类校验
 EXPECTED_REQUIRED = {"root_causes"}
@@ -34,6 +37,8 @@ def validate_question(data: dict) -> list[str]:
         errors.append(f"非法 category: {data['category']}")
     if data["vendor"] not in VALID_VENDORS:
         errors.append(f"非法 vendor: {data['vendor']}")
+    if data["source"] not in VALID_SOURCES:
+        errors.append(f"非法 source: {data['source']}")
 
     # difficulty 1-5
     if not (1 <= int(data.get("difficulty", 0)) <= 5):

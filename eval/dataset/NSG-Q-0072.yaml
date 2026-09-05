@@ -1,4 +1,5 @@
 id: NSG-Q-0072
+source: template_derived
 title: 生成华为 NE40E Route Reflector 配置（cluster-id 10.0.0.1）
 category: config
 vendor: huawei

@@ -1,4 +1,5 @@
 id: NSG-Q-0206
+source: auto_generated
 title: ACL 顺序错（思科 IOS-XE 17，sequence number 生效错）
 category: troubleshoot
 vendor: cisco

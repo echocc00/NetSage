@@ -1,4 +1,5 @@
 id: NSG-Q-0402
+source: auto_generated
 title: 'InfiniBand 调优 2/6: IB 路径 MTU 不通'
 category: perf
 vendor: mellanox

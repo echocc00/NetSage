@@ -1,4 +1,5 @@
 id: NSG-Q-0380
+source: auto_generated
 title: 'RoCEv2 PFC 调优 8/10: GPU Direct 性能差'
 category: perf
 vendor: huawei

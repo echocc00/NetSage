@@ -1,4 +1,5 @@
 id: NSG-Q-0183
+source: auto_generated
 title: VRRP 不切换（华三 Comware 7，BFD 会话未启）
 category: troubleshoot
 vendor: h3c

@@ -1,4 +1,5 @@
 id: NSG-Q-0438
+source: auto_generated
 title: BGP Maximum-routes 触（Tungsten Fabric + H3C）
 category: troubleshoot
 vendor: h3c

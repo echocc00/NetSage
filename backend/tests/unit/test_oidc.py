@@ -63,7 +63,7 @@ def test_callback_rejects_unknown_state():
 
 def test_state_single_use():
     """state 用过即失效（防 replay）。"""
-    from app.api.v1.oidc import _PendingAuth, _pending
+    from app.api.v1.oidc import _pending, _PendingAuth
 
     _pending["st1"] = _PendingAuth(tenant="default", nonce="n1", code_verifier="v1")
     # 第一次会走到 token 交换（因 SSO 未配置会失败），但 state 已被 pop
@@ -86,7 +86,7 @@ def test_state_expires():
 
 
 def test_prune_removes_expired_states():
-    from app.api.v1.oidc import STATE_TTL, _PendingAuth, _pending, _prune_expired
+    from app.api.v1.oidc import STATE_TTL, _pending, _PendingAuth, _prune_expired
 
     _pending.clear()
     stale = _PendingAuth(tenant="d", nonce="n", code_verifier="v")
@@ -241,8 +241,8 @@ async def test_expired_token_rejected(monkeypatch):
 
 
 def test_role_mapping_from_groups():
-    from app.core.security import Role
     from app.api.v1.oidc import _map_user
+    from app.core.security import Role
 
     u = _map_user({"sub": "s1", "preferred_username": "bob", "groups": ["netsage-admin"]})
     assert u.role == Role.ADMIN
@@ -250,8 +250,8 @@ def test_role_mapping_from_groups():
 
 
 def test_role_mapping_picks_highest():
-    from app.core.security import Role
     from app.api.v1.oidc import _map_user
+    from app.core.security import Role
 
     u = _map_user({"sub": "s", "groups": ["netsage-viewer", "netsage-engineer"]})
     assert u.role == Role.ENGINEER
@@ -259,16 +259,16 @@ def test_role_mapping_picks_highest():
 
 def test_role_mapping_defaults_to_viewer():
     """无匹配 group → 最小权限（viewer），不默认给 engineer。"""
-    from app.core.security import Role
     from app.api.v1.oidc import _map_user
+    from app.core.security import Role
 
     u = _map_user({"sub": "s", "groups": ["some-other-group"]})
     assert u.role == Role.VIEWER
 
 
 def test_role_mapping_no_groups_claim():
-    from app.core.security import Role
     from app.api.v1.oidc import _map_user
+    from app.core.security import Role
 
     u = _map_user({"sub": "s", "email": "x@y.com"})
     assert u.role == Role.VIEWER
