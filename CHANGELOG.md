@@ -7,9 +7,12 @@
 ### v0.5.0 阶段1 · RAG 语料覆盖分析 + RFC 补语料管线（波2）
 
 - **覆盖缺口量化**：513 题按 references 分三类——175 题已被现有 huawei 手册覆盖、**338 题缺语料**、其中 **50 题纯引公开 RFC（NDA-free）**、~160 题引 cisco/h3c/juniper/arista 厂商 URL（需版权/NDA）
-- `backend/scripts/ingest_rfcs.py`：从 rfc-editor 拉取 16 个去重 RFC（rfc2328/2545/3101/3418/3706/3947/4271/4456/4861/5340/5798/5925/7296/7796/7938/9234）到 gitignored `doc/rfcs/`，幂等入库（已入库跳过、可断点续跑）
-- 关键实测结论（写进脚本 docstring）：**补 RFC 是转 hit 的必要非充分条件**——命中需检索 top-K 召回带对应 RFC url_key 的 chunk；design/HLD 类题 query（"设计 N 区域 OSPF…"）能否召回 RFC 依赖向量相似度，而**本机纯 CPU bge-m3 极慢**（~16s/chunk），全量灌 16 RFC 需数小时；建议 GPU/联网环境跑
-- 实测基线复现：54 huawei chunks 全量 hit_rate 33.9%、语料内 99.4%（与 v1.0 报告一致）；rfc2545 单 RFC 已入库验证管线通
+- `backend/scripts/ingest_rfcs.py`：从 rfc-editor 拉取 16 个去重 RFC 到 gitignored `doc/rfcs/`，幂等入库（断点续跑）。实测 16 RFC 全量入库 1134 chunks
+- **实测决定性结论（波2 核心发现）**：补 RFC 语料几乎不抬 hit_rate——
+  ① BM25 oracle：50 纯 RFC 题 **0/50** 能召回预期 RFC（中文 query 与英文 RFC 零词重叠）
+  ② 向量召回：NSG-Q-0039（预期 rfc2545）top-10 只有 rfc4271（0.59），rfc2545 不在——query 语义中心是故障/协议名，天然偏向被广泛引用的主规范，而非"具体被引那个 RFC"
+  → 根因是**判定要求检索到具体被引用文档，而 query 语义偏向通用协议文档**。这是评测判定口径问题，非单纯语料覆盖可解
+- 全量 hit_rate 维持 33.9%（语料内 99.4%）；1200 chunks 语料（huawei+RFC）作为资产保留，供换判定口径/有 GPU 环境复测
 
 ### v0.5.0 阶段1 · 评测集复审工具 + 首轮报告（波1）
 
