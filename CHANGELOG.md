@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+### v0.5.0 阶段1 · per-tenant IdP（波1）
+
+- `Settings.oidc_tenants`（env JSON）：`{tenant_slug: {discovery_url, client_id, client_secret}}` 覆盖全局默认 IdP
+- `/auth/oidc/login?tenant=<slug>` 按租户路由到各自 IdP；`/callback` 从 state 恢复租户后**用该租户凭据**做 token 交换 + 按租户 client_id/issuer/JWKS 验签（隔离）
+- `/auth/oidc/idps` 暴露已启用 SSO 的租户列表（登录页租户选择用）
+- 未匹配租户回退全局 `default` IdP（向后兼容，单测 16→21 全过，真实 Keycloak E2E 8 通过）
+
 ### v0.5.0 阶段1 · OIDC 去 🟡（Keycloak 真实 E2E）
 
 - `infra/docker-compose.keycloak.yml`：Keycloak 22.x 实例（start-dev，端口 9090）

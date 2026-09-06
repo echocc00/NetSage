@@ -77,6 +77,55 @@ def _settings() -> Settings:
     return get_settings()
 
 
+@dataclass
+class IdpConfig:
+    """单个租户的 IdP 配置（解析后的不可变值对象）。"""
+    tenant: str
+    discovery_url: str
+    client_id: str
+    client_secret: str
+
+
+def _idp_configs() -> dict[str, IdpConfig]:
+    """解析 per-tenant IdP 覆盖 + 全局默认（tenant='default'）。"""
+    s = _settings()
+    cfg: dict[str, IdpConfig] = {}
+    if s.oidc_discovery_url and s.oidc_client_id:
+        cfg["default"] = IdpConfig(
+            tenant="default",
+            discovery_url=s.oidc_discovery_url,
+            client_id=s.oidc_client_id,
+            client_secret=s.oidc_client_secret,
+        )
+    for slug, over in (s.oidc_tenants or {}).items():
+        discovery = over.get("discovery_url", "")
+        cid = over.get("client_id", "")
+        if discovery and cid:
+            cfg[slug] = IdpConfig(
+                tenant=slug,
+                discovery_url=discovery,
+                client_id=cid,
+                client_secret=over.get("client_secret", ""),
+            )
+    return cfg
+
+
+def _idp_for(tenant: str) -> IdpConfig | None:
+    """tenant 优先取专用 IdP，回退 'default'（全局配置）。"""
+    return _idp_configs().get(tenant) or _idp_configs().get("default")
+
+
+def _default_idp() -> IdpConfig:
+    """从全局设置合成默认 IdP（供内部验签/发现路径；字段可为空由调用上下文兜底）。"""
+    s = _settings()
+    return IdpConfig(
+        tenant="default",
+        discovery_url=s.oidc_discovery_url,
+        client_id=s.oidc_client_id,
+        client_secret=s.oidc_client_secret,
+    )
+
+
 def _redirect_uri() -> str:
     return f"{_settings().oidc_redirect_base}/api/v1/auth/oidc/callback"
 
@@ -97,21 +146,27 @@ def _prune_expired() -> None:
 @router.get("/config", response_model=Envelope[OIDCConfig])
 async def get_oidc_config() -> Envelope[OIDCConfig]:
     """查询 SSO 配置（前端登录页展示用）。"""
-    s = _settings()
-    enabled = bool(s.oidc_discovery_url and s.oidc_client_id)
+    idps = _idp_configs()
     return Envelope.ok(OIDCConfig(
-        enabled=enabled,
-        issuer=s.oidc_discovery_url,
-        client_id=s.oidc_client_id,
+        enabled=bool(idps),
+        issuer=idps["default"].discovery_url if "default" in idps else "",
+        client_id=idps["default"].client_id if "default" in idps else "",
         redirect_uri=_redirect_uri(),
     ))
 
 
+@router.get("/idps", response_model=Envelope[dict])
+async def list_oidc_idps() -> Envelope[dict]:
+    """列出已启用 SSO 的 IdP（按 tenant slug；前端登录页用于租户选择）。"""
+    idps = _idp_configs()
+    return Envelope.ok({"tenants": sorted(idps.keys()), "default": "default" in idps})
+
+
 @router.get("/login")
 async def oidc_login(tenant: str = "default") -> RedirectResponse:
-    """重定向到 OIDC Provider（Authorization Code + PKCE）。"""
-    s = _settings()
-    if not s.oidc_discovery_url or not s.oidc_client_id:
+    """重定向到租户对应的 OIDC Provider（Authorization Code + PKCE）。"""
+    idp = _idp_for(tenant)
+    if idp is None:
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,
             "SSO 未配置（开发态用 /auth/dev-token）",
@@ -123,10 +178,10 @@ async def oidc_login(tenant: str = "default") -> RedirectResponse:
     verifier, challenge = _gen_pkce()
     _pending[state] = _PendingAuth(tenant=tenant, nonce=nonce, code_verifier=verifier)
 
-    meta = await _discover()
-    auth_endpoint = meta.get("authorization_endpoint") or f"{s.oidc_discovery_url.rstrip('/')}/auth"
+    meta = await _discover(idp)
+    auth_endpoint = meta.get("authorization_endpoint") or f"{idp.discovery_url.rstrip('/')}/auth"
     params = {
-        "client_id": s.oidc_client_id,
+        "client_id": idp.client_id,
         "redirect_uri": _redirect_uri(),
         "response_type": "code",
         "scope": "openid profile email",
@@ -142,15 +197,20 @@ async def oidc_login(tenant: str = "default") -> RedirectResponse:
 
 @router.get("/callback")
 async def oidc_callback(code: str, state: str) -> dict:
-    """OIDC 回调：校验 state → PKCE 换 token → 验签 ID token → 签发本地 JWT。"""
+    """OIDC 回调：校验 state → 按租户 IdP 做 PKCE 换 token → 验签 ID token → 签发本地 JWT。"""
     _prune_expired()
     pending = _pending.pop(state, None)
     if pending is None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "无效或过期的 state（CSRF/replay 防护）")
 
-    s = _settings()
-    meta = await _discover()
-    token_endpoint = meta.get("token_endpoint") or f"{s.oidc_discovery_url.rstrip('/')}/token"
+    idp = _idp_for(pending.tenant)
+    if idp is None:
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE, "SSO 未配置（租户无 IdP）"
+        )
+
+    meta = await _discover(idp)
+    token_endpoint = meta.get("token_endpoint") or f"{idp.discovery_url.rstrip('/')}/token"
     if not token_endpoint.startswith(("http://", "https://")):
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "SSO 未配置（无 token_endpoint）")
 
@@ -161,8 +221,8 @@ async def oidc_callback(code: str, state: str) -> dict:
                 data={
                     "grant_type": "authorization_code",
                     "code": code,
-                    "client_id": s.oidc_client_id,
-                    "client_secret": s.oidc_client_secret,
+                    "client_id": idp.client_id,
+                    "client_secret": idp.client_secret,
                     "redirect_uri": _redirect_uri(),
                     "code_verifier": pending.code_verifier,  # PKCE 验证
                 },
@@ -181,7 +241,7 @@ async def oidc_callback(code: str, state: str) -> dict:
     if not id_token:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "IDP 未返回 id_token")
 
-    claims = await _verify_id_token(id_token, expected_nonce=pending.nonce)
+    claims = await _verify_id_token(id_token, expected_nonce=pending.nonce, idp=idp)
     user = _map_user(claims)
     local_token = encode_token(user)
 
@@ -195,12 +255,14 @@ async def oidc_callback(code: str, state: str) -> dict:
     }
 
 
-async def _discover() -> dict:
-    """拉取 OIDC discovery 文档（缓存 1h）。未配置时返回空 dict。"""
-    s = _settings()
-    if not s.oidc_discovery_url:
+async def _discover(idp: IdpConfig | None = None) -> dict:
+    """拉取某 IdP 的 discovery 文档（缓存 1h）。idp 为空/未配置时返回空 dict。"""
+    if idp is None:
+        candidate = _idp_configs().get("default")
+        idp = candidate if candidate is not None else _default_idp()
+    if not idp.discovery_url:
         return {}
-    url = s.oidc_discovery_url.rstrip("/")
+    url = idp.discovery_url.rstrip("/")
     if not url.startswith(("http://", "https://")):
         logger.warning("oidc_discovery_url_invalid", url=url[:40])
         return {}
@@ -238,10 +300,12 @@ async def _fetch_jwks(jwks_uri: str) -> dict:
     return jwks_value
 
 
-async def _verify_id_token(id_token: str, expected_nonce: str) -> dict:
+async def _verify_id_token(
+    id_token: str, expected_nonce: str, idp: IdpConfig | None = None
+) -> dict:
     """验签 ID token：JWKS 公钥 + iss/aud/exp/nonce 校验（OIDC Core 3.1.3.7）。"""
-    s = _settings()
-    meta = await _discover()
+    resolved = idp or _idp_configs().get("default") or _default_idp()
+    meta = await _discover(idp) if idp is not None else await _discover()
     jwks_uri = meta.get("jwks_uri")
     if not jwks_uri:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "IDP 未提供 jwks_uri，无法验签")
@@ -258,7 +322,7 @@ async def _verify_id_token(id_token: str, expected_nonce: str) -> dict:
             id_token,
             key=jwt.PyJWK(key).key,
             algorithms=[header.get("alg", "RS256")],
-            audience=s.oidc_client_id,
+            audience=resolved.client_id,
             issuer=meta.get("issuer"),
             options={"require": ["exp", "iat", "iss", "aud", "sub"]},
         )
@@ -289,7 +353,7 @@ def _map_user(claims: dict) -> SecurityUser:
     return SecurityUser(id=uid, name=str(name), role=role)
 
 
-# ===== 租户管理 =====
+# ===== 租户管理（M11 mock，真实需 DB；SSO 登录租户发现走 /auth/oidc/idps） =====
 
 
 class TenantCreate(BaseModel):

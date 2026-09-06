@@ -75,6 +75,8 @@ class Settings(BaseSettings):
     oidc_client_id: str = ""
     oidc_client_secret: str = ""
     oidc_redirect_base: str = "http://localhost:5173"
+    # 多租户 IdP 覆盖（v0.5.0 per-tenant）：{"<tenant_slug>": {"discovery_url":…, "client_id":…, "client_secret":…}}
+    oidc_tenants: dict[str, dict[str, str]] = Field(default_factory=dict)
 
     # Source of Truth（NetBox，Phase 2）
     netbox_url: str = ""

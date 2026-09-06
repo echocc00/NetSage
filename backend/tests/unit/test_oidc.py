@@ -273,3 +273,121 @@ def test_role_mapping_no_groups_claim():
     u = _map_user({"sub": "s", "email": "x@y.com"})
     assert u.role == Role.VIEWER
     assert u.name == "x@y.com"
+
+
+# ===== per-tenant IdP（波1，v0.5.0） =====
+
+
+def _tenant_settings(monkeypatch):
+    """全局默认 + acme 租户专用 IdP 的 Settings。"""
+    from app.api.v1 import oidc
+
+    s = oidc._settings().model_copy(update={
+        "oidc_discovery_url": "https://idp.default.example",
+        "oidc_client_id": "global-client",
+        "oidc_client_secret": "global-secret",
+        "oidc_tenants": {
+            "acme": {
+                "discovery_url": "https://idp.acme.example",
+                "client_id": "acme-client",
+                "client_secret": "acme-secret",
+            },
+        },
+    })
+    monkeypatch.setattr(oidc, "_settings", lambda: s)
+    return s
+
+
+def test_idp_configs_merges_global_and_tenants(monkeypatch):
+    from app.api.v1 import oidc
+
+    _tenant_settings(monkeypatch)
+    cfg = oidc._idp_configs()
+    assert set(cfg) == {"default", "acme"}
+    assert cfg["default"].client_id == "global-client"
+    assert cfg["acme"].discovery_url == "https://idp.acme.example"
+    assert cfg["acme"].client_id == "acme-client"
+    assert cfg["acme"].client_secret == "acme-secret"
+
+
+def test_idp_for_prefers_tenant_else_default(monkeypatch):
+    from app.api.v1 import oidc
+
+    _tenant_settings(monkeypatch)
+    assert oidc._idp_for("acme").client_id == "acme-client"
+    assert oidc._idp_for("ghost").client_id == "global-client"
+
+
+def test_login_uses_tenant_idp_for_redirect(monkeypatch):
+    from fastapi.testclient import TestClient
+
+    from app.api.v1 import oidc
+    from app.main import app
+
+    _tenant_settings(monkeypatch)
+
+    async def fake_discover(idp=None):
+        url = (idp or oidc._default_idp()).discovery_url.rstrip("/")
+        return {"authorization_endpoint": f"{url}/protocol/openid-connect/auth"}
+
+    monkeypatch.setattr(oidc, "_discover", fake_discover)
+
+    with TestClient(app) as c:
+        r = c.get("/api/v1/auth/oidc/login", params={"tenant": "acme"}, follow_redirects=False)
+        assert r.status_code in (302, 307)
+        loc = r.headers["location"]
+        assert loc.startswith("https://idp.acme.example/protocol/openid-connect/auth")
+        assert "client_id=acme-client" in loc
+
+        r2 = c.get("/api/v1/auth/oidc/login", follow_redirects=False)
+        assert r2.headers["location"].startswith("https://idp.default.example/")
+        assert "client_id=global-client" in r2.headers["location"]
+
+
+def test_oidc_idps_endpoint_lists_configured(monkeypatch):
+    from fastapi.testclient import TestClient
+
+    from app.main import app
+
+    _tenant_settings(monkeypatch)
+    with TestClient(app) as c:
+        r = c.get("/api/v1/auth/oidc/idps")
+        assert r.status_code == 200
+        assert r.json()["data"]["tenants"] == ["acme", "default"]
+
+
+def test_callback_resolves_tenant_idp_for_token_exchange(monkeypatch):
+    """callback 用 pending 的 tenant IdP 凭据做 token 交换（隔离验证）。"""
+    import asyncio
+
+    import httpx
+    import pytest
+    from fastapi import HTTPException
+
+    from app.api.v1 import oidc
+
+    _tenant_settings(monkeypatch)
+    exchanged: dict = {}
+
+    async def fake_discover(idp=None):
+        url = (idp or oidc._default_idp()).discovery_url.rstrip("/")
+        return {"issuer": url, "token_endpoint": f"{url}/token", "jwks_uri": f"{url}/jwks"}
+
+    monkeypatch.setattr(oidc, "_discover", fake_discover)
+
+    async def real_post(self, url, **kwargs):
+        exchanged["url"] = url
+        exchanged["client_id"] = kwargs["data"]["client_id"]
+        exchanged["client_secret"] = kwargs["data"]["client_secret"]
+        raise httpx.ConnectError("down")
+
+    monkeypatch.setattr(httpx.AsyncClient, "post", real_post)
+
+    oidc._pending["st-acme"] = oidc._PendingAuth(tenant="acme", nonce="n", code_verifier="v")
+    with pytest.raises(HTTPException) as exc:
+        asyncio.run(oidc.oidc_callback(code="c", state="st-acme"))
+    assert exc.value.status_code == 502  # token 端点连接失败 → 502
+    assert exchanged["url"] == "https://idp.acme.example/token"
+    assert exchanged["client_id"] == "acme-client"
+    assert exchanged["client_secret"] == "acme-secret"
+    oidc._pending.clear()
