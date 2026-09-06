@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+### v0.5.0 阶段1 · RAG 语料覆盖分析 + RFC 补语料管线（波2）
+
+- **覆盖缺口量化**：513 题按 references 分三类——175 题已被现有 huawei 手册覆盖、**338 题缺语料**、其中 **50 题纯引公开 RFC（NDA-free）**、~160 题引 cisco/h3c/juniper/arista 厂商 URL（需版权/NDA）
+- `backend/scripts/ingest_rfcs.py`：从 rfc-editor 拉取 16 个去重 RFC（rfc2328/2545/3101/3418/3706/3947/4271/4456/4861/5340/5798/5925/7296/7796/7938/9234）到 gitignored `doc/rfcs/`，幂等入库（已入库跳过、可断点续跑）
+- 关键实测结论（写进脚本 docstring）：**补 RFC 是转 hit 的必要非充分条件**——命中需检索 top-K 召回带对应 RFC url_key 的 chunk；design/HLD 类题 query（"设计 N 区域 OSPF…"）能否召回 RFC 依赖向量相似度，而**本机纯 CPU bge-m3 极慢**（~16s/chunk），全量灌 16 RFC 需数小时；建议 GPU/联网环境跑
+- 实测基线复现：54 huawei chunks 全量 hit_rate 33.9%、语料内 99.4%（与 v1.0 报告一致）；rfc2545 单 RFC 已入库验证管线通
+
 ### v0.5.0 阶段1 · 评测集复审工具 + 首轮报告（波1）
 
 - `eval/runner/review_dataset.py`：schema 之上叠深度质量扫描（root_causes 数量/概率越界/verify·fix 缺失、perf 缺 bottleneck、title 模板味、占位/乱码残留、疑似重复区分**编号系列变体** vs 真重复、vendor×category 覆盖矩阵），输出分层报告 `eval/reports/question-review-v1.md`；schema 失败或真重复 → 非零退出（CI 门禁）

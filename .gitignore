@@ -51,3 +51,6 @@ Thumbs.db
 
 # Keycloak E2E 本地 OIDC secret（provision 自动生成，回读不到服务端哈希值）
 .env.keycloak
+
+# 公开 RFC 全文（体积大，本地 ingest 用，不入仓库）
+doc/rfcs/
