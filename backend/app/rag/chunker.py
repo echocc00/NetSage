@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from typing import Any
 
 
 @dataclass
@@ -37,7 +38,7 @@ class ManualChunker:
     # 章节标题正则（#, ##, ### 或 数字编号 1. / 1.1.）
     HEADING_RE = re.compile(r"^(#{1,4}\s.+|\d+(\.\d+)*\s+\S.+)$", re.MULTILINE)
 
-    def chunk(self, text: str, doc_id: str, **meta) -> list[Chunk]:
+    def chunk(self, text: str, doc_id: str, **meta: Any) -> list[Chunk]:
         sections = self._split_by_heading(text)
         chunks: list[Chunk] = []
         for section_path, section_text in sections:
@@ -98,11 +99,11 @@ class ManualChunker:
         return chunks
 
     @staticmethod
-    def _est_tokens(text: str) -> float:
-        """粗略估算 token 数：中文 0.5 token/字，英文 0.25 token/字符（浮点保证累加一致性）。"""
+    def _est_tokens(text: str) -> int:
+        """粗略估算 token 数：中文 0.5 token/字，英文 0.25 token/字符（向上取整为 int 便于累加）。"""
         cn = sum(1 for c in text if "一" <= c <= "鿿")
         en = len(text) - cn
-        return cn / 2 + en / 4
+        return int(cn / 2 + en / 4 + 0.999)
 
     def _keep_overlap(self, buf: list[str], buf_tokens: int) -> tuple[list[str], int]:
         """保留末尾 OVERLAP tokens。"""

@@ -33,7 +33,6 @@ jobs:
 
       - name: Type check (mypy)
         run: mypy app
-        continue-on-error: true  # 渐进式：先不阻塞，逐步收敛
 
       - name: Unit tests
         run: pytest tests/unit -q --no-cov
@@ -112,6 +111,23 @@ jobs:
       - name: Render all 86 templates
         run: pytest tests/unit/test_templates_full.py -q --no-cov
 
+  cli:
+    name: CLI nsc (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install nsc
+        run: pip install -e "cli/nsc[test]"
+
+      - name: Run CLI tests
+        run: pytest cli/nsc/tests -q --no-cov
+
   docker:
     name: Docker build
     runs-on: ubuntu-latest
@@ -126,5 +142,14 @@ jobs:
           context: ./backend
           push: false
           tags: netsage-backend:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: false
+          tags: netsage-frontend:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max

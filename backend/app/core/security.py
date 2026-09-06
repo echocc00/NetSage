@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from datetime import UTC
 from enum import IntEnum
+from typing import cast
 
 from jose import JWTError, jwt
 from pydantic import BaseModel
@@ -83,4 +84,4 @@ def encode_token(user: CurrentUser) -> str:
         "exp": datetime.now(UTC) + timedelta(minutes=settings.jwt_expire_minutes),
         "iss": "netsage",
     }
-    return jwt.encode(payload, settings.jwt_secret, algorithm="HS256")
+    return cast(str, jwt.encode(payload, settings.jwt_secret, algorithm="HS256"))

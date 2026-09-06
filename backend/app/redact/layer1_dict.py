@@ -6,6 +6,8 @@ Phase 1 必做，覆盖 8 类 PII：IPV4/IPV6/MAC/ASN/密码/SNMP community/邮�
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
+from typing import Any
 
 from .mapping import MappingTable
 
@@ -38,6 +40,20 @@ PATTERNS: list[tuple[str, re.Pattern[str]]] = [
 ]
 
 
+def _keyword_repl(mapping: MappingTable, key: str) -> Callable[[re.Match[str]], str]:
+    """关键字保留型替换工厂（给 re.sub 的类型化回调）。"""
+    def repl(m: re.Match[str]) -> str:
+        return Layer1Redactor._redact_keyword(m, mapping, key)
+    return repl
+
+
+def _placeholder_repl(mapping: MappingTable, key: str) -> Callable[[re.Match[str]], str]:
+    """编号占位符替换工厂（给 re.sub 的类型化回调）。"""
+    def repl(m: re.Match[str]) -> str:
+        return mapping.add(key, m.group(0))
+    return repl
+
+
 class Layer1Redactor:
     """静态字典脱敏：确定性，可逆。"""
 
@@ -47,31 +63,30 @@ class Layer1Redactor:
             return text
 
         # 密码/community 整段替换为 REDACTED（不保留原值特征）
-        text = PATTERNS[6][1].sub(
-            lambda m: self._redact_keyword(m, mapping, "PASS"), text
-        )
-        text = PATTERNS[7][1].sub(
-            lambda m: self._redact_keyword(m, mapping, "SNMP"), text
-        )
+        text = PATTERNS[6][1].sub(_keyword_repl(mapping, "PASS"), text)
+        text = PATTERNS[7][1].sub(_keyword_repl(mapping, "SNMP"), text)
 
         # 其余类别替换为带编号占位符（保留可还原性）
         for key, pat in PATTERNS[:6]:
-            text = pat.sub(lambda m, k=key: mapping.add(k, m.group(0)), text)
+            text = pat.sub(_placeholder_repl(mapping, key), text)
         return text
 
     @staticmethod
-    def _redact_keyword(match: re.Match, mapping: MappingTable, key: str) -> str:
+    def _redact_keyword(match: re.Match[str], mapping: MappingTable, key: str) -> str:
         """password/community 行：关键字保留，值替换为 [REDACTED]。"""
         full = match.group(0)
-        keyword = re.match(r"(\w+)", full).group(1)
+        m = re.match(r"(\w+)", full)
+        keyword = m.group(1) if m else full
         mapping.add(key, full)  # 仍记录映射供审计
         return f"{keyword} [REDACTED]"
 
     def redact_dict(self, data: dict, mapping: MappingTable) -> dict:
         """递归脱敏 dict 的所有字符串值。"""
-        return self._walk(data, mapping)
+        value = self._walk(data, mapping)
+        assert isinstance(value, dict), "redact_dict 仅接受 dict 输入"
+        return value
 
-    def _walk(self, obj, mapping):
+    def _walk(self, obj: Any, mapping: MappingTable) -> Any:
         if isinstance(obj, str):
             return self.redact(obj, mapping)
         if isinstance(obj, dict):

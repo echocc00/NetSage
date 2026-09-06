@@ -58,7 +58,8 @@ class SimulationGate:
     @staticmethod
     def _build_topo_from_nim(nim: dict) -> str:
         """从 NIM 生成最小 containerlab YAML（W5 ConfigEngine 接入前的占位）。"""
-        return nim.get("topology_yaml", "")
+        value = nim.get("topology_yaml", "")
+        return value if isinstance(value, str) else ""
 
 
 class SimulationGateAdapter:

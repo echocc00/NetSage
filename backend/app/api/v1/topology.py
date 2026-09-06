@@ -79,8 +79,8 @@ async def get_topology(
     adapter = NetBoxAdapter(base_url=settings.netbox_url, token=settings.netbox_token)
     try:
         topology = await adapter.get_topology(scope)
-        raw_nodes = topology.nodes if hasattr(topology, "nodes") else topology.get("nodes", [])
-        raw_edges = topology.edges if hasattr(topology, "edges") else topology.get("edges", [])
+        raw_nodes = getattr(topology, "nodes", [])
+        raw_edges = getattr(topology, "edges", [])
 
         nodes = [
             TopologyNodeOut(

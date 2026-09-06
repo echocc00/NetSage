@@ -147,7 +147,8 @@ class ClosedLoopOrchestrator:
                 "impact": {"confirmed_by": "closed_loop"},
                 "deployed": [],
             }, session_id="closed-loop")
-            return result.get("deployed", [])
+            deployed = result.get("deployed", [])
+            return deployed if isinstance(deployed, list) else []
         except Exception as e:
             logger.error("closed_loop_deploy_failed", error=str(e))
             return []

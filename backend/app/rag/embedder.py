@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import hashlib
-from typing import Protocol
+from typing import Protocol, cast
 
 import numpy as np
 
@@ -55,7 +55,8 @@ class BgeM3Embedder:
         from sentence_transformers import SentenceTransformer
 
         self._model = SentenceTransformer(model_name)
-        self._dim = self._model.get_sentence_embedding_dimension()
+        dim_value = self._model.get_sentence_embedding_dimension()
+        self._dim = dim_value or 0
 
     @property
     def dim(self) -> int:
@@ -63,7 +64,7 @@ class BgeM3Embedder:
 
     def encode(self, texts: list[str]) -> list[list[float]]:
         embs = self._model.encode(texts, normalize_embeddings=True)
-        return embs.tolist()
+        return cast(list[list[float]], embs.tolist())
 
 
 def get_embedder() -> Embedder:

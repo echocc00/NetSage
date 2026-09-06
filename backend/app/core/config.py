@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     env: str = "dev"
     log_level: str = "INFO"
     app_name: str = "NetSage"
-    version: str = "0.4.1"
+    version: str = "0.4.2"
 
     # 数据库
     database_url: str = Field(...)

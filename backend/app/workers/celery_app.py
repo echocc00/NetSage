@@ -35,7 +35,7 @@ celery_app.conf.update(
 )
 
 
-@celery_app.task(name="app.workers.tasks.observer_poll_task")
+@celery_app.task(name="app.workers.tasks.observer_poll_task")  # type: ignore[untyped-decorator]
 def observer_poll_task() -> dict:
     """定时触发 ObserverAgent（同步入口，内部 asyncio 跑 async handler）。"""
     import asyncio
@@ -48,9 +48,9 @@ def observer_poll_task() -> dict:
     )
     from app.tools.registry import MockToolRegistry
 
-    async def _run():
+    async def _run() -> dict:
         tools = MockToolRegistry()  # Phase 2 W4 后接真实 suzieq-mcp
-        state = {}
+        state: dict = {}
         state = await partial(observer_poll, tools=tools)(state)
         state = await partial(observer_analyze, tools=tools)(state)
         state = await partial(observer_alert, tools=tools)(state)

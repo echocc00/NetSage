@@ -6,6 +6,7 @@ LangGraph 真实 backend（含 checkpoint/interrupt）W5 联调时接入（v2.0 
 """
 from __future__ import annotations
 
+from collections.abc import AsyncGenerator
 from typing import Any
 
 from app.core.logging import get_logger
@@ -47,7 +48,7 @@ class SequentialGraph:
             state = await handler(state) if _is_async(handler) else handler(state)
         return state
 
-    async def stream(self, state: dict, config: dict):
+    async def stream(self, state: dict, config: dict) -> AsyncGenerator[dict, None]:
         """流式执行，每步 yield 事件。"""
         ordered = self._topological_order()
         for node_name in ordered:
@@ -66,8 +67,10 @@ class SequentialGraph:
         ctx = self._interrupted.pop(thread_id, None)
         if ctx is None:
             return {"error": "no interrupted state"}
-        state = ctx["state"]
-        remaining = ctx["next"]
+        raw_state = ctx["state"]
+        state: dict = raw_state if isinstance(raw_state, dict) else {}
+        raw_next = ctx["next"]
+        remaining: list = raw_next if isinstance(raw_next, list) else []
         # 执行 interrupt 节点本身（审批通过）+ 后续节点
         for node_name in remaining:
             handler = self.handlers.get(node_name)

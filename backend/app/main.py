@@ -1,18 +1,19 @@
 """NetSage FastAPI 入口（v2.0 五章 5.1）。"""
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1 import api_router
-from app.core.config import get_settings
+from app.core.config import Settings, get_settings
 from app.core.logging import TraceIdMiddleware, get_logger, setup_logging
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     logger = get_logger("app")
     settings = get_settings()
     settings.verify_secrets()  # 生产弱密钥启动拒绝（审查 C1）
@@ -22,7 +23,7 @@ async def lifespan(app: FastAPI):
     logger.info("shutdown")
 
 
-def _configure_ssot(settings) -> None:
+def _configure_ssot(settings: Settings) -> None:
     """启动时装配 SourceOfTruth（NetBox 可用时注入，否则降级 NullSSoT）。"""
     from app.access.source_of_truth import NullSSoT, configure_ssot
 
@@ -30,11 +31,11 @@ def _configure_ssot(settings) -> None:
         from app.access.netbox_adapter import NetBoxAdapter
 
         adapter = NetBoxAdapter(settings.netbox_url, settings.netbox_token)
-        configure_ssot(adapter)  # type: ignore[arg-type]
+        configure_ssot(adapter)
         logger = get_logger("app")
         logger.info("ssot_configured", backend="netbox", url=settings.netbox_url)
     else:
-        configure_ssot(NullSSoT())  # type: ignore[arg-type]
+        configure_ssot(NullSSoT())
 
 
 def create_app() -> FastAPI:

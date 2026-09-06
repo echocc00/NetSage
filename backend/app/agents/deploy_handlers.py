@@ -6,13 +6,15 @@ pre_check → deploy_loop → verify → rollback
 """
 from __future__ import annotations
 
+from typing import Any
+
 from app.core.logging import get_logger
 from app.tools.registry import ToolRegistry
 
 logger = get_logger("deploy_handler")
 
 
-async def deploy_pre_check(state: dict, tools: ToolRegistry, llm=None) -> dict:
+async def deploy_pre_check(state: dict, tools: ToolRegistry, llm: Any | None = None) -> dict:
     """下发前校验：审批状态 + 快照完整性 + 影响范围确认。"""
     # 审批必须已通过
     if state.get("change_status") != "approved":
@@ -41,7 +43,7 @@ async def deploy_pre_check(state: dict, tools: ToolRegistry, llm=None) -> dict:
     return state
 
 
-async def deploy_loop(state: dict, tools: ToolRegistry, llm=None) -> dict:
+async def deploy_loop(state: dict, tools: ToolRegistry, llm: Any | None = None) -> dict:
     """顺序下发多设备，每台 checkpoint 校验。失败则跳到 rollback。"""
     if state.get("deploy_blocked"):
         return state
@@ -79,7 +81,7 @@ async def deploy_loop(state: dict, tools: ToolRegistry, llm=None) -> dict:
     return state
 
 
-async def deploy_verify(state: dict, tools: ToolRegistry, llm=None) -> dict:
+async def deploy_verify(state: dict, tools: ToolRegistry, llm: Any | None = None) -> dict:
     """全量验证 + 失败时内联回滚（SequentialBackend 不支持条件分支，合并为单节点）。"""
     if state.get("deploy_blocked"):
         return state
@@ -97,7 +99,7 @@ async def deploy_verify(state: dict, tools: ToolRegistry, llm=None) -> dict:
     return state
 
 
-async def deploy_rollback(state: dict, tools: ToolRegistry, llm=None) -> dict:
+async def deploy_rollback(state: dict, tools: ToolRegistry, llm: Any | None = None) -> dict:
     """失败自动回滚已下发设备到快照。"""
     if not state.get("needs_rollback"):
         return state
@@ -153,7 +155,7 @@ async def _checkpoint_verify(device: dict, tools: ToolRegistry) -> None:
 
 # DeployAgent 定义（线性执行：verify 内联 rollback，适配 SequentialBackend）
 # 注：人审在三道闸 approval 阶段已完成，DeployAgent 仅做技术校验 + 下发
-DEPLOY_DEFINITION = {
+DEPLOY_DEFINITION: dict[str, Any] = {
     "name": "deploy",
     "role": "变更下发 Agent：顺序下发 + checkpoint 校验 + 失败回滚",
     "system_prompt": "你是变更下发执行器。顺序下发多设备，每台 checkpoint 校验，失败自动回滚到快照。全程审计。",

@@ -69,7 +69,7 @@ def _get_renderer() -> Any:
     return _renderer
 
 
-async def config_retrieve_context(state: dict, tools: ToolRegistry, llm=None) -> dict:
+async def config_retrieve_context(state: dict, tools: ToolRegistry, llm: Any | None = None) -> dict:
     """检索厂商手册 + 设备 facts。
 
     Phase 1：设备目标从 state 传入（审查 H6 修复：不硬编码凭证）。
@@ -88,7 +88,7 @@ async def config_retrieve_context(state: dict, tools: ToolRegistry, llm=None) ->
     return state
 
 
-async def config_render(state: dict, tools: ToolRegistry, llm=None) -> dict:
+async def config_render(state: dict, tools: ToolRegistry, llm: Any | None = None) -> dict:
     """渲染配置（v2.0 十章"IR 只作翻译不作裸推理"）。
 
     LLM 提参 → 模板渲染（ConfigRenderer）；无 LLM key 时回落占位模板（Phase 1 mock）。
@@ -114,7 +114,7 @@ async def config_render(state: dict, tools: ToolRegistry, llm=None) -> dict:
     return state
 
 
-async def config_lint(state: dict, tools: ToolRegistry, llm=None) -> dict:
+async def config_lint(state: dict, tools: ToolRegistry, llm: Any | None = None) -> dict:
     """Batfish 语法 lint（安全闸 2 前置）。"""
     config = state.get("config_diff", "")
     result = await tools.invoke("batfish.lint_config", config_text=config, vendor="cisco")
@@ -125,7 +125,7 @@ async def config_lint(state: dict, tools: ToolRegistry, llm=None) -> dict:
 # ===== Validator =====
 
 
-async def validator_assert(state: dict, tools: ToolRegistry, llm=None) -> dict:
+async def validator_assert(state: dict, tools: ToolRegistry, llm: Any | None = None) -> dict:
     """跑 Batfish 断言（reachability/routing）。"""
     assertions = state.get("assertions", [
         {"type": "reachability", "src": "leaf01", "dst": "spine01"},

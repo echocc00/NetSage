@@ -9,6 +9,7 @@ from __future__ import annotations
 import re
 from functools import lru_cache
 from pathlib import Path
+from typing import Any
 
 import yaml
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
@@ -110,7 +111,7 @@ def render(template_id: str, params: dict) -> str:
         raise TemplateError(f"模板 [{template_id}] 渲染失败: {e}") from e
 
 
-def _default_for(type_name: str):
+def _default_for(type_name: str) -> Any:
     """可选参数的默认值（按类型，让模板条件判断可求值）。"""
     if type_name == "int":
         return 0

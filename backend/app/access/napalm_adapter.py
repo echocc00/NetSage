@@ -66,7 +66,8 @@ class NapalmAdapter(DeviceAdapter):
         device = await self._connect(target)
         try:
             config = await asyncio.to_thread(device.get_config, retrieve=source)
-            return config.get(source, "")
+            value = config.get(source, "")
+            return value if isinstance(value, str) else ""
         finally:
             await asyncio.to_thread(device.close)
 
@@ -94,7 +95,7 @@ class NapalmAdapter(DeviceAdapter):
             diff = await asyncio.to_thread(device.compare_config)
             await asyncio.to_thread(device.commit_config)
             logger.info("napalm_applied", host=target.host, diff_len=len(diff))
-            return diff
+            return str(diff)
         except Exception as e:
             await asyncio.to_thread(device.discard_config)
             raise AdapterError("apply_failed", f"候选应用失败: {e}") from e

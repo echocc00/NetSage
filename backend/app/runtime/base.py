@@ -5,6 +5,7 @@
 """
 from __future__ import annotations
 
+from collections.abc import AsyncGenerator, AsyncIterator
 from dataclasses import dataclass, field
 from typing import Any, Protocol
 
@@ -37,7 +38,7 @@ class CompiledGraph(Protocol):
     """编译后的图（框架无关接口）。"""
 
     async def invoke(self, state: dict, config: dict) -> dict: ...
-    async def stream(self, state: dict, config: dict): ...
+    def stream(self, state: dict, config: dict) -> AsyncGenerator[dict, None]: ...
     async def resume(self, config: dict) -> dict: ...
 
 
@@ -66,7 +67,7 @@ class AgentRunner:
         config = {"configurable": {"thread_id": session_id}}
         return await graph.invoke(state, config)
 
-    async def stream(self, agent_name: str, state: dict, session_id: str):
+    async def stream(self, agent_name: str, state: dict, session_id: str) -> AsyncIterator[dict]:
         """流式执行（推送 DAG 进度给前端）。"""
         graph = self._compiled[agent_name]
         config = {"configurable": {"thread_id": session_id}}

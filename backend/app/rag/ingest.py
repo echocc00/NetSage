@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -75,7 +76,7 @@ class IngestService:
         logger.info("ingest_ok", doc_id=doc_id, chunks=len(rows), version=version)
         return len(rows)
 
-    async def ingest_file(self, path: str, doc_id: str | None = None, **meta) -> int:
+    async def ingest_file(self, path: str, doc_id: str | None = None, **meta: Any) -> int:
         """ ingest 文件。"""
         p = Path(path)
         content = p.read_text(encoding="utf-8")

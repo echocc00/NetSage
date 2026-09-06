@@ -21,7 +21,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 
-from app.core.config import get_settings
+from app.core.config import Settings, get_settings
 from app.core.deps import CurrentUser, get_current_user
 from app.core.logging import get_logger
 from app.core.security import CurrentUser as SecurityUser
@@ -73,7 +73,7 @@ class OIDCConfig(BaseModel):
     pkce: bool = True
 
 
-def _settings():
+def _settings() -> Settings:
     return get_settings()
 
 
@@ -216,8 +216,9 @@ async def _discover() -> dict:
             r = await c.get(url)
             r.raise_for_status()
             meta = r.json()
-        _jwks_cache[f"meta:{url}"] = (time.time(), meta)
-        return meta
+        meta_value = meta if isinstance(meta, dict) else {}
+        _jwks_cache[f"meta:{url}"] = (time.time(), meta_value)
+        return meta_value
     except httpx.HTTPError as e:
         logger.warning("oidc_discovery_failed", error=str(e)[:80])
         return {}  # 降级：调用方回退到约定端点
@@ -232,8 +233,9 @@ async def _fetch_jwks(jwks_uri: str) -> dict:
         r = await c.get(jwks_uri)
         r.raise_for_status()
         jwks = r.json()
-    _jwks_cache[f"jwks:{jwks_uri}"] = (time.time(), jwks)
-    return jwks
+        jwks_value = jwks if isinstance(jwks, dict) else {}
+    _jwks_cache[f"jwks:{jwks_uri}"] = (time.time(), jwks_value)
+    return jwks_value
 
 
 async def _verify_id_token(id_token: str, expected_nonce: str) -> dict:

@@ -8,11 +8,13 @@ import logging
 import re
 import sys
 import uuid
-from typing import Any
+from collections.abc import Awaitable, Callable, Mapping, MutableMapping
+from typing import Any, cast
 
 import structlog
 from fastapi import FastAPI, Request
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
 
 # 敏感字段 key 名（security M1：structlog 防密码泄漏到日志）
 SENSITIVE_KEYS = {"password", "passwd", "pwd", "secret", "token", "api_key", "authorization", "credential"}
@@ -23,7 +25,9 @@ SECRET_VALUE_RE = re.compile(
 )
 
 
-def redact_secrets(_, __, event_dict: dict[str, Any]) -> dict[str, Any]:
+def redact_secrets(
+    logger: Any, method_name: str, event_dict: MutableMapping[str, Any]
+) -> Mapping[str, Any]:
     """把敏感键值替换为 [REDACTED]，防止密码/密钥写日志。"""
     for key in list(event_dict.keys()):
         if key.lower() in SENSITIVE_KEYS:
@@ -66,7 +70,7 @@ class TraceIdMiddleware(BaseHTTPMiddleware):
     客户端 ID 放 client_trace_id 字段，主 trace_id 服务端生成。
     """
 
-    async def dispatch(self, request: Request, call_next):
+    async def dispatch(self, request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
         client_hint = request.headers.get("X-Trace-Id", "")[:64]
         trace_id = uuid.uuid4().hex[:16]
         structlog.contextvars.clear_contextvars()
@@ -85,4 +89,4 @@ class TraceIdMiddleware(BaseHTTPMiddleware):
 
 
 def get_logger(name: str | None = None) -> structlog.stdlib.BoundLogger:
-    return structlog.get_logger(name)
+    return cast(structlog.stdlib.BoundLogger, structlog.get_logger(name))

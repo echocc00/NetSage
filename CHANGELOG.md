@@ -2,6 +2,41 @@
 
 本项目遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [Unreleased]
+
+### 计划 v0.4.2（已发布 2026-09-06，见下）
+
+## [v0.4.2] - 2026-09-06
+
+### 收尾补丁（按 v0.4.2 规划）
+
+**CLI nsc 落地**
+- 命令增强至 8 个：新增 `version` / `status`（--url）；`ask` 链式产出 Markdown 报告（配置意图含 diff + lint，后端不可用回退意图分类）；`simulate` 支持 `--change-id` 触发真实三道闸
+- `cli/nsc/tests/` 新增 23 测试（respx mock httpx，不碰真实后端）；test.yml 新增 `cli` job 跑 CLI 测试；pyproject version 0.1.0→0.4.2 + `[test]` 依赖组
+- README 能力表 CLI nsc 改 ✅（8 命令，23 测试）
+
+**frontend Dockerfile + nginx**
+- `frontend/Dockerfile`（multi-stage node:20-alpine → nginx:1.27-alpine）、`nginx.conf`（/api 反代 backend:8000 + SSE 关缓冲 + SPA fallback + gzip + 静态缓存）、`.dockerignore`
+- prod compose 补 frontend 服务引用（此前引用缺失的 Dockerfile）；CI docker job 加 frontend 镜像 build
+- 实测：镜像 70.4MB（目标 ≤80MB），容器 health=healthy，`/` 返回 `<title>NetSage`，`/health` 200
+- 修一个真实缺陷：busybox wget 里 localhost 解析到 `::1` 会被拒，healthcheck 改用 `127.0.0.1`
+
+**mypy 收敛严格真阻断**
+- `disable_error_code = ["type-arg"]` 封顶纯机械泛型噪音；test.yml 删除 `continue-on-error: true`，PR 再引入类型错会红
+- 修 133 个真实类型错误：安全关键模块（redact/gates）全类型零错；7 个 Agent DEFINITION 动态 schema 注解 `dict[str, Any]`；handler `llm=None` 参数注解；`r.json()`/`.get()` 返回值收窄；async generator Protocol 签名修正；多处被 mypy 揪出的真实问题（`_est_tokens` 浮点累加、`get_sentence_embedding_dimension()` 可空、`rdma.save_fabric` 缺 return、`_default_for` 缺返回类型）
+- 结果：`mypy app` 0 错 / 88 文件；ruff 0 告警
+
+**测试数三层口径透明化**
+- `backend/tests/conftest.py::test_inventory()` + CHANGELOG 区分 292 functions / 501 cases / 18 e2e；eval/README 加"测试层级（统计口径）"章节
+
+**AGENTS.md + CHANGELOG Unreleased**
+- 新增 `AGENTS.md`（编码风格 / 测试要求 / 文档约定 / 安全红线 / 仓库策略 5 分类）；CHANGELOG 顶部加 [Unreleased]
+
+**gitignore 收尾**
+- `__pycache__/` 已覆盖；`doc/` 无跟踪中途文件；前瞻规划文档（v1.0.2/v2.0）按"仅本地保留"约束移出版本控制
+
+**测试**：292 unit functions 展开 501 unit cases + 18 e2e scenarios + 23 cli 全部通过；ruff + mypy 双 0
+
 ## [v0.4.1] - 2026-09-06
 
 ### 第三方审计问题修复（P7-1 ~ P7-8）
@@ -26,7 +61,7 @@
 - **RAG hit_rate 首次实测**：bge-m3 真实向量 + 本地构建 pgvector，全量 33.9%（174/513）、语料内 99.4%（174/175）。瓶颈为语料覆盖（3 份华为手册 54 chunks，上限 34.1%）而非检索算法。报告见 `eval/reports/hit_rate-v1.0.md`
 - `SECURITY.md` 改为 NetSage 专用（此前为模板残留），README 能力表引入 ✅/🟡 分级 + "已知限制（诚实清单）"
 
-**测试**：518 单元 + 18 e2e 通过，ruff 零告警
+**测试**：292 unit functions 展开 501 unit cases + 18 e2e scenarios 通过（`pytest tests/ --collect-only` 501+18），ruff + mypy 双 0 告警
 
 ## [v0.4.0] - 2026-08-26
 

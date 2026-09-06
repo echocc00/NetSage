@@ -111,6 +111,18 @@ eval/
 └── reports/          评测报告
 ```
 
+## 测试层级（统计口径）
+
+仓库测试按三层口径记录，引用时须标明是哪个数字（防止"函数 vs 用例"虚标）：
+
+| 口径 | 数量 | 来源 |
+|---|---|:---|
+| unit functions | 292 | `pytest tests/ --collect-only` 收集的去 parametrize 函数数 |
+| unit cases | 501 | 单元测试 collected items（parametrize 展开后） |
+| e2e scenarios | 18 | `tests/e2e/` 真实 HTTP 场景函数数 |
+
+`backend/tests/conftest.py::test_inventory` 提供同一份当前数字供引用；数字变化时以 `pytest --collect-only -q` 实测为准。
+
 ## 许可
 
 评测集遵循仓库 Apache-2.0 许可。题目按 `source` 字段标注构造方式：30 题人工构造、81 题模板渲染、402 题脚本批量生成（见"题目来源"章节）。

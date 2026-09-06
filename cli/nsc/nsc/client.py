@@ -6,12 +6,6 @@ from pathlib import Path
 from typing import Any
 
 import httpx
-import typer
-from rich.console import Console
-from rich.markdown import Markdown
-from rich.panel import Panel
-
-console = Console()
 
 DEFAULT_BACKEND = os.getenv("NSC_BACKEND", "http://localhost:8000")
 CONFIG_PATH = Path.home() / ".nsc" / "config.yaml"
@@ -61,5 +55,11 @@ class NSCClient:
 
     def run_validate(self, session_id: str) -> dict:
         r = self.client.post(f"/api/v1/agents/sessions/{session_id}/validate")
+        r.raise_for_status()
+        return r.json()["data"]
+
+    def run_change(self, change_id: str) -> dict:
+        """触发变更三道闸流程：POST /api/v1/changes/{id}/run。"""
+        r = self.client.post(f"/api/v1/changes/{change_id}/run")
         r.raise_for_status()
         return r.json()["data"]

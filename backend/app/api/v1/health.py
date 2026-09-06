@@ -12,7 +12,7 @@ import httpx
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from app.core.config import get_settings
+from app.core.config import Settings, get_settings
 
 router = APIRouter(tags=["health"])
 
@@ -63,7 +63,7 @@ async def deps_detail() -> ReadyResponse:
     return await readiness()
 
 
-async def _check_deps(settings) -> list[DepStatus]:
+async def _check_deps(settings: Settings) -> list[DepStatus]:
     """并行探测所有依赖。"""
     pg_task = _check_pg(settings)
     redis_task = _check_redis(settings)
@@ -73,7 +73,7 @@ async def _check_deps(settings) -> list[DepStatus]:
     return [pg, redis, llm, ssot]
 
 
-async def _check_pg(settings) -> DepStatus:
+async def _check_pg(settings: Settings) -> DepStatus:
     try:
         from sqlalchemy.ext.asyncio import create_async_engine
         engine = create_async_engine(settings.database_url)
@@ -85,7 +85,7 @@ async def _check_pg(settings) -> DepStatus:
         return DepStatus(name="postgres", healthy=False, detail=str(e)[:80])
 
 
-async def _check_redis(settings) -> DepStatus:
+async def _check_redis(settings: Settings) -> DepStatus:
     try:
         import redis.asyncio as aioredis
         r = aioredis.from_url(settings.redis_url)
@@ -96,7 +96,7 @@ async def _check_redis(settings) -> DepStatus:
         return DepStatus(name="redis", healthy=False, detail=str(e)[:80])
 
 
-async def _check_llm(settings) -> DepStatus:
+async def _check_llm(settings: Settings) -> DepStatus:
     has_key = bool(settings.deepseek_api_key or settings.minimax_api_key or settings.anthropic_api_key)
     return DepStatus(
         name="llm",
@@ -105,7 +105,7 @@ async def _check_llm(settings) -> DepStatus:
     )
 
 
-async def _check_ssot(settings) -> DepStatus:
+async def _check_ssot(settings: Settings) -> DepStatus:
     if not settings.netbox_url:
         return DepStatus(name="ssot", healthy=True, detail="未配置 NetBox（NullSSoT 降级）")
     try:

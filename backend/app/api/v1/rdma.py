@@ -96,6 +96,7 @@ async def save_fabric(
             await db.commit()
             await db.refresh(fabric)
             return Envelope.ok({"id": fabric.id, "name": fabric.name})
+        return Envelope.ok({"status": "no_session"})
     except Exception as e:
         return Envelope.ok({"status": "mock", "name": req.name, "error": str(e)[:80]})
 

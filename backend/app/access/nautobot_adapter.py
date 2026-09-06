@@ -90,7 +90,8 @@ class NautobotAdapter(SourceOfTruth):
         try:
             r = await self.client.get(path, params=params)
             r.raise_for_status()
-            return r.json()
+            value = r.json()
+            return value if isinstance(value, dict) else {}
         except httpx.HTTPStatusError as e:
             raise SSoTError("http_error", f"Nautobot {path} 返回 {e.response.status_code}") from e
         except httpx.RequestError as e:

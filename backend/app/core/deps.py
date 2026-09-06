@@ -1,13 +1,15 @@
 """FastAPI 依赖注入（v2.0 五章 5.3）。"""
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.security import ROLE_PERMISSIONS, CurrentUser, Role, decode_token
+from app.core.security import ROLE_PERMISSIONS, Role, decode_token
+from app.core.security import CurrentUser as CurrentUser
 from app.db import get_session
 
 bearer_scheme = HTTPBearer(auto_error=False)
@@ -29,7 +31,7 @@ CurrentUserDep = Annotated[CurrentUser, Depends(get_current_user)]
 DBSession = Annotated[AsyncSession, Depends(get_session)]
 
 
-def require_permission(perm: str):
+def require_permission(perm: str) -> Callable[..., Awaitable[CurrentUser]]:
     """权限守卫：基于角色权限集合（auditor 独立维度，不误获写权限，等保三权分立）。"""
 
     async def _checker(user: CurrentUserDep) -> CurrentUser:
@@ -42,7 +44,7 @@ def require_permission(perm: str):
 
 
 # 向后兼容：纯写权限层级（viewer<operator<engineer<admin，auditor 排除）
-def require_role(min_role: Role):
+def require_role(min_role: Role) -> Callable[..., Awaitable[CurrentUser]]:
     """角色层级守卫（viewer<operator<engineer<admin）。auditor 不在此层级。"""
 
     async def _checker(user: CurrentUserDep) -> CurrentUser:

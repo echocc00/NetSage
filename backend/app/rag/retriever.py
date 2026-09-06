@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -111,7 +112,7 @@ class HybridRetriever:
         return [self._row_to_chunk(r, r.score or 0.0) for r in result]
 
     @staticmethod
-    def _row_to_chunk(row, score: float) -> RetrievedChunk:
+    def _row_to_chunk(row: Any, score: float) -> RetrievedChunk:
         import json
 
         metadata = {}

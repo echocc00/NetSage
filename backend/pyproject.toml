@@ -83,3 +83,6 @@ markers = [
 python_version = "3.12"
 strict = true
 ignore_missing_imports = true
+# v0.4.2 收敛严格（user 拍板）：type-arg 为纯机械噪音（dict/list/dataclass 泛型补充），
+# 封顶后门禁只对真实类型错误失败；安全关键模块（redact/gates）已全类型零错。
+disable_error_code = ["type-arg"]

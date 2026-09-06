@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
-SECURITY_AUDITOR_DEFINITION = {
+SECURITY_AUDITOR_DEFINITION: dict[str, Any] = {
     "name": "security_auditor",
     "role": "安全审计 Agent：配置基线 + ACL 分析 + 攻击面测绘 + 加固优先级 + 合规报告",
     "system_prompt": (
@@ -23,7 +23,7 @@ SECURITY_AUDITOR_DEFINITION = {
     "interrupt_points": [],
 }
 
-COMPLIANCE_DEFINITION = {
+COMPLIANCE_DEFINITION: dict[str, Any] = {
     "name": "compliance",
     "role": "合规 Agent：聚合基线 + ACL → 合规报告 + 整改建议",
     "system_prompt": "你是合规审计官。聚合基线扫描与 ACL 分析结果，生成 Markdown + CSV 报告。",

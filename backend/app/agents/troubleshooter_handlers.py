@@ -5,6 +5,8 @@ collect → analyze(RCA) → rank_causes → suggest_fixes
 """
 from __future__ import annotations
 
+from typing import Any
+
 from app.agents.rca_engine import RCAEngine, SymptomContext
 from app.core.logging import get_logger
 from app.tools.registry import ToolRegistry
@@ -14,7 +16,7 @@ logger = get_logger("troubleshooter_handler")
 _rca = RCAEngine()
 
 
-async def troubleshoot_collect(state: dict, tools: ToolRegistry, llm=None) -> dict:
+async def troubleshoot_collect(state: dict, tools: ToolRegistry, llm: Any | None = None) -> dict:
     """收集多源数据：设备配置 + 协议状态 + 变更历史 + RAG 案例。"""
     symptom = state.get("query", "")
     protocol = state.get("scenario", "bgp")
@@ -45,7 +47,7 @@ async def troubleshoot_collect(state: dict, tools: ToolRegistry, llm=None) -> di
     return state
 
 
-async def troubleshoot_analyze(state: dict, tools: ToolRegistry, llm=None) -> dict:
+async def troubleshoot_analyze(state: dict, tools: ToolRegistry, llm: Any | None = None) -> dict:
     """RCA 引擎分析 → 根因排序。"""
     collected = state.get("collected", {})
     symptom = state.get("query", "")
@@ -78,7 +80,7 @@ async def troubleshoot_analyze(state: dict, tools: ToolRegistry, llm=None) -> di
     return state
 
 
-async def troubleshoot_suggest_fixes(state: dict, tools: ToolRegistry, llm=None) -> dict:
+async def troubleshoot_suggest_fixes(state: dict, tools: ToolRegistry, llm: Any | None = None) -> dict:
     """为 top 根因生成修复方案 + 验证步骤 + 一键变更单草稿。"""
     causes = state.get("root_causes", [])
     if not causes:
@@ -108,7 +110,7 @@ async def troubleshoot_suggest_fixes(state: dict, tools: ToolRegistry, llm=None)
 
 
 # Troubleshooter Agent 定义（注册到 agent_runtime）
-TROUBLESHOOTER_DEFINITION = {
+TROUBLESHOOTER_DEFINITION: dict[str, Any] = {
     "name": "troubleshooter",
     "role": "故障排查 Agent：多源数据关联 + 根因排序 + 修复建议",
     "system_prompt": "你是网络故障排查专家。基于症状 + 多源数据，给出 ≥3 候选根因（按概率排序）+ 证据链 + 验证命令 + 修复方案。低置信度要求人工确认。",

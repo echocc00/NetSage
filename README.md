@@ -1,6 +1,6 @@
 # NetSage · AI 网络工程师智能平台
 
-> **v0.4.1** · AI 辅助网络工程平台：让 AI 承担设计、配置生成、故障排查、安全审计、RDMA 调优等专业工作。
+> **v0.4.2** · AI 辅助网络工程平台：让 AI 承担设计、配置生成、故障排查、安全审计、RDMA 调优等专业工作。
 >
 
 [![Latest Release](https://img.shields.io/github/v/release/echocc00/NetSage?display_name=tag&style=flat-square)](https://github.com/echocc00/NetSage/releases/latest)
@@ -28,7 +28,7 @@
 
 > 基线文档：[最终技术方案 v2.0](doc/NetSage-最终技术方案-v2.0.md) · [开发计划](doc/NetSage-开发计划与详细设计-v1.0.md) · [Phase 2 规划](doc/NetSage-Phase2-规划-v1.0.md) · [Phase 3 规划](doc/NetSage-Phase3-规划-v1.0.md)
 
-## 能力总览（v0.4.1）
+## 能力总览（v0.4.2）
 
 | 模块 | 状态 | 说明 |
 |---|---|---|
@@ -43,6 +43,7 @@
 | 审计合规 | ✅ | sha256 哈希链 + INSERT ONLY + 五级 RBAC（等保三权分立） |
 | 生产化 | ✅ | 运营大屏 + DR/备份（RPO 24h/RTO 2h）+ LLM 缓存 + 生产 Docker + OpenAPI |
 | React 前端 | ✅ | 9 页面：大屏 / 设备 / 设计工坊 / 排障 / 审批 / 审计 / RDMA / 无线 / 登录 |
+| CLI nsc | ✅ | 8 命令：login / status / health / version / ask / gen / simulate / report（typer，23 测试） |
 | RDMA 专项 | 🟡 | RdmAgent（PFC/ECN/DCQCN 配置诊断）+ OpenSM 容器化。**默认 mock 模式，真实 IB 硬件未验证** |
 | 无线专项 | 🟡 | WirelessAgent（AP 布放 + 信道规划 + 漫游域 + 安全策略）。**WLC API 未接入** |
 | 多租户 + SSO | 🟡 | Tenant model + OIDC（PKCE + nonce + state）。**未接真实 Keycloak 验证** |
@@ -87,6 +88,16 @@ npm run dev
 PYTHONIOENCODING=utf-8 python scripts/phase3_acceptance.py
 ```
 
+### 生产部署（v0.4.2 起含前端容器）
+
+```bash
+# 前置：.env 填写 JWT_SECRET / POSTGRES_PASSWORD / LLM key（必填项缺失启动即拒绝）
+docker compose -f infra/docker-compose.prod.yml up -d --build
+# 后端  http://localhost:8000  ·  前端 nginx  http://localhost:3000
+# 前端容器：multi-stage（node:20-alpine 构建 → nginx:1.27-alpine 运行），
+# nginx 把 /api/* 反代 backend:8000（SSE 关闭缓冲），SPA 路由 fallback 到 index.html
+```
+
 ## 仓库结构
 
 ```
@@ -94,7 +105,7 @@ backend/              FastAPI 后端（Python 3.11+，10 Agent + 三道闸 + 双
 mcp-servers/          MCP Server ×7（containerlab / batfish / napalm / netbox / suzieq / nautobot / opensm）
 nautobot-app-designs/ 自研 Nautobot App v0.1（NetworkDesign 持久化）
 frontend/             React + AntD + React Flow（9 页面）
-cli/                  nsc CLI（typer，6 命令）
+cli/                  nsc CLI（typer，8 命令）
 eval/                 NetAI-Bench 评测集（513 题）
 infra/                docker-compose（dev / prod / netbox / suzieq / opensm）+ Vault
 scripts/              运维脚本（backup / restore）+ _build_archive（历史构建脚本）
@@ -191,8 +202,9 @@ flowchart TB
 - ✅ **Phase 3**（M5-M6）：Nautobot 集成 + 安全合规 + 自动化闭环（10/10，验收 12/12）
 - ✅ **Phase 4**（M7-M12）：RDMA + 无线 + 多租户 + SSO + 生产化（v0.4.0）
 - ✅ **审计修复**（P7-1~P7-8）：脱敏接入 LLM 网关 + OIDC 补齐 + CI 门禁 + Agent 深度 + E2E + hit_rate 实测（v0.4.1）
+- ✅ **v0.4.2 收尾**：CLI nsc 落地 + frontend Dockerfile + mypy 真阻断 + 测试数透明化 + AGENTS.md（v0.4.2）
 
-### v0.4.1 已知限制（诚实清单）
+### v0.4.2 已知限制（诚实清单）
 
 | 项 | 现状 | 解锁条件 |
 |---|---|---|

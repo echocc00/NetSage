@@ -6,13 +6,15 @@ SUZIEQ Assert 框架做配置 vs 状态断言。
 """
 from __future__ import annotations
 
+from typing import Any
+
 from app.core.logging import get_logger
 from app.tools.registry import ToolRegistry
 
 logger = get_logger("observer_handler")
 
 
-async def observer_poll(state: dict, tools: ToolRegistry, llm=None) -> dict:
+async def observer_poll(state: dict, tools: ToolRegistry, llm: Any | None = None) -> dict:
     """触发 SUZIEQ poll + 查关键状态表。"""
     try:
         await tools.invoke("suzieq.poll_once")
@@ -30,7 +32,7 @@ async def observer_poll(state: dict, tools: ToolRegistry, llm=None) -> dict:
     return state
 
 
-async def observer_analyze(state: dict, tools: ToolRegistry, llm=None) -> dict:
+async def observer_analyze(state: dict, tools: ToolRegistry, llm: Any | None = None) -> dict:
     """分析状态：SUZIEQ Assert + 异常检测。"""
     anomalies: list[dict] = []
 
@@ -63,7 +65,7 @@ async def observer_analyze(state: dict, tools: ToolRegistry, llm=None) -> dict:
     return state
 
 
-async def observer_alert(state: dict, tools: ToolRegistry, llm=None) -> dict:
+async def observer_alert(state: dict, tools: ToolRegistry, llm: Any | None = None) -> dict:
     """有异常时告警（记录 + 可选 LLM 趋势分析）。"""
     if not state.get("needs_alert"):
         state["alert_status"] = "no_anomaly"
@@ -80,7 +82,7 @@ async def observer_alert(state: dict, tools: ToolRegistry, llm=None) -> dict:
     return state
 
 
-OBSERVER_DEFINITION = {
+OBSERVER_DEFINITION: dict[str, Any] = {
     "name": "observer",
     "role": "网络可观测性 Agent：定时 poll + 趋势分析 + 异常告警",
     "system_prompt": "你是网络可观测性分析器。定时采集全网状态，用 SUZIEQ Assert 做断言，异常时告警。",

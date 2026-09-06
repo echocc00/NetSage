@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Any
 
-RDMA_AGENT_DEFINITION = {
+RDMA_AGENT_DEFINITION: dict[str, Any] = {
     "name": "rdm_agent",
     "role": "RDMA/IB 专项 Agent：无损网络设计 + RoCE 调优 + 配置诊断 + IB 子网规划",
     "system_prompt": (

@@ -246,7 +246,7 @@ class RCAEngine:
         if ctx.traffic_anomalies:
             score += 0.1  # 有流量异常 → 物理类根因加权
 
-        return score
+        return float(score)
 
     def _check_protocol_state(self, rule: dict, state: dict) -> int:
         """检查协议状态是否有匹配 rule 的异常。"""

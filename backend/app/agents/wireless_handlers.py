@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Any
 
-WIRELESS_AGENT_DEFINITION = {
+WIRELESS_AGENT_DEFINITION: dict[str, Any] = {
     "name": "wireless_agent",
     "role": "无线网络 Agent：AP 布放 + 射频规划（信道/功率/带宽）+ 漫游域 + 安全策略",
     "system_prompt": (

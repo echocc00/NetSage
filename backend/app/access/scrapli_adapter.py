@@ -62,7 +62,7 @@ class ScrapliAdapter(DeviceAdapter):
         try:
             cmd = "show running-config" if source == "running" else "show startup-config"
             resp = await driver.send_command(cmd)
-            return resp.result
+            return str(resp.result)
         finally:
             await driver.close()
 

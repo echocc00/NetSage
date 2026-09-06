@@ -6,6 +6,7 @@ napalm 不支持的厂商/命令用 netmiko 灵活 CLI。
 from __future__ import annotations
 
 import asyncio
+from typing import Any
 
 from app.access.base import AdapterError, DeviceAdapter, DeviceFacts, DeviceTarget
 from app.core.logging import get_logger
@@ -27,7 +28,7 @@ NETMIKO_TYPE_MAP: dict[str, str] = {
 class NetmikoAdapter(DeviceAdapter):
     """netmiko CLI 兜底适配器。"""
 
-    def _connect_sync(self, target: DeviceTarget):
+    def _connect_sync(self, target: DeviceTarget) -> Any:
         from netmiko import ConnectHandler
 
         device_type = NETMIKO_TYPE_MAP.get(target.vendor, "cisco_ios")
@@ -42,7 +43,7 @@ class NetmikoAdapter(DeviceAdapter):
         except Exception as e:
             raise AdapterError("connect_failed", f"netmiko 连接失败: {e}") from e
 
-    async def _connect(self, target: DeviceTarget):
+    async def _connect(self, target: DeviceTarget) -> Any:
         return await asyncio.to_thread(self._connect_sync, target)
 
     async def get_facts(self, target: DeviceTarget) -> DeviceFacts:

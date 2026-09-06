@@ -1,19 +1,31 @@
 """nsc CLI 主入口（typer，v2.0 开发计划十五章）。
 
-命令：gen / simulate / report / ask / health
-W2 超最小演示主载体。
+命令：login / health / status / version / ask / gen / simulate / report
+W2 超最小演示主载体；v0.4.2 补齐 status/version + 变更触发。
 """
 from __future__ import annotations
 
+import yaml
 import typer
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
 
+from nsc import __version__
 from nsc.client import CONFIG_PATH, NSCClient
 
 console = Console()
 app = typer.Typer(help="NetSage CLI · AI 网络工程师命令行", no_args_is_help=True)
+
+
+def _show_status(client: NSCClient, title: str = "NetSage 后端") -> None:
+    """打印后端健康状态。"""
+    result = client.health()
+    console.print(Panel(
+        f"status: {result['status']}\nversion: {result['version']}\nenv: {result['env']}",
+        title=title,
+        border_style="green",
+    ))
 
 
 @app.command()
@@ -21,8 +33,6 @@ def login(
     role: str = typer.Option("engineer", "--role", "-r", help="viewer/operator/engineer/admin/auditor"),
 ) -> None:
     """开发态登录：nsc login（生成 JWT 存 ~/.nsc/config.yaml）"""
-    import yaml
-
     client = NSCClient()
     role_map = {
         "viewer": 0, "operator": 1, "engineer": 2, "admin": 3, "auditor": 4,
@@ -41,31 +51,65 @@ def login(
 
 
 @app.command()
-def health() -> None:
-    """检查后端连通性：nsc health"""
-    client = NSCClient()
+def status(
+    url: str = typer.Option("", "--url", "-u", help="后端地址，默认取 NSC_BACKEND / localhost:8000"),
+) -> None:
+    """后端状态：nsc status --url http://localhost:8000"""
     try:
-        result = client.health()
-        console.print(Panel(
-            f"status: {result['status']}\nversion: {result['version']}\nenv: {result['env']}",
-            title="NetSage 后端",
-            border_style="green",
-        ))
+        _show_status(NSCClient(backend=url) if url else NSCClient())
     except Exception as e:
         console.print(f"[red]✗ 后端不可达：{e}[/red]")
         raise typer.Exit(1)
 
 
 @app.command()
+def health() -> None:
+    """检查后端连通性：nsc health"""
+    try:
+        _show_status(NSCClient())
+    except Exception as e:
+        console.print(f"[red]✗ 后端不可达：{e}[/red]")
+        raise typer.Exit(1)
+
+
+@app.command()
+def version() -> None:
+    """显示版本：nsc version"""
+    console.print(f"NetSage v{__version__}（CLI）")
+
+
+@app.command()
 def ask(question: str, vendor: str = typer.Option("huawei", "--vendor", "-v")) -> None:
-    """自然语言提问：nsc ask "BGP 邻居为什么抖动" """
+    """自然语言提问并生成报告：nsc ask "BGP 邻居为什么抖动"
+    后端不可用时回退为意图分类摘要。
+    """
     client = NSCClient()
     session = client.create_session(question, vendor=vendor)
-    console.print(Panel(
-        f"intent: {session['intent']}\nscenario: {session['scenario']}\n"
-        f"agent: {session['primary_agent']}\napproval: {session['requires_approval']}",
-        title=f"会话 {session['session_id']}",
-    ))
+    sid = session["session_id"]
+    intent = session.get("intent", "unknown")
+    lines = [
+        "# NetSage 智能分析",
+        "",
+        f"**会话**: `{sid}`",
+        f"- intent: {intent}",
+        f"- scenario: {session.get('scenario', '-')}",
+        f"- primary_agent: {session.get('primary_agent', '-')}",
+        f"- requires_approval: {session.get('requires_approval', False)}",
+    ]
+    if intent in {"config"}:
+        try:
+            result = client.run_config(sid, question, vendor=vendor)
+            lines += [
+                "",
+                "## 配置 diff",
+                "```text",
+                result.get("config_diff", "（无 diff）"),
+                "```",
+                f"lint: {'pass' if result.get('lint_passed') else 'fail'}",
+            ]
+        except Exception:
+            lines += ["", "## 配置生成", "（后端未就绪，仅返回意图分类）"]
+    console.print(Markdown("\n".join(lines)))
 
 
 @app.command()
@@ -91,11 +135,29 @@ def gen(
 
 
 @app.command()
-def simulate(topo: str = typer.Argument("bgp-2node", help="拓扑名称")) -> None:
-    """跑仿真：nsc simulate bgp-2node（W2 演示：2 节点 BGP）
+def simulate(
+    topo: str = typer.Argument("bgp-2node", help="拓扑名称"),
+    change_id: str = typer.Option("", "--change-id", "-c", help="变更 ID，传参则触发真实三道闸流程"),
+) -> None:
+    """跑仿真：nsc simulate bgp-2node
 
-    Phase 1：调 Containerlab MCP（需镜像到位，未到位时返回提示）。
+    带 --change-id 时调用 /changes/{id}/run 触发快照→仿真→校验→审批。
     """
+    if change_id:
+        client = NSCClient()
+        try:
+            result = client.run_change(change_id)
+            steps = "\n".join(f"  - {s.get('gate')}: {'pass' if s.get('passed', True) else 'FAIL'}"
+                              for s in result.get("steps", []))
+            console.print(Panel(
+                f"change_id: {change_id}\nstatus: {result.get('status')}\n{steps}",
+                title="三道闸结果",
+                border_style="green",
+            ))
+            return
+        except Exception as e:
+            console.print(f"[red]✗ 变更执行失败：{e}[/red]")
+            raise typer.Exit(1)
     console.print(f"仿真拓扑：{topo}")
     console.print("注意: Containerlab 仿真需 cXRd 镜像到位（W2 演示前用户提供）")
     console.print("  镜像就绪后：nsc simulate bgp-2node 将调 containerlab-mcp.deploy_topology")
@@ -105,7 +167,6 @@ def simulate(topo: str = typer.Argument("bgp-2node", help="拓扑名称")) -> No
 def report(session_id: str = typer.Argument(..., help="会话 ID")) -> None:
     """生成 Markdown 报告：nsc report <session_id>"""
     client = NSCClient()
-    # 拉会话 + 配置 + 校验
     console.print(f"生成会话 {session_id} 报告")
     md = f"""# NetSage 变更报告
 
@@ -124,7 +185,7 @@ def report(session_id: str = typer.Argument(..., help="会话 ID")) -> None:
 （已保存配置快照，支持一键回滚）
 
 ---
-*Generated by nsc · NetSage*
+*Generated by nsc · NetSage v{__version__}*
 """
     console.print(Markdown(md))
 
