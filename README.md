@@ -46,7 +46,7 @@
 | CLI nsc | ✅ | 8 命令：login / status / health / version / ask / gen / simulate / report（typer，23 测试） |
 | RDMA 专项 | 🟡 | RdmAgent（PFC/ECN/DCQCN 配置诊断）+ OpenSM 容器化。**默认 mock 模式，真实 IB 硬件未验证** |
 | 无线专项 | 🟡 | WirelessAgent（AP 布放 + 信道规划 + 漫游域 + 安全策略）。**WLC API 未接入** |
-| 多租户 + SSO | 🟡 | Tenant model + OIDC（PKCE + nonce + state）。**未接真实 Keycloak 验证** |
+| 多租户 + SSO | ✅ | Tenant model + OIDC（PKCE + nonce + state + JWKS 验签）。**已接真实 Keycloak 22 E2E**（headless 全链路，8 测试） |
 | RAG 知识库 | 🟡 | 混合检索（bge-m3 + BM25）已实测：**语料内 hit_rate 99.4%，全量 33.9%**（语料仅 3 份华为手册，覆盖上限 34.1%）。见 [报告](eval/reports/hit_rate-v1.0.md) |
 | NetAI-Bench | 🟡 | 513 题 schema 100% 通过，每题带 `source` 溯源。**人工构造 30 / 模板渲染 81 / 脚本生成 402，后者未逐题人工复核** |
 
@@ -212,7 +212,7 @@ flowchart TB
 | RDMA 真实验证 | OpenSM/RdmAgent 默认 mock 模式，2 节点硬编码数据 | IB 硬件测试床 + perftest |
 | OpenSM 法务 | 工程隔离已做（不链接/不分发/不修改），法务 memo 未出具 | 法务团队签字 |
 | Nautobot | Adapter 完整但默认 mock，未部署真实 Nautobot 服务 | 部署 Nautobot v2 |
-| OIDC/SSO | PKCE + nonce + state 完整，未接真实 Keycloak 端到端验证 | Keycloak 实例 |
+| OIDC/SSO | 已接真实 Keycloak 22 E2E（auth-code + PKCE 全链路 headless 验证，8 测试：发现/JWKS/登录/验签/防重放）；per-tenant IdP 配置与生产 HTTPS/secure-cookie 待 v0.5.0 多租户阶段 | 生产部署 + 多租户 IdP 映射 |
 | 评测集质量 | 513 题 schema 100% 通过，402 题为脚本生成未逐题人工复核 | 按 `source` 分层人工复审 |
 | WLC API | WirelessAgent 生成配置，未接厂商 WLC 控制器 API | 厂商 API 凭据 |
 

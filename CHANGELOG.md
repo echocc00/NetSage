@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+### v0.5.0 阶段1 · OIDC 去 🟡（Keycloak 真实 E2E）
+
+- `infra/docker-compose.keycloak.yml`：Keycloak 22.x 实例（start-dev，端口 9090）
+- `backend/scripts/provision_keycloak.py`：Admin REST 幂等 provision（realm=netsage / 5 角色组 / alice·bob·carol·dave 用户 / 机密 client netsage-web(PKCE S256 + 标准流 + 直连授权) / groups→claims['groups'] mapper）；client secret 因 Keycloak 22 只生成随机值，持久化到 gitignored 的 `.env.keycloak`
+- `backend/tests/integration/test_keycloak_e2e.py`（8 测试，真实 provider）：真实 discovery / 真实 JWKS RS256 / **完整 Authorization Code + PKCE 全链路**（headless 完成 Keycloak 登录表单 → 回调验签（iss/aud/exp/nonce）→ 签发本地 JWT + groups→RBAC）/ state 单次使用防重放 / 错误 code 401 / 真实 id_token 签名独立验证 / provision 幂等
+- CI 新增 `keycloak` job（起实例 → provision → E2E）
+- `.env.example` 增 OIDC 变量块；README「多租户 + SSO」转 ✅（真实 Keycloak 22 已验证），已知限制同步；SECURITY.md OIDC 范围注明真实 E2E
+
 ### 计划 v0.4.2（已发布 2026-09-06，见下）
 
 ## [v0.4.2] - 2026-09-06

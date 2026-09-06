@@ -51,7 +51,7 @@
 - **数据脱敏**：黑盒内容（running-config / 凭据 / 原始日志）泄漏到 LLM
 - **审计完整性**：哈希链篡改、审计日志绕过
 - RBAC 权限提升（viewer → engineer/admin）
-- OIDC/SSO 流程漏洞（state/nonce/PKCE 绕过）
+- OIDC/SSO 流程漏洞（state/nonce/PKCE 绕过）——v0.5.0 起已对真实 Keycloak 22 做 E2E（发现/登录/验签/防重放）
 - RAG / LLM 注入 / 提示词越权
 - 与上游集成的安全（NetBox / Nautobot / Batfish / Containerlab / SUZIEQ / OpenSM）
 

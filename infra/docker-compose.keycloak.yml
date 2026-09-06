@@ -1,0 +1,29 @@
+# NetSage Keycloak 22.x（OIDC SSO 端到端测试实例，v0.5.0 阶段1 去 🟡）
+# 用法：docker compose -f infra/docker-compose.keycloak.yml up -d
+#      python backend/scripts/provision_keycloak.py
+# 说明：start-dev = H2 内存库 + 默认 admin/admin，仅供 E2E/本地联调，勿用于生产。
+#
+# 端口：宿主机 9090 → 容器 8080。若 9090 被占用，改 ports 左侧并同步 .env 的 OIDC_DISCOVERY_URL 与 provision 脚本 --base。
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0
+    container_name: netsage-keycloak
+    command: ["start-dev"]
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HTTP_PORT: "8080"
+      KC_HTTP_RELATIVE_PATH: /
+    ports:
+      - "9090:8080"
+    restart: unless-stopped
+    # 就绪探测交给 provision_keycloak.py 轮询 discovery（容器内无 curl/wget，TCP 检查会过早通过）
+    healthcheck:
+      test: ["CMD", "true"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits: { memory: 2G }
