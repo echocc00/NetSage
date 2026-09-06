@@ -4,8 +4,8 @@
 
 | Version | Supported | 说明 |
 |---|---|---|
-| v1.0.1 | ✅ | Latest release（审计问题修复：脱敏接入 LLM 网关 + OIDC PKCE/nonce/验签） |
-| v1.0.0 | ⚠️ | 生产化完成，但脱敏未接入 LLM 网关、OIDC 未验签 —— **建议升级 v1.0.1** |
+| v0.4.1 | ✅ | Latest release（审计问题修复：脱敏接入 LLM 网关 + OIDC PKCE/nonce/验签） |
+| v0.4.0 | ⚠️ | 生产化完成，但脱敏未接入 LLM 网关、OIDC 未验签 —— **建议升级 v0.4.1** |
 | v0.3.0 | ✅ | WirelessAgent + 多租户 SSO + NetAI-Bench |
 | v0.2.0 | ✅ | RDMA 专项（OpenSM + RdmAgent） |
 | < v0.2.0 | ❌ | 不再接收安全补丁，请升级到最新 release |
@@ -76,7 +76,7 @@
 
 部署 NetSage 时建议：
 
-1. **使用最新 release**（v1.0.1）
+1. **使用最新 release**（v0.4.1）
 2. **生产必填密钥**：`JWT_SECRET` / `POSTGRES_PASSWORD` 不可用默认值（启动会拒绝）
 3. **保持脱敏开启**：不要设置 `REDACT_BLACKBOX_LOCAL_ONLY=false`（会允许 running-config 外发）
 4. **GPL 隔离**：OpenSM 走进程外调用，不链接不分发（见 doc/NetSage-最终技术方案-v2.0.md 二十一章）

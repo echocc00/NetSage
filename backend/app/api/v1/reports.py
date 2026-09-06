@@ -100,7 +100,7 @@ async def dashboard(
         "top_alerts": [
             {"severity": "warning", "device": "leaf02", "message": "CRC 错误率上升"},
         ],
-        "version": "v1.0.0",
+        "version": "v0.4.1",
     })
 
 
