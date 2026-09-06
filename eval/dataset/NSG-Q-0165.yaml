@@ -31,6 +31,12 @@ expected_output:
     probability: 0.4
     verify: show interface | include error
     fix: 查物理层
+  - rank: 3
+    cause: DBD 报文 MTU 超对端接口 MTU
+    probability: 0.1
+    verify: show ip ospf interface | include MTU
+    fix: 两端接口 MTU 对齐
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/ospf-mtu-ignore

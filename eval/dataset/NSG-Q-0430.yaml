@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display evpn instance
     fix: 配 anycast
+  - rank: 3
+    cause: VBDif 缺 arp collect host 使远端 MAC 不学
+    probability: 0.1
+    verify: display vxlan arp | include collect
+    fix: arp collect host 补配
+
   references:
   - type: vendor_doc
     url: https://support.huawei.com/vrp-vxlan-vbdif

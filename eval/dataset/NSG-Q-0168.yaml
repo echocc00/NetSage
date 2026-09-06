@@ -31,6 +31,12 @@ expected_output:
     probability: 0.3
     verify: show ip ospf | include throttle
     fix: timers throttle lsa 配置
+  - rank: 3
+    cause: type-2 泛洪因 DR 切换频繁刷新
+    probability: 0.1
+    verify: show ip ospf interface | include DR
+    fix: 固定 DR priority
+
   references:
   - type: vendor_doc
     url: https://www.arista.com/en/docs/eos-4.24/ospf-lsa-throttle

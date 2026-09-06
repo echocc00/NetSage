@@ -33,6 +33,12 @@ expected_output:
     evidence: []
     verify: display radius
     fix: 修 RADIUS server
+  - rank: 3
+    cause: IKEv2 认证方法一端 EAP 一端证书
+    probability: 0.1
+    verify: display ikev2 policy
+    fix: 两端认证方法一致
+
   references:
   - type: vendor_doc
     url: https://support.huawei.com/vrp-ipsec-eap

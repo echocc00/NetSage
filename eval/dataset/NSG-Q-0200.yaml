@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display isis peer
     fix: is-level level-2
+  - rank: 3
+    cause: IS-IS LSP 长度/overload 未处理
+    probability: 0.1
+    verify: display isis lsp | include overload
+    fix: set-overload 排查
+
   references:
   - type: vendor_doc
     url: https://support.huawei.com/vrp-isis-metric

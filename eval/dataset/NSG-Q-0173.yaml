@@ -30,6 +30,12 @@ expected_output:
     probability: 0.2
     verify: show ospf configuration
     fix: reference-bandwidth 100000
+  - rank: 3
+    cause: cost 计算把备路径判成等价/更优
+    probability: 0.1
+    verify: show route protocol ospf
+    fix: 设 reference-bandwidth 统一
+
   references:
   - type: vendor_doc
     url: https://www.juniper.net/documentation/junos-21.2/ospf-cost

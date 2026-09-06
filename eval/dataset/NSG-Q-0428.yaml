@@ -33,6 +33,12 @@ expected_output:
     evidence: []
     verify: show bgp l2vpn evpn summary
     fix: 修 BGP
+  - rank: 3
+    cause: RR 上 member vni 未含目标 VNI
+    probability: 0.1
+    verify: show bgp l2vpn evpn | include member
+    fix: member vni 补齐
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/nx-os-vxlan-rr

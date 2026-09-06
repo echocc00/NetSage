@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: show ip pim neighbor
     fix: 修 assert
+  - rank: 3
+    cause: 上游 PIM 邻居 RPF 接口选择错
+    probability: 0.1
+    verify: show ip mroute | include RP
+    fix: 静态 RP + 正确 RPF
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/pim-rpf

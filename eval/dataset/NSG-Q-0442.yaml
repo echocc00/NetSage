@@ -33,6 +33,12 @@ expected_output:
     evidence: []
     verify: show ip ospf neighbor
     fix: 查邻居稳定性
+  - rank: 3
+    cause: 接口 mt 未匹配使 LSA 被拒
+    probability: 0.1
+    verify: show ip ospf interface | include MTU
+    fix: 接口 MTU 对齐
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/ospf-summary

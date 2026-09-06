@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display bgp routing-table filter
     fix: 调整 route-policy
+  - rank: 3
+    cause: peer 未 enable 到对端地址族
+    probability: 0.1
+    verify: display bgp peer | include enable
+    fix: address-family 内 peer enable
+
   references:
   - type: vendor_doc
     url: https://www.h3c.com/cn/d_202206/bgp-export

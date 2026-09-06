@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display bfd session
     fix: 启用 bfd
+  - rank: 3
+    cause: VRRP priority 未区分主备（同 100）
+    probability: 0.1
+    verify: display vrrp verbose | include priority
+    fix: 主 120 / 备 100
+
   references:
   - type: vendor_doc
     url: https://www.h3c.com/cn/d_202206/vrrp-bfd

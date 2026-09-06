@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display bgp router-id
     fix: 重配 router-id
+  - rank: 3
+    cause: 对端仍按旧 federation 边界通告，路径在本地被拒
+    probability: 0.1
+    verify: display bgp routing-table | include federation
+    fix: clear bgp 对端重新协商 federation 会话
+
   references:
   - type: vendor_doc
     url: https://support.huawei.com/vrp-bgp-confederation

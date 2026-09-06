@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display ospf peer
     fix: 检查双方 key-id
+  - rank: 3
+    cause: 区域认证类型（md5 vs 明文）不一致
+    probability: 0.1
+    verify: display ospf | include authentication
+    fix: 统一认证类型
+
   references:
   - type: vendor_doc
     url: https://support.huawei.com/vrp-ospf-md5

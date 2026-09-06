@@ -33,6 +33,12 @@ expected_output:
     evidence: []
     verify: show route protocol bgp
     fix: 配 originator-id
+  - rank: 3
+    cause: client-to-client 反射未使能导致 RR 不同步
+    probability: 0.1
+    verify: show bgp neighbor | include client
+    fix: bgp client-to-client reflection 开启
+
   references:
   - type: vendor_doc
     url: https://www.juniper.net/documentation/junos-21.2/bgp-cluster

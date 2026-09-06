@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display vlan
     fix: 统一 service-vid
+  - rank: 3
+    cause: QinQ 仅单层 tag 转发导致不匹配
+    probability: 0.1
+    verify: display vlan translation
+    fix: 双层 tag 端口正确封装
+
   references:
   - type: vendor_doc
     url: https://www.h3c.com/cn/d_202206/qinq

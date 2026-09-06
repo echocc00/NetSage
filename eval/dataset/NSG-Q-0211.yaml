@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: show interface
     fix: 修物理链路
+  - rank: 3
+    cause: BFD 状态未联动 OSPF（bfd 配而未 enable）
+    probability: 0.1
+    verify: show ip ospf | include bfd
+    fix: ip ospf bfd 开启
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/bfd-ospf

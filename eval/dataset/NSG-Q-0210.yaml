@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: show interface
     fix: 物理修链路
+  - rank: 3
+    cause: RA 未发（advertise 未开）
+    probability: 0.1
+    verify: show ipv6 router-advertisement | include advertise
+    fix: advertise 开启
+
   references:
   - type: vendor_doc
     url: https://www.juniper.net/documentation/junos-21.2/slaac

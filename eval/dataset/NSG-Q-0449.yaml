@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display msdp sa
     fix: 查 SA 状态
+  - rank: 3
+    cause: MSDP 需配置 SA 缓存一致
+    probability: 0.1
+    verify: display msdp sa-cache
+    fix: 缓存策略统一
+
   references:
   - type: vendor_doc
     url: https://www.h3c.com/cn/d_202206/msdp-mesh

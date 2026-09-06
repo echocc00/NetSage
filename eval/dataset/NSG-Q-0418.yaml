@@ -33,6 +33,12 @@ expected_output:
     evidence: []
     verify: show ip ospf border-routers
     fix: 配置 ASBR
+  - rank: 3
+    cause: stub 区域未含 ASBR 的 type-4 需人工注入
+    probability: 0.05
+    verify: show ip ospf database | include Type-4
+    fix: ABR 配 area range 覆盖 ASBR 环回
+
   references:
   - type: vendor_doc
     url: https://www.arista.com/en/docs/eos-4.24/ospf-stub

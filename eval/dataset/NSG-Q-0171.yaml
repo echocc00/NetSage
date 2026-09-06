@@ -31,6 +31,12 @@ expected_output:
     probability: 0.15
     verify: display ospf abr
     fix: 调整 area-range
+  - rank: 3
+    cause: ABR 上 cost 设 max 抑制 type-3 通告
+    probability: 0.1
+    verify: display ospf lsdb | include metric
+    fix: 调整 summary cost
+
   references:
   - type: vendor_doc
     url: https://www.h3c.com/cn/d_202206/ospf-stub-summary

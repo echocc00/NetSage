@@ -35,6 +35,12 @@ expected_output:
     probability: 0.35
     verify: show ospf configuration
     fix: spf-options 配置 throttle
+  - rank: 3
+    cause: type-3 前缀本身频繁变，非物理层
+    probability: 0.1
+    verify: show ospf database | match 0.0.0.0
+    fix: stub 区域内路由稳定后再调 throttle
+
   references:
   - type: vendor_doc
     url: https://www.juniper.net/documentation/junos-21.2/ospf-spf-options

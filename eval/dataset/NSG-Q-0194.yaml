@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display dot1x
     fix: 调整 EAP 模式
+  - rank: 3
+    cause: RADIUS 端口/密钥不符
+    probability: 0.1
+    verify: display radius configuration
+    fix: radius-server key 对齐
+
   references:
   - type: vendor_doc
     url: https://support.huawei.com/vrp-dot1x

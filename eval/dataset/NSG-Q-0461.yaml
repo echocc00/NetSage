@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: show isis database
     fix: 修 IGP metric
+  - rank: 3
+    cause: ORR 位置策略未绑定到该 group
+    probability: 0.1
+    verify: show bgp neighbor | include orr
+    fix: group 绑定 orr policy
+
   references:
   - type: vendor_doc
     url: https://www.juniper.net/documentation/junos-21.2/bgp-orr

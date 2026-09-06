@@ -31,6 +31,12 @@ expected_output:
     probability: 0.3
     verify: display bgp dampening
     fix: dampening 启用
+  - rank: 3
+    cause: 下游客户重复宣告同一前缀导致撤回风暴（非抖动）
+    probability: 0.1
+    verify: display bgp routing-table flap-info | include repeat
+    fix: peer 会话 reset + 抑制重复宣告
+
   references:
   - type: vendor_doc
     url: https://support.huawei.com/vrp-bgp-aggregate

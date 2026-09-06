@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display ospf peer
     fix: 两端都启 GR
+  - rank: 3
+    cause: GR helper 端 require-lsa 设置挡住恢复
+    probability: 0.1
+    verify: display ospf graceful-restart | include require
+    fix: 关 require-lsa 或补 LSA
+
   references:
   - type: vendor_doc
     url: https://www.h3c.com/cn/d_202206/ospf-gr

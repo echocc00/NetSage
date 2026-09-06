@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: show bgp evpn summary
     fix: 配 BGP EVPN
+  - rank: 3
+    cause: BUM 需 ingress-replication 协议一致
+    probability: 0.1
+    verify: show vxlan vni | include ingress
+    fix: 两端 ingress-replication protocol bgp
+
   references:
   - type: vendor_doc
     url: https://www.arista.com/en/docs/eos-4.24/vxlan-bum

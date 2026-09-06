@@ -32,6 +32,12 @@ expected_output:
     probability: 0.15
     verify: display ospfv3
     fix: 统一 area 0
+  - rank: 3
+    cause: 接口 area 挂错实例（ospfv3 1 area 0）
+    probability: 0.05
+    verify: display ospfv3 interface 10GE1/0/1
+    fix: ospfv3 1 area 0 instance 18
+
   references:
   - type: vendor_doc
     url: https://support.huawei.com/vrp-ospfv3

@@ -31,6 +31,12 @@ expected_output:
     evidence: []
     verify: display ospfv3 peer
     fix: 统一 area
+  - rank: 3
+    cause: 进程号不一致（不同 ospfv3 实例）
+    probability: 0.1
+    verify: display ospfv3 | include process
+    fix: 统一进程号
+
   references:
   - type: vendor_doc
     url: https://www.h3c.com/cn/d_202206/ospfv3-instance

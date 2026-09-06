@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display pim bsr
     fix: 配 PIM BSR
+  - rank: 3
+    cause: IGMP 版本不一致（v2 vs v3）
+    probability: 0.1
+    verify: display igmp | include version
+    fix: 统一 IGMP 版本
+
   references:
   - type: vendor_doc
     url: https://support.huawei.com/vrp-igmp-querier

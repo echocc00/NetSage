@@ -30,6 +30,12 @@ expected_output:
     probability: 0.3
     verify: show interface | include flap
     fix: 修链路
+  - rank: 3
+    cause: peer 会话频繁重连使 flap 计数未清零即触发抑制
+    probability: 0.1
+    verify: show ip bgp dampening flap-statistics
+    fix: 对 flap 源先抑制再统一调参
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/bgp-dampening

@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: show bgp summary
     fix: 统一 BGP 模式
+  - rank: 3
+    cause: 对端旧版本不识别 RFC 9234 错误处理字段
+    probability: 0.1
+    verify: show bgp neighbors 10.1.1.2 | include version
+    fix: 升级对端 BGP
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/bgp-rfc9234

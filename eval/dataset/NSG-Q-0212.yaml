@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display ospfv3
     fix: 调整 area 类型
+  - rank: 3
+    cause: 对端未 import 本端 type-1
+    probability: 0.1
+    verify: display ospfv3 lsdb | include ASBR
+    fix: 对端 import 补上
+
   references:
   - type: vendor_doc
     url: https://support.huawei.com/vrp-ospfv3-external

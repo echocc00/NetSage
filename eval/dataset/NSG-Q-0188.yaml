@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: show crypto isakmp key
     fix: 对齐 pre-shared-key
+  - rank: 3
+    cause: IKE 生命周期/加密套件不一致
+    probability: 0.1
+    verify: show crypto isakmp sa
+    fix: isakmp policy 统一
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/ipsec-aggressive

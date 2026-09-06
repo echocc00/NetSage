@@ -31,6 +31,12 @@ expected_output:
     probability: 0.4
     verify: display ip interface brief
     fix: 对齐掩码
+  - rank: 3
+    cause: hello/dead 计时器不一致导致 2-way 后停滞
+    probability: 0.1
+    verify: display ospf peer | include timer
+    fix: ospf timer hello 10 dead 40 对齐
+
   references:
   - type: vendor_doc
     url: https://www.h3c.com/cn/d_202206/ospf-two-way

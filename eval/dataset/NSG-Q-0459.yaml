@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display df
     fix: 修 DF election
+  - rank: 3
+    cause: ESI 多归属需 DF 一致否则 BUM 重复
+    probability: 0.1
+    verify: display evpn esi df
+    fix: 统一 DF election
+
   references:
   - type: vendor_doc
     url: https://support.huawei.com/vrp-evpn-esi

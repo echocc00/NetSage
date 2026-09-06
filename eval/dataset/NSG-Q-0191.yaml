@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display ipv6 interface
     fix: 配置固定 link-local
+  - rank: 3
+    cause: ND RA 未周期性发送使邻居老化
+    probability: 0.1
+    verify: display ipv6 nd ra
+    fix: ipv6 nd ra interval 检查
+
   references:
   - type: vendor_doc
     url: https://support.huawei.com/vrp-ipv6-nd

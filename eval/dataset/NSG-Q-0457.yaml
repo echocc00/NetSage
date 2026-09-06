@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: show aaa stats
     fix: 调 timeout
+  - rank: 3
+    cause: RADIUS 认证/计费端口分离错
+    probability: 0.1
+    verify: show aaa | include radius
+    fix: auth/accounting 端口一致
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/aaa-radius-key

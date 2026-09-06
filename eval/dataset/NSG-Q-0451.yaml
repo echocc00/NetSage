@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display firewall slot
     fix: 修 redirect
+  - rank: 3
+    cause: FlowSpec 未 route-target 通告到 RR
+    probability: 0.1
+    verify: display bgp ipv4 flowspec routing-table
+    fix: flowspec 地址族配 RT
+
   references:
   - type: vendor_doc
     url: https://www.h3c.com/cn/d_202206/bgp-flowspec

@@ -35,6 +35,12 @@ expected_output:
     evidence: []
     verify: show mac address-table
     fix: 限制 MAC
+  - rank: 3
+    cause: PVST 未收敛到根（根桥漂移）
+    probability: 0.1
+    verify: show spanning-tree vlan 10 | include root
+    fix: root primary 固定
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/pvst

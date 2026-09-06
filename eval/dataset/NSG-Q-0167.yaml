@@ -32,6 +32,12 @@ expected_output:
     probability: 0.15
     verify: show ospf neighbor
     fix: area 0.0.0.0 一致
+  - rank: 3
+    cause: 接口认证缺失使对端忽略 hello
+    probability: 0.1
+    verify: show ospf interface ge-0/0/0 | include authentication
+    fix: 两端认证对齐
+
   references:
   - type: vendor_doc
     url: https://www.juniper.net/documentation/junos-21.2/ospf-passive

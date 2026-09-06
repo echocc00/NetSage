@@ -31,6 +31,12 @@ expected_output:
     evidence: []
     verify: display netstream template
     fix: 修 template
+  - rank: 3
+    cause: 采样方向（入/出）配错
+    probability: 0.1
+    verify: display netstream | include direction
+    fix: sampler 绑定正确方向
+
   references:
   - type: vendor_doc
     url: https://support.huawei.com/vrp-netstream

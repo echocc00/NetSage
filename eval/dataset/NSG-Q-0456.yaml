@@ -36,6 +36,12 @@ expected_output:
     evidence: []
     verify: display device
     fix: 配 manual rollback
+  - rank: 3
+    cause: 回滚点未包含全部变更段
+    probability: 0.1
+    verify: display rollback | include point
+    fix: 回滚点含完整片段
+
   references:
   - type: vendor_doc
     url: https://support.huawei.com/vrp-config-rollback

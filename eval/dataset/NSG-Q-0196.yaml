@@ -33,6 +33,12 @@ expected_output:
     evidence: []
     verify: show spanning-tree mst priority
     fix: priority 0 root primary
+  - rank: 3
+    cause: MST 实例到 VLAN 映射不一致
+    probability: 0.1
+    verify: show spanning-tree mst | include vlan
+    fix: instance vlan 映射统一
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/mstp

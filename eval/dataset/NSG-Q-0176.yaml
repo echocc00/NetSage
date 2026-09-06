@@ -31,6 +31,12 @@ expected_output:
     probability: 0.3
     verify: display interface Loopback0
     fix: undo shutdown
+  - rank: 3
+    cause: EVPN 使能但 VNI 未入 EVPN 实例
+    probability: 0.1
+    verify: display evpn instance | include vni
+    fix: evpn vpn-instance 加 VNI
+
   references:
   - type: vendor_doc
     url: https://www.h3c.com/cn/d_202206/vtep-loopback

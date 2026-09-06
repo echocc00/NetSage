@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display vrrp
     fix: timer 调长
+  - rank: 3
+    cause: VRRP track 目标被误删
+    probability: 0.1
+    verify: display vrrp verbose | include track
+    fix: track 目标还原
+
   references:
   - type: vendor_doc
     url: https://www.h3c.com/cn/d_202206/vrrp-track

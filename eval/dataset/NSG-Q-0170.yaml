@@ -30,6 +30,12 @@ expected_output:
     probability: 0.3
     verify: show ipv6 ospf interface | include Network
     fix: 统一 network-type
+  - rank: 3
+    cause: dead-interval 也须一致（不取 4×hello 自动）
+    probability: 0.1
+    verify: show ipv6 ospf interface | include Dead
+    fix: ipv6 ospf dead-interval 40
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/ospfv3-hello

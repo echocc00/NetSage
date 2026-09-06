@@ -31,6 +31,12 @@ expected_output:
     evidence: []
     verify: display route-policy
     fix: 配正确语法
+  - rank: 3
+    cause: 对端未启用 large-community 能力，属性被剥离
+    probability: 0.1
+    verify: display bgp peer verbose | include large
+    fix: 两端 advertise-large-community
+
   references:
   - type: vendor_doc
     url: https://support.huawei.com/vrp-bgp-large-community

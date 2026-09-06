@@ -33,6 +33,12 @@ expected_output:
     evidence: []
     verify: debug ip tcp
     fix: 放行 179
+  - rank: 3
+    cause: update-source 未指定使 TCP 源地址不被对端允许
+    probability: 0.1
+    verify: show ip bgp neighbor 2001:db8::2 | include update-source
+    fix: neighbor update-source
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/bgp-passive

@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: show bgp neighbor
     fix: 配 originator-id
+  - rank: 3
+    cause: ORIGINATOR_ID 相同使 RR 丢弃反射路径
+    probability: 0.1
+    verify: show route protocol bgp | match originator
+    fix: 逐跳改 router-id
+
   references:
   - type: vendor_doc
     url: https://www.juniper.net/documentation/junos-21.2/bgp-cluster

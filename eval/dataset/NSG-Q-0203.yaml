@@ -35,6 +35,12 @@ expected_output:
     evidence: []
     verify: display nat
     fix: 清表
+  - rank: 3
+    cause: HRP 心跳超时使状态误判
+    probability: 0.1
+    verify: display hrp state
+    fix: hrp 心跳间隔调优
+
   references:
   - type: vendor_doc
     url: https://support.huawei.com/vrp-nat-hrp

@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: show running | include radius
     fix: timeout 30
+  - rank: 3
+    cause: AAA 方法列表未引用 RADIUS
+    probability: 0.1
+    verify: show aaa servers | include method
+    fix: aaa authentication 引用 radius
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/aaa-radius

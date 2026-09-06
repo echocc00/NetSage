@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: show bgp peer
     fix: 重新设计
+  - rank: 3
+    cause: local-as 未配 no-prepend，路径带本端 AS 被对端拒收
+    probability: 0.1
+    verify: show ip bgp summary | include local-as
+    fix: local-as 65002 no-prepend
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/bgp-local-as

@@ -33,6 +33,12 @@ expected_output:
     evidence: []
     verify: display evpn route type-5
     fix: 统一 RT
+  - rank: 3
+    cause: Type-5 需 ip-prefix 导入才通告
+    probability: 0.1
+    verify: display evpn route type-5
+    fix: address-family l2vpn evpn → 配 ip 导入
+
   references:
   - type: vendor_doc
     url: https://www.h3c.com/cn/d_202206/evpn-rr-type5

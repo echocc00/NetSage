@@ -31,6 +31,12 @@ expected_output:
     evidence: []
     verify: display isis route
     fix: 调低 metric
+  - rank: 3
+    cause: metric-style 一端 narrow 一端 wide 单向不优
+    probability: 0.1
+    verify: display isis | include metric-style
+    fix: 两端统一 wide
+
   references:
   - type: vendor_doc
     url: https://www.h3c.com/cn/d_202206/isis-metric-wide

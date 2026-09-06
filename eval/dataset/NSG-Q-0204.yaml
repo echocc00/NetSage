@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: show ip protocol
     fix: disable eigrp
+  - rank: 3
+    cause: 等价路径来自不同区域导致 ECMP 不成立
+    probability: 0.1
+    verify: show ip route 10.0.0.0 | include equal
+    fix: same area 内 ECMP
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/ospf-ecmp

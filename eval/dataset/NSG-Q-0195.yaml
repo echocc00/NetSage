@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: show etherchannel detail
     fix: max-bundle 配置
+  - rank: 3
+    cause: 成员口模式不一致（active/passive）
+    probability: 0.1
+    verify: show etherchannel summary | include mode
+    fix: 两端成员口模式一致
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/lacp-fallback

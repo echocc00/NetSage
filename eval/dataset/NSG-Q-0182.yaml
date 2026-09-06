@@ -33,6 +33,12 @@ expected_output:
     evidence: []
     verify: show mpls lsp
     fix: path primary loose
+  - rank: 3
+    cause: RSVP 未 enable 到目标 LSP
+    probability: 0.1
+    verify: show rsvp neighbor
+    fix: protocols rsvp interface 全开
+
   references:
   - type: vendor_doc
     url: https://www.juniper.net/documentation/junos-21.2/mpls-rsvp

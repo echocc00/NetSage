@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: show ospf interface
     fix: 统一 network-type
+  - rank: 3
+    cause: 接口 preempt 使 DR 反复抢占
+    probability: 0.1
+    verify: show ospf neighbor | match DR
+    fix: 禁抢占或固定 priority
+
   references:
   - type: vendor_doc
     url: https://www.juniper.net/documentation/junos-21.2/ospf-dr-priority

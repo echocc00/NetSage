@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: show ip access-list
     fix: 调整 hierarchy
+  - rank: 3
+    cause: ACL 未配 remark 使运维难维护（非功能性）
+    probability: 0.05
+    verify: show ip access-list | include remark
+    fix: 补 remark 便于审查
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/acl-sequence

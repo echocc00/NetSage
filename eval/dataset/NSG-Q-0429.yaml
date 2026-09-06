@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display interface brief
     fix: 启用 IP
+  - rank: 3
+    cause: 源接口被 ACL 过滤使 VTEP 通信失败
+    probability: 0.1
+    verify: display ip routing-table | include 10.0.0.1
+    fix: 放行 VTEP 源 ACL
+
   references:
   - type: vendor_doc
     url: https://www.h3c.com/cn/d_202206/vxlan-vtep

@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: show evpn instance detail
     fix: 统一 sync
+  - rank: 3
+    cause: VNI 未映射到相同 VRF 使 MAC 隔离
+    probability: 0.05
+    verify: show evpn instance vni
+    fix: 统一 VNI-VRF 绑定
+
   references:
   - type: vendor_doc
     url: https://www.juniper.net/documentation/junos-21.2/evpn-anycast-gateway

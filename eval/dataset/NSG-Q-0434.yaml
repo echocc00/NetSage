@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display bgp peer
     fix: 配 vpnv4-family peer enable
+  - rank: 3
+    cause: VPNv4 地址族 peer 未 enable 导致 RT 不交换
+    probability: 0.1
+    verify: display bgp vpnv4 peer
+    fix: vpnv4-family peer enable
+
   references:
   - type: vendor_doc
     url: https://www.h3c.com/cn/d_202206/bgp-vpnv4

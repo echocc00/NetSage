@@ -33,6 +33,12 @@ expected_output:
     evidence: []
     verify: show interface
     fix: 修物理链路
+  - rank: 3
+    cause: 抑制后 reuse 时间过长导致路由长时间不恢复
+    probability: 0.1
+    verify: show ip bgp dampening parameters
+    fix: bgp dampening 15 1500 2000 60
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/bgp-dampening-threshold

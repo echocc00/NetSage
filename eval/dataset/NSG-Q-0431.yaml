@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: show crypto isakmp
     fix: 配置 PMTUd
+  - rank: 3
+    cause: ESP 封装导致分片被中间丢弃
+    probability: 0.1
+    verify: show crypto ipsec sa | include frag
+    fix: DF 位调整 + MSS
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/ipsec-mss

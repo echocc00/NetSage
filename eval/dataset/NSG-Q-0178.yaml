@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display vxlan vni
     fix: 配置 nve source-interface
+  - rank: 3
+    cause: NVE 接口对应 VNI 未加入 bridge-domain
+    probability: 0.1
+    verify: display vxlan vni
+    fix: bridge-domain 绑定 vxlan
+
   references:
   - type: vendor_doc
     url: https://support.huawei.com/vrp-nve

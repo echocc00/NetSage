@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: show ipv6 ospf
     fix: ipv6 ospf reference-bandwidth 1000000
+  - rank: 3
+    cause: 对端参考带宽不同使 cost 失衡
+    probability: 0.1
+    verify: show ipv6 ospf | include reference
+    fix: 两端 reference-bandwidth 一致
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/ospfv3-cost

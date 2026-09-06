@@ -4,7 +4,7 @@
 
 ## 总览
 - schema 失败: **0**
-- 深度检查命中: **109** 条（跨 3 类）
+- 深度检查命中: **3** 条（跨 2 类）
 - 疑似近似重复: **0** 对真重复 + 200 对编号系列变体
 
 | source | 数量 |
@@ -13,10 +13,6 @@
 | manual | 30 |
 
 ## 深度检查明细（按类别）
-### root_causes<3（106）
-- 来源分布: {'auto_generated': 106}
-- 样本: [auto_generated] 仅 2 个, [auto_generated] 仅 2 个, [auto_generated] 仅 2 个, [auto_generated] 仅 2 个, [auto_generated] 仅 2 个, [auto_generated] 仅 2 个, [auto_generated] 仅 2 个, [auto_generated] 仅 2 个
-
 ### 文本残留占位（2）
 - 来源分布: {'manual': 1, 'auto_generated': 1}
 - 样本: [manual], [auto_generated]

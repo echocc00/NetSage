@@ -29,6 +29,12 @@ expected_output:
     probability: 0.2
     verify: show ip bgp summary | include warning
     fix: warning-only 移除
+  - rank: 3
+    cause: 重新宣告全表触发瞬时计数超 max-routes
+    probability: 0.1
+    verify: show ip bgp neighbors 10.1.1.2 | include max
+    fix: clear ip bgp 后按 session 收敛观察
+
   references:
   - type: vendor_doc
     url: https://www.arista.com/en/docs/eos-4.24/bgp-max-routes

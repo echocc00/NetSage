@@ -31,6 +31,12 @@ expected_output:
     evidence: []
     verify: show l2vpn evpn route
     fix: 统一 RT
+  - rank: 3
+    cause: MAC 重复因 arp suppression 未同步到新 leaf
+    probability: 0.1
+    verify: show l2vpn evpn arp | include suppress
+    fix: 新 leaf 补 arp suppress
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/nx-os-evpn-arp-suppression

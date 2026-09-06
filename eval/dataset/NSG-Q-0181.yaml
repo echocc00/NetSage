@@ -34,6 +34,12 @@ expected_output:
     evidence: []
     verify: show ip route 10.0.0.1
     fix: 修 IGP
+  - rank: 3
+    cause: LDP 传输地址未配，用接口地址建邻失败
+    probability: 0.1
+    verify: show mpls ldp discovery | include transport
+    fix: mpls ldp router-id 指定
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/mpls-ldp

@@ -33,6 +33,12 @@ expected_output:
     evidence: []
     verify: display interface Loopback0
     fix: ip address
+  - rank: 3
+    cause: VTEP 源地址被前缀过滤
+    probability: 0.1
+    verify: display ip routing-table 10.0.0.1
+    fix: IGP 放行 VTEP loopback
+
   references:
   - type: vendor_doc
     url: https://www.h3c.com/cn/d_202206/vtep-igp

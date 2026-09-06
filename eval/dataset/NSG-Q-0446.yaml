@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: show ip bgp 10.1.1.2
     fix: 统一 add-path
+  - rank: 3
+    cause: ADD-PATH 未针对该邻居开启发送/接收方向
+    probability: 0.1
+    verify: show ip bgp neighbors 10.1.1.2 | include add-path
+    fix: neighbor send/receive add-path 全开
+
   references:
   - type: vendor_doc
     url: https://www.arista.com/en/docs/eos-4.24/bgp-add-path

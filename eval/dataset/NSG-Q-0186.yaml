@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: show ipv6 route
     fix: ipv6 unicast-routing 启用
+  - rank: 3
+    cause: neighbor 未配 ipv6 activate 仅在 family 内宣告
+    probability: 0.05
+    verify: show ip bgp ipv6 unicast summary
+    fix: address-family ipv6 unicast → activate
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/bgp-ipv6-afi

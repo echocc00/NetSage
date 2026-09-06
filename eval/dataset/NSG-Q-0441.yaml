@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display bgp ipv6 network
     fix: 配 network
+  - rank: 3
+    cause: IPv6 unicast 未启用导致通告被拒
+    probability: 0.1
+    verify: display bgp ipv6 | include unicast
+    fix: bgp ipv6 unicast 开启
+
   references:
   - type: vendor_doc
     url: https://www.h3c.com/cn/d_202206/ipv6-bgp-filter

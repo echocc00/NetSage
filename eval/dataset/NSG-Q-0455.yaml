@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display gnmi session
     fix: 修认证
+  - rank: 3
+    cause: gNMI 端口/订阅粒度不匹配
+    probability: 0.1
+    verify: display telemetry | include port
+    fix: 订阅口径统一
+
   references:
   - type: vendor_doc
     url: https://www.h3c.com/cn/d_202206/telemetry-gnmi

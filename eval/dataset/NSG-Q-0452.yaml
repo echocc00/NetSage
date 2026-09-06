@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display macsec
     fix: 配 mode
+  - rank: 3
+    cause: MACsec 需统一 cipher suite
+    probability: 0.1
+    verify: display macsec | include cipher
+    fix: 两端 cipher 一致
+
   references:
   - type: vendor_doc
     url: https://support.huawei.com/vrp-macsec

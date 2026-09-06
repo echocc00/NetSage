@@ -33,6 +33,12 @@ expected_output:
     evidence: []
     verify: show ospf configuration
     fix: 确认 nssa 配置
+  - rank: 3
+    cause: NSSA 转 type-5 的 ABR 漏 always-translate
+    probability: 0.1
+    verify: show ospf database nssa-external
+    fix: set area 0 nssa 转译开
+
   references:
   - type: vendor_doc
     url: https://www.juniper.net/documentation/junos-21.2/ospf-nssa-export

@@ -33,6 +33,12 @@ expected_output:
     evidence: []
     verify: show ipv6 router
     fix: 修改 O-flag
+  - rank: 3
+    cause: RA 中 M/O flag 被网关策略覆盖
+    probability: 0.05
+    verify: show ipv6 interface | include Managed
+    fix: 与 DHCPv6 协调
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/ipv6-slaac-m-flag

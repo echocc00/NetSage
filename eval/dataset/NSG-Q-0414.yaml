@@ -31,6 +31,12 @@ expected_output:
     evidence: []
     verify: show bgp summary
     fix: 调整 router-id
+  - rank: 3
+    cause: confed 邻居未 enable 地址族
+    probability: 0.1
+    verify: show bgp summary | include confed
+    fix: address-family 内 enable peer
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/bgp-confederation

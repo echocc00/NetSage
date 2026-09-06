@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display bgp peer verbose
     fix: 重启 peer
+  - rank: 3
+    cause: 对端在 AS-Path 重复段被丢弃而非放行
+    probability: 0.1
+    verify: display bgp routing-table | include as-path
+    fix: peer allow-as-in 数量校准
+
   references:
   - type: vendor_doc
     url: https://support.huawei.com/vrp-bgp-allow-as-in

@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: show ipv6 ospf interface
     fix: 启 IPv6 link-local
+  - rank: 3
+    cause: 接口网络类型 p2mp 与对端不匹配
+    probability: 0.1
+    verify: show ipv6 ospf interface | include Network
+    fix: 统一 network-type p2p
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/ospfv3-2-way

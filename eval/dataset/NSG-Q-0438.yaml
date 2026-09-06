@@ -31,6 +31,12 @@ expected_output:
     evidence: []
     verify: display filter-policy
     fix: prefix-list 限制
+  - rank: 3
+    cause: 客户侧误用 default 收 full table
+    probability: 0.1
+    verify: display bgp routing-table statistics
+    fix: peer 仅宣告所需前缀
+
   references:
   - type: vendor_doc
     url: https://www.h3c.com/cn/d_202206/bgp-max-prefix

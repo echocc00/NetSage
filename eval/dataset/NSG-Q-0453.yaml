@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: show mka
     fix: 修 priority
+  - rank: 3
+    cause: MKA 需同一 key server 优先级
+    probability: 0.05
+    verify: show mka sessions | include key-server
+    fix: priority 高者固定
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/macsec-mka

@@ -33,6 +33,12 @@ expected_output:
     evidence: []
     verify: display ipv6 neighbors
     fix: 同步接口
+  - rank: 3
+    cause: IPv6 地址族未激活，fe80 邻居不进入 Established
+    probability: 0.05
+    verify: display bgp ipv6 peer | include active
+    fix: peer 2001:db8::2 activate
+
   references:
   - type: vendor_doc
     url: https://www.h3c.com/cn/d_202206/bgp-ipv6-link-local

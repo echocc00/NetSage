@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display ospf
     fix: 统一认证
+  - rank: 3
+    cause: OSPF process 间重发布导致路由环
+    probability: 0.1
+    verify: display ospf routing | include redist
+    fix: 检查重发布方向
+
   references:
   - type: vendor_doc
     url: https://www.h3c.com/cn/d_202206/ospf-router-id

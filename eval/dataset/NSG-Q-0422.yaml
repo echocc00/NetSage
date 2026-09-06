@@ -33,6 +33,12 @@ expected_output:
     evidence: []
     verify: display ip routing-table
     fix: 把 Lo 通告到 IGP
+  - rank: 3
+    cause: RR 客户端地址族未 activate
+    probability: 0.05
+    verify: display bgp peer | include activate
+    fix: address-family ipv4 → peer activate
+
   references:
   - type: vendor_doc
     url: https://support.huawei.com/vrp-bgp-ibgp

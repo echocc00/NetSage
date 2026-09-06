@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display ospfv3
     fix: 配 ASBR NSSA
+  - rank: 3
+    cause: NSSA ABR 未转译 type-7→type-5
+    probability: 0.1
+    verify: display ospfv3 lsdb | include type-5
+    fix: always-translate 开启
+
   references:
   - type: vendor_doc
     url: https://support.huawei.com/vrp-ospfv3-nssa

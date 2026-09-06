@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display tacacs-accounting
     fix: 对齐 key
+  - rank: 3
+    cause: TACACS+ 需单连接模式避免乱序
+    probability: 0.1
+    verify: display tacacs | include single
+    fix: single-connection 开启
+
   references:
   - type: vendor_doc
     url: https://www.h3c.com/cn/d_202206/tacacs

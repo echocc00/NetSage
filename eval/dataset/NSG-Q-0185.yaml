@@ -31,6 +31,12 @@ expected_output:
     evidence: []
     verify: show hsrp detail
     fix: 删除认证
+  - rank: 3
+    cause: HSRP 组号/虚拟 IP 不一致
+    probability: 0.1
+    verify: show hsrp brief | include group
+    fix: 两端同组同 VIP
+
   references:
   - type: vendor_doc
     url: https://www.arista.com/en/docs/eos-4.24/hsrp

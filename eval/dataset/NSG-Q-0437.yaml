@@ -31,6 +31,12 @@ expected_output:
     evidence: []
     verify: show route instance
     fix: 统一 RT
+  - rank: 3
+    cause: Symmetric IRB 缺网关 VNI 互通
+    probability: 0.1
+    verify: show evpn instance | include L3
+    fix: 配 L3 VNI + 网关
+
   references:
   - type: vendor_doc
     url: https://www.juniper.net/documentation/junos-21.2/evpn-irb

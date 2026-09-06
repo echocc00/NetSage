@@ -30,6 +30,12 @@ expected_output:
     probability: 0.3
     verify: show nve peer
     fix: 补 peer-vtep
+  - rank: 3
+    cause: nve peer-vtep 缺对端导致 head-end 不发
+    probability: 0.1
+    verify: show nve peers | include 10.0.0.2
+    fix: member vni + peer-vtep 补齐
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/nx-os-vxlan-bum

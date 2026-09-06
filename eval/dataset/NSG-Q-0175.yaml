@@ -31,6 +31,12 @@ expected_output:
     probability: 0.2
     verify: display ospf interface | include Auth
     fix: 统一 cipher / plain
+  - rank: 3
+    cause: hello 认证类型不一致（区域 vs 接口）
+    probability: 0.1
+    verify: display ospf interface | include Auth
+    fix: 区域认证下沉到接口一致
+
   references:
   - type: vendor_doc
     url: https://support.huawei.com/vrp-ospf-authentication

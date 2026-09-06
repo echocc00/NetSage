@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display ipv6 interface
     fix: 配 link-local
+  - rank: 3
+    cause: RA 被静态默认路由抑制
+    probability: 0.05
+    verify: display ipv6 nd ra | include default
+    fix: 删除冲突默认路由
+
   references:
   - type: vendor_doc
     url: https://www.h3c.com/cn/d_202206/ipv6-ra

@@ -30,6 +30,12 @@ expected_output:
     probability: 0.15
     verify: show ip ospf
     fix: area stub 默认 cost 1
+  - rank: 3
+    cause: stub 区域不允许 type-5 默认路由
+    probability: 0.1
+    verify: show ip ospf database external
+    fix: 改 totally-stub + 默认 cost
+
   references:
   - type: vendor_doc
     url: https://www.arista.com/en/docs/eos-4.24/ospf-default

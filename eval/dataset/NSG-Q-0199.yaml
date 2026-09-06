@@ -33,6 +33,12 @@ expected_output:
     evidence: []
     verify: show bgp ipv6 unicast
     fix: set metric
+  - rank: 3
+    cause: ipv6 unicast 未 activate 导致 RT 无法交换
+    probability: 0.1
+    verify: show bgp ipv6 unicast summary
+    fix: activate + 重发 route-map
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/bgp-ipv6-route-map

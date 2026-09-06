@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display ipv6 neighbors
     fix: 清邻居
+  - rank: 3
+    cause: 接口实例号不符使邻居隔离
+    probability: 0.1
+    verify: display ospfv3 interface | include instance
+    fix: 两端 instance 一致
+
   references:
   - type: vendor_doc
     url: https://support.huawei.com/vrp-ospfv3-link-local

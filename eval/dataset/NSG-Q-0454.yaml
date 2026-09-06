@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: show telemetry sensor
     fix: 修 sensor path
+  - rank: 3
+    cause: gRPC 端口被防火墙拦
+    probability: 0.1
+    verify: show telemetry | include port
+    fix: 放行 50051
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/nx-os-telemetry

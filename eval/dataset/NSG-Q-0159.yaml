@@ -35,6 +35,12 @@ expected_output:
     probability: 0.3
     verify: show bgp statistics
     fix: teardown 95
+  - rank: 3
+    cause: 重启窗口内既有前缀与新前缀叠加计数，超 teardown 阈值
+    probability: 0.1
+    verify: show bgp neighbor 10.1.1.2 | match messages
+    fix: prefix-limit teardown 前先观察收敛
+
   references:
   - type: vendor_doc
     url: https://www.juniper.net/documentation/junos-21.2/bgp-prefix-limit

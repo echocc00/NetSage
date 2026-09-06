@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: show ip mroute
     fix: 查 RPF
+  - rank: 3
+    cause: MSDP peer 需双向建连才转发 SA
+    probability: 0.1
+    verify: show ip msdp peer | include up
+    fix: 双向 msdp peer
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/msdp-default

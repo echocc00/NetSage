@@ -33,6 +33,12 @@ expected_output:
     probability: 0.2
     verify: show ip bgp neighbors 10.1.1.2 | include restart
     fix: clear ip bgp 10.1.1.2 soft
+  - rank: 3
+    cause: 邻居 clear/重启后未收敛即被计数，瞬时超限触发 shutdown
+    probability: 0.1
+    verify: show ip bgp neighbors 10.1.1.2 | include messages
+    fix: router bgp → bgp update-delay 后观察再重配
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/bgp-maximum-prefix

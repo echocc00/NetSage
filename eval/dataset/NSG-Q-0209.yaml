@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: 测试 DHCP server
     fix: 修 server 配置
+  - rank: 3
+    cause: relay 端 interface 缺 ip helper 仅单方向
+    probability: 0.1
+    verify: show running-config interface vlan10
+    fix: 入/出 helper-address 都配
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/dhcp-relay

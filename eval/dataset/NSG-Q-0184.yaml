@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: show vrrp interface
     fix: 认证 + 间隔对齐
+  - rank: 3
+    cause: VRRP 认证 key 不一致导致互斥
+    probability: 0.1
+    verify: show vrrp detail | include auth
+    fix: 统一认证
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/vrrp-dual-master

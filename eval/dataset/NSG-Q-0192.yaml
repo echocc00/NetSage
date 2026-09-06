@@ -34,6 +34,12 @@ expected_output:
     evidence: []
     verify: show ip dhcp snooping statistics
     fix: 关闭 option 82
+  - rank: 3
+    cause: DHCP 中继未开启使请求到不了 snooping
+    probability: 0.1
+    verify: show ip dhcp snooping | include relay
+    fix: ip dhcp relay 开启
+
   references:
   - type: vendor_doc
     url: https://www.cisco.com/c/en/us/support/dhcp-snooping

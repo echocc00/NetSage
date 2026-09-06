@@ -110,7 +110,8 @@ python eval/runner/review_dataset.py   # → eval/reports/question-review-v1.md
 
 覆盖：root_causes 数量/概率越界/verify·fix 缺失、perf 缺 bottleneck、title 模板味、占位/乱码残留、
 疑似重复（区分"编号系列变体" `设计 … N/M` 与真重复）、vendor×category 覆盖矩阵。
-首轮结论（513 题）：schema 0 失败、**0 真重复**、106 题 troubleshoot 仅 2 根因（复审候选）、200 对编号系列变体（规模梯度，属有意）。
+首轮结论（513 题）：schema 0 失败、**0 真重复**、200 对编号系列变体（规模梯度，属有意）。
+106 题 troubleshoot 仅 2 根因已补齐到 3（513/513 schema 通过，root_causes<3 归零）。
 
 ## 目录结构
 

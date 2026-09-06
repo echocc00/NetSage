@@ -32,6 +32,12 @@ expected_output:
     evidence: []
     verify: display ipsec sa
     fix: 统一 transform-set
+  - rank: 3
+    cause: IPsec 封装模式（tunnel vs transport）不一致
+    probability: 0.1
+    verify: display ipsec sa | include mode
+    fix: 两端封装模式统一
+
   references:
   - type: vendor_doc
     url: https://www.h3c.com/cn/d_202206/ipsec-transform
