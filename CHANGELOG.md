@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+### v0.5.0 阶段1 · 评测集质量复审基建（波1）
+
+- `eval/runner/review_dataset.py`：schema 之上叠深度质量扫描（root_causes 数量/概率越界/verify·fix 缺失、perf 缺 bottleneck、title 模板味、占位/乱码残留、疑似重复区分**编号系列变体** vs 真重复、vendor×category 覆盖矩阵），输出分层报告 `eval/reports/question-review-v1.md`；schema 失败或真重复 → 非零退出（CI 门禁）
+- 首轮 513 题：schema 0 失败、**0 真重复**、200 对编号系列变体（设计规模梯度，属有意）、106 题 troubleshoot 仅 2 根因（→ 人工复核候选清单）
+- CI eval-dataset job 增 quality-review step
+
 ### v0.5.0 阶段1 · per-tenant IdP（波1）
 
 - `Settings.oidc_tenants`（env JSON）：`{tenant_slug: {discovery_url, client_id, client_secret}}` 覆盖全局默认 IdP

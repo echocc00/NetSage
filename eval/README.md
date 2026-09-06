@@ -100,6 +100,18 @@ python eval/runner/__init__.py
 }
 ```
 
+## 质量复审（v0.5.0 起）
+
+`schema.py` 只保证结构可评测；`runner/review_dataset.py` 在其上做**深度质量扫描**并输出分层报告：
+
+```bash
+python eval/runner/review_dataset.py   # → eval/reports/question-review-v1.md
+```
+
+覆盖：root_causes 数量/概率越界/verify·fix 缺失、perf 缺 bottleneck、title 模板味、占位/乱码残留、
+疑似重复（区分"编号系列变体" `设计 … N/M` 与真重复）、vendor×category 覆盖矩阵。
+首轮结论（513 题）：schema 0 失败、**0 真重复**、106 题 troubleshoot 仅 2 根因（复审候选）、200 对编号系列变体（规模梯度，属有意）。
+
 ## 目录结构
 
 ```
@@ -107,8 +119,9 @@ eval/
 ├── dataset/          513 题 YAML（NSG-Q-0001 ~ NSG-Q-0519）
 ├── runner/
 │   ├── __init__.py   评测 Runner（加载 + 打分 + 报告）
-│   └── schema.py     题目 schema 校验器
-└── reports/          评测报告
+│   ├── schema.py     题目 schema 校验器
+│   └── review_dataset.py  深度质量复审（生成分层报告）
+└── reports/          评测报告 + 复审报告
 ```
 
 ## 测试层级（统计口径）

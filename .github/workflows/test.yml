@@ -91,6 +91,9 @@ jobs:
           sys.exit(0 if passed == total else 1)
           PY
 
+      - name: Quality review (no schema fail / no true dupes)
+        run: python eval/runner/review_dataset.py
+
   templates:
     name: Config templates render
     runs-on: ubuntu-latest
