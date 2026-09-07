@@ -114,6 +114,16 @@ doc/                  技术方案 + 开发计划 + Phase 规划 + DR Runbook
 
 ## 架构
 
+<p align="center">
+  <img src="docs/architecture.svg" alt="Architecture diagram" width="900">
+</p>
+
+
+<p align="center">
+  <img src="docs/architecture-sequence.svg" alt="Architecture sequence diagram" width="900">
+</p>
+
+
 ```mermaid
 flowchart TB
     classDef frontend fill:#083344,stroke:#22d3ee,color:#fff
