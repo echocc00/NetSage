@@ -1,40 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 380" role="img" lang="en">
-<defs>
-          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" class="m-default" />
-          </marker>
-          <marker id="arrowhead-emphasis" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" class="m-emphasis" />
-          </marker>
-          <marker id="arrowhead-security" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" class="m-security" />
-          </marker>
-          <marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" class="m-dashed" />
-          </marker>
-          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-            <path d="M 40 0 L 0 0 0 40" class="c-grid" stroke-width="0.5"/>
-          </pattern>
-        </defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 348" role="img" lang="en">
 
         <title id="archify-diagram-title">NetSage</title>
         <desc id="archify-diagram-description">AI network engineer</desc>
         <!-- Definitions -->
         <defs>
           <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" class="m-default" />
+            <polygon points="0 0, 10 3.5, 0 7" class="m-default" style="fill: #948978" />
           </marker>
           <marker id="arrowhead-emphasis" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" class="m-emphasis" />
+            <polygon points="0 0, 10 3.5, 0 7" class="m-emphasis" style="fill: #dd6b3d" />
           </marker>
           <marker id="arrowhead-security" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" class="m-security" />
+            <polygon points="0 0, 10 3.5, 0 7" class="m-security" style="fill: #df9085" />
           </marker>
           <marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" class="m-dashed" />
+            <polygon points="0 0, 10 3.5, 0 7" class="m-dashed" style="fill: #c0a4d0" />
           </marker>
           <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-            <path d="M 40 0 L 0 0 0 40" class="c-grid" stroke-width="0.5"/>
+            <path d="M 40 0 L 0 0 0 40" class="c-grid" style="stroke-dasharray: 1 3; opacity: 0.78" stroke-width="0.5"/>
           </pattern>
         </defs>
 
@@ -45,134 +28,134 @@
 
 
         <!-- Connection paths (before components for correct z-order) -->
-        <path data-edge-from="op" data-edge-to="llm" data-edge-label="intent" data-edge-key="0" data-edge-id="op-llm" data-composition-points="200,90;310,90" d="M 200 90 L 310 90" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="llm" data-edge-to="jinja" data-edge-label="render" data-edge-key="1" data-edge-id="llm-jinja" data-composition-points="385,120;385,220" d="M 385 120 L 385 220" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="llm" data-edge-to="nornir" data-edge-label="instruct" data-edge-key="2" data-edge-id="llm-nornir" data-composition-points="460,83;560,83" d="M 460 83 L 560 83" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="nornir" data-edge-to="netmiko" data-edge-label="connect" data-edge-key="3" data-edge-id="nornir-netmiko" data-composition-points="710,90;760,90;760,170;810,170" d="M 710 90 L 752 90 Q 760 90 760 98 L 760 162 Q 760 170 768 170 L 810 170" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="nornir" data-edge-to="ansible" data-edge-label="generate" data-edge-key="4" data-edge-id="nornir-ansible" data-composition-points="710,90;810,90" d="M 710 90 L 810 90" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="llm" data-edge-to="rdma" data-edge-label="optimize" data-edge-key="5" data-edge-id="llm-rdma" data-composition-points="460,97;484,97;484,250;810,250" d="M 460 97 L 476 97 Q 484 97 484 105 L 484 242 Q 484 250 492 250 L 810 250" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="netmiko" data-edge-to="devices" data-edge-label="SSH" data-edge-key="6" data-edge-id="netmiko-devices" data-composition-points="980,170;1020,170;1020,90;1060,90" d="M 980 170 L 1012 170 Q 1020 170 1020 162 L 1020 98 Q 1020 90 1028 90 L 1060 90" class="a-security" stroke-width="1.5" marker-end="url(#arrowhead-security)"/>
+        <path data-edge-from="op" data-edge-to="llm" data-edge-label="intent" data-edge-key="0" data-edge-id="op-llm" data-composition-points="200,90;310,90" d="M 200 90 L 310 90" class="a-default" style="stroke: #948978" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="llm" data-edge-to="jinja" data-edge-label="render" data-edge-key="1" data-edge-id="llm-jinja" data-composition-points="385,120;385,220" d="M 385 120 L 385 220" class="a-default" style="stroke: #948978" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="llm" data-edge-to="nornir" data-edge-label="instruct" data-edge-key="2" data-edge-id="llm-nornir" data-composition-points="460,83;560,83" d="M 460 83 L 560 83" class="a-default" style="stroke: #948978" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="nornir" data-edge-to="netmiko" data-edge-label="connect" data-edge-key="3" data-edge-id="nornir-netmiko" data-composition-points="710,90;760,90;760,170;810,170" d="M 710 90 L 752 90 Q 760 90 760 98 L 760 162 Q 760 170 768 170 L 810 170" class="a-default" style="stroke: #948978" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="nornir" data-edge-to="ansible" data-edge-label="generate" data-edge-key="4" data-edge-id="nornir-ansible" data-composition-points="710,90;810,90" d="M 710 90 L 810 90" class="a-default" style="stroke: #948978" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="llm" data-edge-to="rdma" data-edge-label="optimize" data-edge-key="5" data-edge-id="llm-rdma" data-composition-points="460,97;484,97;484,250;810,250" d="M 460 97 L 476 97 Q 484 97 484 105 L 484 242 Q 484 250 492 250 L 810 250" class="a-default" style="stroke: #948978" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="netmiko" data-edge-to="devices" data-edge-label="SSH" data-edge-key="6" data-edge-id="netmiko-devices" data-composition-points="980,170;1020,170;1020,90;1060,90" d="M 980 170 L 1012 170 Q 1020 170 1020 162 L 1020 98 Q 1020 90 1028 90 L 1060 90" class="a-security" style="stroke: #df9085; stroke-dasharray: 5,5" stroke-width="1.5" marker-end="url(#arrowhead-security)"/>
 
         <!-- Components -->
         <g id="node-op" data-node-id="op" data-node-label="Operator" tabindex="0" role="button" aria-label="Focus Operator, CLI / chat, Architecture component" aria-pressed="false" data-node-kind="external" data-node-sublabel="CLI / chat" data-node-context="Architecture component">
           <title>Operator · CLI / chat · Architecture component</title>
-          <rect x="60" y="60" width="140" height="60" rx="6" class="c-mask"/>
-          <rect x="60" y="60" width="140" height="60" rx="6" class="c-external" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="external" class="semantic-sigil s-external" transform="translate(66 66) scale(0.6875)">
+          <rect x="60" y="60" width="140" height="60" rx="6" class="c-mask" style="fill: #231f18"/>
+          <rect x="60" y="60" width="140" height="60" rx="6" class="c-external" style="fill: rgba(126, 115, 96, 0.18); stroke: #b8ad99" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="external" class="semantic-sigil s-external" style="stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; opacity: 0.76; color: #b8ad99" transform="translate(66 66) scale(0.6875)">
             <rect x="2.5" y="5" width="8.5" height="8" rx="1.5"/>
             <path d="M8 2.5h5.5V8M13.5 2.5 7.5 8.5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="130" y="88" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Operator</text>
-        <text data-detail="context" x="130" y="104" class="t-muted" font-size="9" text-anchor="middle">CLI / chat</text>
+          <text data-node-label="" data-detail-anchor="" x="130" y="88" class="t-primary" style="fill: #f4eddf" font-size="11" font-weight="600" text-anchor="middle">Operator</text>
+        <text data-detail="context" x="130" y="104" class="t-muted" style="fill: #b9ae9b" font-size="9" text-anchor="middle">CLI / chat</text>
         </g>
 
         <g id="node-llm" data-node-id="llm" data-node-label="LLM" tabindex="0" role="button" aria-label="Focus LLM, multi-vendor, Architecture component" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="multi-vendor" data-node-tag="planner + reasoning" data-node-context="Architecture component">
           <title>LLM · multi-vendor · Architecture component · planner + reasoning</title>
-          <rect x="310" y="60" width="150" height="60" rx="6" class="c-mask"/>
-          <rect x="310" y="60" width="150" height="60" rx="6" class="c-cloud" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" transform="translate(316 66) scale(0.6875)">
+          <rect x="310" y="60" width="150" height="60" rx="6" class="c-mask" style="fill: #231f18"/>
+          <rect x="310" y="60" width="150" height="60" rx="6" class="c-cloud" style="fill: rgba(170, 119, 49, 0.16); stroke: #d8ad68" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" style="stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; opacity: 0.76; color: #d8ad68" transform="translate(316 66) scale(0.6875)">
             <path d="M4.3 12.5h7.3a2.4 2.4 0 0 0 .2-4.8 4 4 0 0 0-7.5-1.3A3.1 3.1 0 0 0 4.3 12.5Z"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="385" y="88" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">LLM</text>
-        <text data-detail="context" x="385" y="104" class="t-muted" font-size="9" text-anchor="middle">multi-vendor</text>
-        <text data-detail="fine" x="385" y="112" class="t-cloud" font-size="7" text-anchor="middle">planner + reasoning</text>
+          <text data-node-label="" data-detail-anchor="" x="385" y="88" class="t-primary" style="fill: #f4eddf" font-size="11" font-weight="600" text-anchor="middle">LLM</text>
+        <text data-detail="context" x="385" y="104" class="t-muted" style="fill: #b9ae9b" font-size="9" text-anchor="middle">multi-vendor</text>
+        <text data-detail="fine" x="385" y="112" class="t-cloud" style="fill: #d8ad68" font-size="7" text-anchor="middle">planner + reasoning</text>
         </g>
 
         <g id="node-jinja" data-node-id="jinja" data-node-label="Jinja2" tabindex="0" role="button" aria-label="Focus Jinja2, config templates, Architecture component" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="config templates" data-node-context="Architecture component">
           <title>Jinja2 · config templates · Architecture component</title>
-          <rect x="310" y="220" width="150" height="60" rx="6" class="c-mask"/>
-          <rect x="310" y="220" width="150" height="60" rx="6" class="c-cloud" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" transform="translate(316 226) scale(0.6875)">
+          <rect x="310" y="220" width="150" height="60" rx="6" class="c-mask" style="fill: #231f18"/>
+          <rect x="310" y="220" width="150" height="60" rx="6" class="c-cloud" style="fill: rgba(170, 119, 49, 0.16); stroke: #d8ad68" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" style="stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; opacity: 0.76; color: #d8ad68" transform="translate(316 226) scale(0.6875)">
             <path d="M4.3 12.5h7.3a2.4 2.4 0 0 0 .2-4.8 4 4 0 0 0-7.5-1.3A3.1 3.1 0 0 0 4.3 12.5Z"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="385" y="248" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Jinja2</text>
-        <text data-detail="context" x="385" y="264" class="t-muted" font-size="9" text-anchor="middle">config templates</text>
+          <text data-node-label="" data-detail-anchor="" x="385" y="248" class="t-primary" style="fill: #f4eddf" font-size="11" font-weight="600" text-anchor="middle">Jinja2</text>
+        <text data-detail="context" x="385" y="264" class="t-muted" style="fill: #b9ae9b" font-size="9" text-anchor="middle">config templates</text>
         </g>
 
         <g id="node-nornir" data-node-id="nornir" data-node-label="Nornir" tabindex="0" role="button" aria-label="Focus Nornir, Python orchestrator, Architecture component" aria-pressed="false" data-node-kind="backend" data-node-sublabel="Python orchestrator" data-node-tag="network ops" data-node-context="Architecture component">
           <title>Nornir · Python orchestrator · Architecture component · network ops</title>
-          <rect x="560" y="60" width="150" height="60" rx="6" class="c-mask"/>
-          <rect x="560" y="60" width="150" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(566 66) scale(0.6875)">
+          <rect x="560" y="60" width="150" height="60" rx="6" class="c-mask" style="fill: #231f18"/>
+          <rect x="560" y="60" width="150" height="60" rx="6" class="c-backend" style="fill: rgba(63, 132, 92, 0.16); stroke: #8fc29e" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" style="stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; opacity: 0.76; color: #8fc29e" transform="translate(566 66) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="635" y="88" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Nornir</text>
-        <text data-detail="context" x="635" y="104" class="t-muted" font-size="9" text-anchor="middle">Python orchestrator</text>
-        <text data-detail="fine" x="635" y="112" class="t-backend" font-size="7" text-anchor="middle">network ops</text>
+          <text data-node-label="" data-detail-anchor="" x="635" y="88" class="t-primary" style="fill: #f4eddf" font-size="11" font-weight="600" text-anchor="middle">Nornir</text>
+        <text data-detail="context" x="635" y="104" class="t-muted" style="fill: #b9ae9b" font-size="9" text-anchor="middle">Python orchestrator</text>
+        <text data-detail="fine" x="635" y="112" class="t-backend" style="fill: #8fc29e" font-size="7" text-anchor="middle">network ops</text>
         </g>
 
         <g id="node-netmiko" data-node-id="netmiko" data-node-label="Netmiko + NAPALM" tabindex="0" role="button" aria-label="Focus Netmiko + NAPALM, device drivers, Architecture component" aria-pressed="false" data-node-kind="backend" data-node-sublabel="device drivers" data-node-context="Architecture component">
           <title>Netmiko + NAPALM · device drivers · Architecture component</title>
-          <rect x="810" y="140" width="170" height="60" rx="6" class="c-mask"/>
-          <rect x="810" y="140" width="170" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(816 146) scale(0.6875)">
+          <rect x="810" y="140" width="170" height="60" rx="6" class="c-mask" style="fill: #231f18"/>
+          <rect x="810" y="140" width="170" height="60" rx="6" class="c-backend" style="fill: rgba(63, 132, 92, 0.16); stroke: #8fc29e" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" style="stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; opacity: 0.76; color: #8fc29e" transform="translate(816 146) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="895" y="168" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Netmiko + NAPALM</text>
-        <text data-detail="context" x="895" y="184" class="t-muted" font-size="9" text-anchor="middle">device drivers</text>
+          <text data-node-label="" data-detail-anchor="" x="895" y="168" class="t-primary" style="fill: #f4eddf" font-size="11" font-weight="600" text-anchor="middle">Netmiko + NAPALM</text>
+        <text data-detail="context" x="895" y="184" class="t-muted" style="fill: #b9ae9b" font-size="9" text-anchor="middle">device drivers</text>
         </g>
 
         <g id="node-ansible" data-node-id="ansible" data-node-label="Ansible" tabindex="0" role="button" aria-label="Focus Ansible, config gen, Architecture component" aria-pressed="false" data-node-kind="backend" data-node-sublabel="config gen" data-node-context="Architecture component">
           <title>Ansible · config gen · Architecture component</title>
-          <rect x="810" y="60" width="170" height="60" rx="6" class="c-mask"/>
-          <rect x="810" y="60" width="170" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(816 66) scale(0.6875)">
+          <rect x="810" y="60" width="170" height="60" rx="6" class="c-mask" style="fill: #231f18"/>
+          <rect x="810" y="60" width="170" height="60" rx="6" class="c-backend" style="fill: rgba(63, 132, 92, 0.16); stroke: #8fc29e" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" style="stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; opacity: 0.76; color: #8fc29e" transform="translate(816 66) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="895" y="88" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Ansible</text>
-        <text data-detail="context" x="895" y="104" class="t-muted" font-size="9" text-anchor="middle">config gen</text>
+          <text data-node-label="" data-detail-anchor="" x="895" y="88" class="t-primary" style="fill: #f4eddf" font-size="11" font-weight="600" text-anchor="middle">Ansible</text>
+        <text data-detail="context" x="895" y="104" class="t-muted" style="fill: #b9ae9b" font-size="9" text-anchor="middle">config gen</text>
         </g>
 
         <g id="node-rdma" data-node-id="rdma" data-node-label="RDMA tuning" tabindex="0" role="button" aria-label="Focus RDMA tuning, perf toolkit, Architecture component" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="perf toolkit" data-node-context="Architecture component">
           <title>RDMA tuning · perf toolkit · Architecture component</title>
-          <rect x="810" y="220" width="170" height="60" rx="6" class="c-mask"/>
-          <rect x="810" y="220" width="170" height="60" rx="6" class="c-cloud" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" transform="translate(816 226) scale(0.6875)">
+          <rect x="810" y="220" width="170" height="60" rx="6" class="c-mask" style="fill: #231f18"/>
+          <rect x="810" y="220" width="170" height="60" rx="6" class="c-cloud" style="fill: rgba(170, 119, 49, 0.16); stroke: #d8ad68" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" style="stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; opacity: 0.76; color: #d8ad68" transform="translate(816 226) scale(0.6875)">
             <path d="M4.3 12.5h7.3a2.4 2.4 0 0 0 .2-4.8 4 4 0 0 0-7.5-1.3A3.1 3.1 0 0 0 4.3 12.5Z"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="895" y="248" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">RDMA tuning</text>
-        <text data-detail="context" x="895" y="264" class="t-muted" font-size="9" text-anchor="middle">perf toolkit</text>
+          <text data-node-label="" data-detail-anchor="" x="895" y="248" class="t-primary" style="fill: #f4eddf" font-size="11" font-weight="600" text-anchor="middle">RDMA tuning</text>
+        <text data-detail="context" x="895" y="264" class="t-muted" style="fill: #b9ae9b" font-size="9" text-anchor="middle">perf toolkit</text>
         </g>
 
         <g id="node-devices" data-node-id="devices" data-node-label="Network Devices" tabindex="0" role="button" aria-label="Focus Network Devices, routers / switches, Architecture component" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="routers / switches" data-node-context="Architecture component">
           <title>Network Devices · routers / switches · Architecture component</title>
-          <rect x="1060" y="60" width="180" height="60" rx="6" class="c-mask"/>
-          <rect x="1060" y="60" width="180" height="60" rx="6" class="c-cloud" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" transform="translate(1066 66) scale(0.6875)">
+          <rect x="1060" y="60" width="180" height="60" rx="6" class="c-mask" style="fill: #231f18"/>
+          <rect x="1060" y="60" width="180" height="60" rx="6" class="c-cloud" style="fill: rgba(170, 119, 49, 0.16); stroke: #d8ad68" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" style="stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; opacity: 0.76; color: #d8ad68" transform="translate(1066 66) scale(0.6875)">
             <path d="M4.3 12.5h7.3a2.4 2.4 0 0 0 .2-4.8 4 4 0 0 0-7.5-1.3A3.1 3.1 0 0 0 4.3 12.5Z"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="1150" y="88" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Network Devices</text>
-        <text data-detail="context" x="1150" y="104" class="t-muted" font-size="9" text-anchor="middle">routers / switches</text>
+          <text data-node-label="" data-detail-anchor="" x="1150" y="88" class="t-primary" style="fill: #f4eddf" font-size="11" font-weight="600" text-anchor="middle">Network Devices</text>
+        <text data-detail="context" x="1150" y="104" class="t-muted" style="fill: #b9ae9b" font-size="9" text-anchor="middle">routers / switches</text>
         </g>
 
         <!-- Connection labels -->
         <g data-detail="context" data-edge-from="op" data-edge-to="llm" data-edge-label="intent" data-edge-key="0" data-edge-id="op-llm">
-          <rect x="235.6" y="70" width="38.8" height="14" rx="3" class="c-mask"/>
-          <text x="255" y="80" class="t-muted" font-size="8" text-anchor="middle">intent</text>
+          <rect x="235.6" y="70" width="38.8" height="14" rx="3" class="c-mask" style="fill: #231f18"/>
+          <text x="255" y="80" class="t-muted" style="fill: #b9ae9b" font-size="8" text-anchor="middle">intent</text>
         </g>
         <g data-detail="context" data-edge-from="llm" data-edge-to="jinja" data-edge-label="render" data-edge-key="1" data-edge-id="llm-jinja">
-          <rect x="365.6" y="165" width="38.8" height="14" rx="3" class="c-mask"/>
-          <text x="385" y="175" class="t-muted" font-size="8" text-anchor="middle">render</text>
+          <rect x="365.6" y="165" width="38.8" height="14" rx="3" class="c-mask" style="fill: #231f18"/>
+          <text x="385" y="175" class="t-muted" style="fill: #b9ae9b" font-size="8" text-anchor="middle">render</text>
         </g>
         <g data-detail="context" data-edge-from="llm" data-edge-to="nornir" data-edge-label="instruct" data-edge-key="2" data-edge-id="llm-nornir">
-          <rect x="485.8" y="63" width="48.4" height="14" rx="3" class="c-mask"/>
-          <text x="510" y="73" class="t-muted" font-size="8" text-anchor="middle">instruct</text>
+          <rect x="485.8" y="63" width="48.4" height="14" rx="3" class="c-mask" style="fill: #231f18"/>
+          <text x="510" y="73" class="t-muted" style="fill: #b9ae9b" font-size="8" text-anchor="middle">instruct</text>
         </g>
         <g data-detail="context" data-edge-from="nornir" data-edge-to="netmiko" data-edge-label="connect" data-edge-key="3" data-edge-id="nornir-netmiko">
-          <rect x="713.2" y="40" width="43.6" height="14" rx="3" class="c-mask"/>
-          <text x="735" y="50" class="t-muted" font-size="8" text-anchor="middle">connect</text>
+          <rect x="713.2" y="40" width="43.6" height="14" rx="3" class="c-mask" style="fill: #231f18"/>
+          <text x="735" y="50" class="t-muted" style="fill: #b9ae9b" font-size="8" text-anchor="middle">connect</text>
         </g>
         <g data-detail="context" data-edge-from="nornir" data-edge-to="ansible" data-edge-label="generate" data-edge-key="4" data-edge-id="nornir-ansible">
-          <rect x="675.8" y="190" width="48.4" height="14" rx="3" class="c-mask"/>
-          <text x="700" y="200" class="t-muted" font-size="8" text-anchor="middle">generate</text>
+          <rect x="675.8" y="190" width="48.4" height="14" rx="3" class="c-mask" style="fill: #231f18"/>
+          <text x="700" y="200" class="t-muted" style="fill: #b9ae9b" font-size="8" text-anchor="middle">generate</text>
         </g>
         <g data-detail="context" data-edge-from="llm" data-edge-to="rdma" data-edge-label="optimize" data-edge-key="5" data-edge-id="llm-rdma">
-          <rect x="459.8" y="153.5" width="48.4" height="14" rx="3" class="c-mask"/>
-          <text x="484" y="163.5" class="t-muted" font-size="8" text-anchor="middle">optimize</text>
+          <rect x="459.8" y="153.5" width="48.4" height="14" rx="3" class="c-mask" style="fill: #231f18"/>
+          <text x="484" y="163.5" class="t-muted" style="fill: #b9ae9b" font-size="8" text-anchor="middle">optimize</text>
         </g>
         <g data-detail="context" data-edge-from="netmiko" data-edge-to="devices" data-edge-label="SSH" data-edge-key="6" data-edge-id="netmiko-devices">
-          <rect x="1005" y="110" width="30" height="14" rx="3" class="c-mask"/>
-          <text x="1020" y="120" class="t-security" font-size="8" text-anchor="middle">SSH</text>
+          <rect x="1005" y="110" width="30" height="14" rx="3" class="c-mask" style="fill: #231f18"/>
+          <text x="1020" y="120" class="t-security" style="fill: #df9085" font-size="8" text-anchor="middle">SSH</text>
         </g>
 
         <!-- Boundary labels (foreground masks keep routes out of titles) -->
@@ -180,18 +163,18 @@
 
         <!-- Legend -->
         <g data-legend="" data-legend-bridge="">
-          <text x="40" y="312" class="t-primary" font-size="12" font-weight="650">Legend</text>
+          <text x="40" y="312" class="t-primary" style="fill: #f4eddf" font-size="12" font-weight="650">Legend</text>
           <g data-legend-semantic-kind="backend" data-legend-kind="backend" data-legend-label="Backend" data-legend-x="40" data-legend-baseline="332" data-legend-width="78">
-            <rect x="40" y="323" width="16" height="10" rx="2.5" class="c-backend" stroke-width="1"/>
-            <text x="62" y="332" class="t-muted" font-size="10" font-weight="500">Backend</text>
+            <rect x="40" y="323" width="16" height="10" rx="2.5" class="c-backend" style="fill: rgba(63, 132, 92, 0.16); stroke: #8fc29e" stroke-width="1"/>
+            <text x="62" y="332" class="t-muted" style="fill: #b9ae9b" font-size="10" font-weight="500">Backend</text>
           </g>
           <g data-legend-semantic-kind="cloud" data-legend-kind="cloud" data-legend-label="Cloud" data-legend-x="140" data-legend-baseline="332" data-legend-width="68">
-            <rect x="140" y="323" width="16" height="10" rx="2.5" class="c-cloud" stroke-width="1"/>
-            <text x="162" y="332" class="t-muted" font-size="10" font-weight="500">Cloud</text>
+            <rect x="140" y="323" width="16" height="10" rx="2.5" class="c-cloud" style="fill: rgba(170, 119, 49, 0.16); stroke: #d8ad68" stroke-width="1"/>
+            <text x="162" y="332" class="t-muted" style="fill: #b9ae9b" font-size="10" font-weight="500">Cloud</text>
           </g>
           <g data-legend-semantic-kind="external" data-legend-kind="external" data-legend-label="External" data-legend-x="230" data-legend-baseline="332" data-legend-width="83">
-            <rect x="230" y="323" width="16" height="10" rx="2.5" class="c-external" stroke-width="1"/>
-            <text x="252" y="332" class="t-muted" font-size="10" font-weight="500">External</text>
+            <rect x="230" y="323" width="16" height="10" rx="2.5" class="c-external" style="fill: rgba(126, 115, 96, 0.18); stroke: #b8ad99" stroke-width="1"/>
+            <text x="252" y="332" class="t-muted" style="fill: #b9ae9b" font-size="10" font-weight="500">External</text>
           </g>
         </g>
       
