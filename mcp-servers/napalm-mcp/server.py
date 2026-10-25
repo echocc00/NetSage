@@ -5,19 +5,19 @@
 """
 from __future__ import annotations
 
-import os
 from typing import Any
 
 from fastmcp import FastMCP
 from napalm import get_network_driver
-
 from netsage_mcp_shared import MCPError, log
 
 mcp = FastMCP("napalm-mcp")
 
 # Phase 1 支持的厂商 driver 映射
+# （v0.5.1 实测修正：napalm 的 Cisco IOS/IOS-XE driver 名是 "ios"——
+#   原映射 "iosxe" 不是有效 driver，get_facts 即报 Cannot import）
 DRIVER_MAP: dict[str, str] = {
-    "cisco_iosxe": "iosxe",
+    "cisco_iosxe": "ios",
     "cisco_ios": "ios",
     "cisco_nxos": "nxos_ssh",
     "huawei_vrp": "huawei",

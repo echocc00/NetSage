@@ -1,6 +1,6 @@
 # NetSage · AI 网络工程师智能平台
 
-> **v0.4.2** · AI 辅助网络工程平台：让 AI 承担设计、配置生成、故障排查、安全审计、RDMA 调优等专业工作。
+> **v0.5.1** · AI 辅助网络工程平台：让 AI 承担设计、配置生成、故障排查、安全审计、RDMA 调优等专业工作。
 >
 
 [![Latest Release](https://img.shields.io/github/v/release/echocc00/NetSage?display_name=tag&style=flat-square)](https://github.com/echocc00/NetSage/releases/latest)
@@ -28,7 +28,7 @@
 
 > 基线文档：[最终技术方案 v2.0](doc/NetSage-最终技术方案-v2.0.md) · [开发计划](doc/NetSage-开发计划与详细设计-v1.0.md) · [Phase 2 规划](doc/NetSage-Phase2-规划-v1.0.md) · [Phase 3 规划](doc/NetSage-Phase3-规划-v1.0.md)
 
-## 能力总览（v0.4.2）
+## 能力总览（v0.5.1）
 
 | 模块 | 状态 | 说明 |
 |---|---|---|
@@ -36,7 +36,7 @@
 | 三道闸引擎 | 🟡 | 编排+状态机完整；默认 **mock 工具模式（闸门必过演示）**，`TOOLS_BACKEND=mcp` 经 HttpToolRegistry 走真实 MCP server（containerlab 仿真闸真实链路已实测 6/6；batfish/napalm 待对应环境） |
 | 多厂商接入 | 🟡 | 华为 VRP / Cisco IOS-XE / H3C / Juniper / Arista（NAPALM + netmiko + scrapli），86 配置模板。适配层就绪、napalm-mcp 真实现；厂商方言未全量实测 |
 | SourceOfTruth 双适配器 | ✅ | NetBox（真实 REST）+ Nautobot（Adapter，mock 模式默认）+ 自研 App v0.1 |
-| 安全合规 | ✅ | SecurityAuditor + 30 条基线规则（CIS + 厂商加固，行级否定语义）+ ACL 分析（报告结构演示，Batfish 真实集成待接线） |
+| 安全合规 | ✅ | SecurityAuditor + 30 条基线规则（CIS + 厂商加固，行级否定语义）+ ACL 分析（真实 Batfish searchFilters/接口引用检查，不可达时如实报 error） |
 | 故障排障 | ✅ | RCA 引擎（11 条 BGP/OSPF/VXLAN 规则 + 7 条 RDMA 规则，关键词加权排序）+ Troubleshooter Agent |
 | 自动化闭环 | ✅ | 诊断→修复→验证→审批→下发→监控。自动化率口径 (6-1)/6≈83%（步骤计数法），非实测运营值；生产 auto_approve 服务端强制 False |
 | 数据脱敏 | ✅ | Layer1/3 双层 + 内容特征自动分级（谎报白盒送配置会被升级拦截）+ 已接入 LLM 网关（黑盒阻断 + 灰盒强制脱敏 + 响应还原） |
@@ -222,7 +222,7 @@ flowchart TB
 
 | 项 | 现状 | 解锁条件 |
 |---|---|---|
-| 三道闸真实链路 | 双模式：默认 mock（闸门必过，响应明示 tools_mode）；`TOOLS_BACKEND=mcp` 走真实 MCP server。**containerlab 仿真闸全链已实测**（`backend/scripts/verify_containerlab_real.py` 6/6：真实部署 2 节点拓扑 + 节点内 exec + 销毁清理，sidecar 配方见 CHANGELOG）；协议链路 + 失败传播实测（`verify_mcp_chain.py` 6/6，真实失败正确挡闸）。Batfish 校验闸与 napalm 下发闸待真实服务/设备 | 起容器化 batfish（dev compose 已含）验证校验闸；真实设备验证下发闸 |
+| 三道闸真实链路 | 仿真闸（containerlab）与校验闸（batfish）**均有真实链路实测**（`verify_containerlab_real.py` 6/6 + `verify_batfish_real.py` 8/8，含真实失败传播）；协议层 `verify_mcp_chain.py` 6/6；napalm-mcp server 侧真实连接传播 `verify_napalm_mcp.py` 4/4。**剩余：真实设备/虚拟网元的下发成功路径**（napalm 对真实网元的 commit 未验证） | vrnetlab 虚拟网元或真实设备验证下发闸 |
 | RAG hit_rate | 语料仅 3 份华为手册（543 行 / 54 chunks），全量 33.9%；语料内 99.4%，瓶颈是语料覆盖非检索算法 | 厂商手册全量 ingest（需版权授权）+ RFC 全文 |
 | RDMA 真实验证 | OpenSM/RdmAgent 默认 mock 模式，2 节点硬编码数据 | IB 硬件测试床 + perftest |
 | OpenSM 法务 | 工程隔离已做（不链接/不分发/不修改），法务 memo 未出具 | 法务团队签字 |
@@ -230,7 +230,6 @@ flowchart TB
 | OIDC/SSO | 已接真实 Keycloak 22 E2E（auth-code + PKCE 全链路 headless 验证，8 测试：发现/JWKS/登录/验签/防重放）；生产 HTTPS/secure-cookie 待多租户阶段 | 生产部署 |
 | 评测集质量 | 513 题 schema 100% 通过；复审 v1：0 真重复、200 对编号系列变体、root_causes 已全部补齐 ≥3（工具 `eval/runner/review_dataset.py`）；脚本生成 402 题仍待逐题人工复核 | 按 `source` 分层人工复审 |
 | WLC API | WirelessAgent 生成配置，未接厂商 WLC 控制器 API | 厂商 API 凭据 |
-| ACL 分析 | `/compliance/scan-acl` 返回示例数据（报告结构演示），Batfish 真实集成未接线 | acl_analyzer 接 batfish-mcp |
 | 运营指标历史 | 合规得分/RCA 命中/Agent 运行历史未持久化，报表对应指标显式 no_data | 指标事件落库 + 看板 |
 
 ## 许可证

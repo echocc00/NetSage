@@ -167,16 +167,21 @@ def test_list_changes_route_returns_real_store():
     before = client.get("/api/v1/changes", headers=_auth(Role.AUDITOR))
     assert before.status_code == 200
     base = before.json()["data"]["count"]
+    created_ids: list[int] = []
     for i in range(2):
-        client.post(
+        r = client.post(
             "/api/v1/changes",
             json={"title": f"list-{i}", "nim": {}, "devices": [], "configs": {}, "assertions": []},
             headers=_auth(Role.ENGINEER),
         )
+        assert r.status_code == 200
+        created_ids.append(r.json()["data"]["id"])
     after = client.get("/api/v1/changes", headers=_auth(Role.AUDITOR)).json()["data"]
-    assert after["count"] == base + 2
+    assert after["count"] >= base + 2  # 并发测试共享 store，只断言增量下限
+    assert after["count"] >= len(after["items"])  # count=总数，items 截断到 limit=50
     assert after["storage"] in ("memory", "db")
     assert {"id", "title", "status"} <= set(after["items"][0])
+    assert set(created_ids) <= {item["id"] for item in after["items"]}  # 新建的都在列表里
 
 
 # ===== auto_approve 服务端强制（审查 P0）=====
@@ -373,3 +378,68 @@ def test_baseline_absent_alternation():
     assert scanner._match(config, "absent", "ftp server enable|tftp server enable") is True
     config2 = "tftp server enable\n"
     assert scanner._match(config2, "absent", "ftp server enable|tftp server enable") is False
+
+
+# ===== ACL 分析去示例化（v0.5.1）=====
+
+
+@pytest.mark.asyncio
+async def test_acl_analyzer_no_hardcoded_demo_data():
+    """ACL 分析不再返回编造的 shadowed/unused 示例数据（评审 P1）。"""
+    from app.services.acl_analyzer import ACLAnalyzer
+
+    class _FailingTools:
+        async def invoke(self, name: str, **kw):
+            raise RuntimeError("batfish offline")
+
+    import app.agents.registry as reg
+
+    original = reg.get_tools
+    reg.get_tools = lambda: _FailingTools()
+    try:
+        report = await ACLAnalyzer().analyze("snap", "cisco_iosxe")
+    finally:
+        reg.get_tools = original
+    assert report.reachability == [] and report.unused == []
+    assert report.error is not None and "不可用" in report.error  # 如实报 unavailable
+
+
+@pytest.mark.asyncio
+async def test_acl_analyzer_real_rows_extraction():
+    """TableAnswerElement 正确解包：rows 进结果，空表不误报。"""
+    from app.services.acl_analyzer import ACLAnalyzer, _extract_rows
+
+    el = {"answerElements": [{"class": "TableAnswerElement", "rows": [
+        {"Source": "10.1.1.10", "Destination": "10.2.2.20", "Action": "PERMIT"},
+    ], "summary": {"numResults": 1}}]}
+    rows = _extract_rows(el)
+    assert len(rows) == 1 and rows[0]["Action"] == "PERMIT"
+    empty = _extract_rows({"answerElements": [{"rows": [], "summary": {"numResults": 0}}]})
+    assert empty == []
+
+    class _FakeTools:
+        def __init__(self, payloads: dict) -> None:
+            self.payloads = payloads
+
+        async def invoke(self, name: str, **kw):
+            return self.payloads[name]
+
+    import app.agents.registry as reg
+
+    original = reg.get_tools
+    reg.get_tools = lambda: _FakeTools({
+        "batfish.search_filters": el,
+        "batfish.interface_properties": {"answerElements": [{"rows": [
+            {"Interface": "Eth1", "Incoming_Filter": "ACL_IN"},
+        ]}]},
+        "batfish.filter_tables": {"answerElements": [{"rows": [
+            {"Name": "ACL_IN"}, {"Name": "ACL_LEGACY"},
+        ]}]},
+    })
+    try:
+        report = await ACLAnalyzer().analyze("snap", "cisco_iosxe")
+    finally:
+        reg.get_tools = original
+    assert report.error is None
+    assert report.reachability and report.reachability[0]["action"] == "permit"
+    assert report.unused == [{"acl": "ACL_LEGACY", "reason": "未在任何接口引用"}]

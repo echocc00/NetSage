@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "netsage-backend"
-version = "0.1.0"
+version = "0.5.1"
 description = "NetSage AI 网络工程师智能平台后端"
 requires-python = ">=3.12"
 readme = "README.md"
@@ -47,6 +47,10 @@ vendors = [
     "netmiko>=4.0",
     "scrapli>=2024.0",
     "napalm-huawei>=0.3",   # 华为 VRP driver（napalm 第三方包）
+]
+# Batfish 静态分析（batfish-mcp sidecar 与 verify_batfish_real.py 使用）
+batfish = [
+    "pybatfish>=2024.0",
 ]
 dev = [
     "pytest>=8.0",

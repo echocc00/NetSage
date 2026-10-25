@@ -2,6 +2,38 @@
 
 本项目遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [v0.5.1] - 2026-10-25
+
+### 校验闸真实化 + ACL 去示例化 + 审计物理只读（三闸真实化收尾）
+
+> 本版完成后：三道闸中仿真闸（containerlab）与校验闸（batfish）均有真实链路实测；
+> 审计记录 owner 也无法改写（物理只读）；全部包版本对齐 0.5.1。
+
+**Batfish 校验闸真实链路（`backend/scripts/verify_batfish_real.py` 8/8）**
+- 直连 pybatfish 5 项 + 经 batfish-mcp 3 项：真实 lint（合法配置 0 warning / 错误配置检出 2）/ 真实路由表查询 / 失败传播（不存在前缀 → 空）/ MCP load_snapshot / MCP lint+routing
+- 真实调试修复 batfish-mcp 三个 bug：① `set_snapshot` 重复传参 TypeError；② `routes()` 不支持 prefix 参数（版本 API 差异）→ 全表+本地过滤；③ **TableAnswerElement 解包错误**——`answerElements` 是表格包装（0 行结果也会被数成 1 条警告，恒 fail），真结果在 `rows` 里
+- 快照目录结构实测：Batfish 要求 `root/configs/device.cfg` 包装（"Unexpected packaging" 报错指引）
+- 新增 3 个真实查询工具：`search_filters` / `interface_properties` / `filter_tables`（ACL 分析用）
+
+**ACL 分析去示例化（评审 P1 收尾）**
+- `acl_analyzer.py` 硬编码示例数据（编造 shadowed/unused 结论）移除——改走 ToolRegistry 真实断言（searchFilters 流量匹配 + 接口引用检查找 unused ACL）；Batfish 不可达时如实返回 `error` 说明，不编造
+
+**审计物理只读（migration 0008，等保 INSERT ONLY 最后防线）**
+- `BEFORE UPDATE/DELETE` trigger 强制抛异常——此前 REVOKE 对表 owner 无效的缺口补上（实测 owner UPDATE/DELETE 均被拒）
+- DB 集成测试同步：篡改模拟改为 trigger 拒绝断言（防线一），哈希重算检测保留在内存链测试（防线二）
+
+**napalm-mcp 真实化（`backend/scripts/verify_napalm_mcp.py` 4/4）**
+- 真实调试修复 driver 映射 bug：`cisco_iosxe` 原映射 `"iosxe"` 不是有效 napalm driver（Cannot import 报错）——正确为 `"ios"`
+- 验证 server 侧真实连接失败传播（不可达地址 → napalm 库真实 TCP 尝试）+ 不支持厂商校验拒绝
+- 新增 `napalm-mcp/run_http.py`（streamable-http sidecar 入口，与 containerlab/batfish 同配方）
+
+**其他**
+- JWT decode 强制校验 iss/aud（encode 侧此前已带、decode 不验）
+- pyproject 新增 `[batfish]` 可选依赖组（pybatfish）
+- `GET /changes` 的 `count` 修正为全库真实总数（原取 len(items) 被 limit 截断）
+- 包版本对齐 0.5.1（backend / cli / frontend / settings.version）
+- 测试口径：316 unit functions / 534 unit cases / 18 e2e；ruff + mypy strict 双 0
+
 ## [Unreleased]
 
 ### v0.5.0 阶段2 补充 2 · containerlab 仿真闸真实链路打通 + CI DB 门禁

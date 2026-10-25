@@ -100,11 +100,15 @@ async def list_changes(
     user: CurrentUserDep,
     limit: int = 50,
 ) -> Envelope[dict]:
-    """变更单列表（审查修复：前端审批页原调用此路由 405）。"""
+    """变更单列表（审查修复：前端审批页原调用此路由 405）。
+
+    count 为全库真实总数（stats），items 截断到 limit（默认 50，按 id 降序）。
+    """
     store = get_change_store()
     items = await store.list(limit=limit)
+    stats = await store.stats()
     return Envelope.ok({
-        "count": len(items),
+        "count": int(stats.get("total", len(items))),
         "storage": store.mode,
         "items": [
             {"id": r.id, "title": r.title, "status": r.status,

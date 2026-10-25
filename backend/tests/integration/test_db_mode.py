@@ -73,7 +73,12 @@ async def test_db_change_store_full_lifecycle(store):
 
 
 async def test_db_audit_chain_and_tamper_detect():
-    """DB 审计链：写入 → verify 通过 → 篡改记录内容 → verify 失败（重算哈希）。"""
+    """DB 审计链：写入 → verify 通过；owner 篡改被 trigger 物理阻止（v0.5.1）。
+
+    防线一：BEFORE UPDATE/DELETE trigger（migration 0008）——owner 也被拒
+    （此前 REVOKE 对 owner 无效的缺口已补）。
+    防线二：verify_chain 重算哈希（内存链篡改检测见 test_v050_fixes.py）。
+    """
     import asyncpg
 
     from app.audit.service import DbAuditSink
@@ -85,14 +90,14 @@ async def test_db_audit_chain_and_tamper_detect():
         )
     assert await sink.verify() is True
 
-    # owner 模拟内网 DBA 篡改（REVOKE 对 owner 无效——如实暴露此边界；
-    # 防线是 verify 重算哈希，篡改可检出。DB trigger 兜底见诚实清单）
     conn = await asyncpg.connect("postgresql://netsage:changeme_dev_only@localhost:5432/netsage")
     try:
-        await conn.execute("UPDATE audit_logs SET action = 'change.deploy' WHERE id = 2")
-        assert await sink.verify() is False
-        # 还原（保持链干净，不影响其他测试）
-        await conn.execute("UPDATE audit_logs SET action = 'change.create' WHERE id = 2")
+        # owner 直改/直删都被 trigger 拒绝（防线一生效）
+        with pytest.raises(asyncpg.PostgresError, match="INSERT ONLY"):
+            await conn.execute("UPDATE audit_logs SET action = 'change.deploy' WHERE id = 2")
+        with pytest.raises(asyncpg.PostgresError, match="INSERT ONLY"):
+            await conn.execute("DELETE FROM audit_logs WHERE id = 2")
+        # 链未被破坏
         assert await sink.verify() is True
     finally:
         await conn.close()

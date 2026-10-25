@@ -51,7 +51,7 @@ def decode_token(token: str) -> CurrentUser | None:
     安全要求（审查修复）：
     - 算法硬编码 HS256，不接受配置注入（防 algorithm confusion）
     - 强制校验 exp（require: ["exp"]）
-    - iss/aud 校验 Phase 3 OIDC 接入时补充
+    - iss/aud 强制校验（v0.5.1：encode 侧已带 iss="netsage"，decode 此前不验）
     """
     settings = get_settings()
     try:
@@ -60,6 +60,8 @@ def decode_token(token: str) -> CurrentUser | None:
             settings.jwt_secret,
             algorithms=["HS256"],
             options={"require": ["exp"]},
+            issuer="netsage",
+            audience="netsage-api",
         )
         return CurrentUser(
             id=int(payload["sub"]),
@@ -83,5 +85,6 @@ def encode_token(user: CurrentUser) -> str:
         "role": user.role.value,
         "exp": datetime.now(UTC) + timedelta(minutes=settings.jwt_expire_minutes),
         "iss": "netsage",
+        "aud": "netsage-api",
     }
     return cast(str, jwt.encode(payload, settings.jwt_secret, algorithm="HS256"))
