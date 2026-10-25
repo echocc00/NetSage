@@ -157,6 +157,45 @@ jobs:
       - name: Run real-provider SSO E2E
         run: pytest tests/integration/test_keycloak_e2e.py -q --no-cov
 
+  db-integration:
+    name: DB integration (postgres + alembic)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: netsage
+          POSTGRES_PASSWORD: changeme_dev_only
+          POSTGRES_DB: netsage
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U netsage"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql+asyncpg://netsage:changeme_dev_only@localhost:5432/netsage
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install deps
+        run: pip install -e ".[dev]"
+
+      - name: Run migrations (0001 → head)
+        run: alembic upgrade head
+
+      - name: DB mode integration tests (change store / audit chain / RAG)
+        run: pytest tests/integration/test_db_mode.py tests/integration/test_rag_integration.py -q --no-cov
+
   docker:
     name: Docker build
     runs-on: ubuntu-latest

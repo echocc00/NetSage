@@ -13,7 +13,6 @@ import tempfile
 from pathlib import Path
 
 from fastmcp import FastMCP
-
 from netsage_mcp_shared import MCPError, log
 
 mcp = FastMCP("containerlab-mcp")
@@ -61,9 +60,13 @@ async def deploy_topology(topo_yaml: str, name: str) -> dict:
 
 @mcp.tool()
 async def destroy_topology(name: str) -> dict:
-    """销毁指定拓扑。"""
-    rc, out, err = await _run([CLAB_BIN, "destroy", "-c", "--label", f"clab-node-lab-name={name}"])
-    if rc != 0 and "not found" not in err.lower():
+    """销毁指定拓扑。
+
+    containerlab ≥0.6x 用 `destroy --name`（旧的 `--label clab-node-lab-name=`
+    旗标已在 0.82 移除——v0.5.0 真实链路调试时发现并修正）。
+    """
+    rc, out, err = await _run([CLAB_BIN, "destroy", "--name", name, "--cleanup"])
+    if rc != 0 and "not found" not in err.lower() and "no labs" not in err.lower():
         raise MCPError("destroy_failed", f"destroy 失败: {err}", out)
     log.info("clab_destroyed", name=name)
     return {"name": name, "status": "destroyed"}
@@ -76,16 +79,28 @@ async def inspect_topology(name: str) -> dict:
 
 
 async def _inspect(name: str) -> dict:
-    rc, out, err = await _run([CLAB_BIN, "inspect", "-c", "--label", f"clab-node-lab-name={name}"])
+    """inspect --all --format json 后按 lab_name 过滤（JSON 解析，替代旧表格解析）。"""
+    import json as _json
+
+    rc, out, err = await _run([CLAB_BIN, "inspect", "--all", "--format", "json"])
     if rc != 0:
         return {"name": name, "nodes": [], "raw": err}
-    # containerlab inspect 输出表格，简化解析
-    lines = [l for l in out.splitlines() if l.strip() and not l.startswith("+-")][1:]
-    nodes = []
-    for line in lines:
-        parts = [p.strip() for p in line.split("|") if p.strip()]
-        if len(parts) >= 4:
-            nodes.append({"name": parts[0], "kind": parts[1] if len(parts) > 1 else "", "image": parts[2] if len(parts) > 2 else ""})
+    try:
+        labs = _json.loads(out or "{}")
+    except ValueError:
+        return {"name": name, "nodes": [], "raw": out[:200]}
+    containers = labs.get(name, []) if isinstance(labs, dict) else []
+    nodes = [
+        {
+            "name": str(c.get("name", "")).removeprefix(f"clab-{name}-"),
+            "kind": c.get("kind", ""),
+            "image": c.get("image", ""),
+            "state": c.get("state", ""),
+            "ipv4": c.get("ipv4_address", ""),
+        }
+        for c in containers
+        if isinstance(c, dict)
+    ]
     return {"name": name, "nodes": nodes}
 
 
@@ -100,7 +115,6 @@ def _validate_exec_command(command: str) -> None:
 
     不用 sh -c 拼 shell（防 `; rm -rf` 注入），直接数组传参给 docker exec。
     """
-    import re
 
     stripped = command.strip()
     if not stripped.lower().startswith(ALLOWED_EXEC_PREFIXES):
@@ -148,7 +162,7 @@ async def save_topology(name: str, path: str) -> str:
     if not target.is_relative_to(export_root.resolve()):
         raise MCPError("path_denied", "导出路径必须在导出目录内")
 
-    rc, out, err = await _run([CLAB_BIN, "inspect", "-c", "--label", f"clab-node-lab-name={name}", "--format", "yaml"])
+    rc, out, err = await _run([CLAB_BIN, "inspect", "--all", "--format", "json"])
     if rc != 0:
         raise MCPError("save_failed", f"save 失败: {err}", out)
     target.write_text(out, encoding="utf-8")

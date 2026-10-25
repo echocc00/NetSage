@@ -33,7 +33,7 @@
 | 模块 | 状态 | 说明 |
 |---|---|---|
 | Agent 编排 | ✅ | 10 Agent：planner / config_engineer / validator / troubleshooter / deploy / observer / security_auditor / compliance / rdm_agent / wireless_agent |
-| 三道闸引擎 | 🟡 | 编排+状态机完整；默认 **mock 工具模式（闸门必过演示）**，`TOOLS_BACKEND=mcp` 经 HttpToolRegistry 走真实 MCP server（协议链路+失败传播已实测 6/6；真实 containerlab 拓扑成功路径待验证） |
+| 三道闸引擎 | 🟡 | 编排+状态机完整；默认 **mock 工具模式（闸门必过演示）**，`TOOLS_BACKEND=mcp` 经 HttpToolRegistry 走真实 MCP server（containerlab 仿真闸真实链路已实测 6/6；batfish/napalm 待对应环境） |
 | 多厂商接入 | 🟡 | 华为 VRP / Cisco IOS-XE / H3C / Juniper / Arista（NAPALM + netmiko + scrapli），86 配置模板。适配层就绪、napalm-mcp 真实现；厂商方言未全量实测 |
 | SourceOfTruth 双适配器 | ✅ | NetBox（真实 REST）+ Nautobot（Adapter，mock 模式默认）+ 自研 App v0.1 |
 | 安全合规 | ✅ | SecurityAuditor + 30 条基线规则（CIS + 厂商加固，行级否定语义）+ ACL 分析（报告结构演示，Batfish 真实集成待接线） |
@@ -222,7 +222,7 @@ flowchart TB
 
 | 项 | 现状 | 解锁条件 |
 |---|---|---|
-| 三道闸真实链路 | 双模式：默认 mock（闸门必过，响应明示 tools_mode）；`TOOLS_BACKEND=mcp` 走真实 MCP server。**协议链路 + 失败传播已实测**（`backend/scripts/verify_mcp_chain.py` 6/6：四闸结果来自真实 MCP 响应；真实失败会正确挡闸 sim_failed）。真实 containerlab 拓扑**部署成功路径**未验证 | Linux 容器环境跑真实 containerlab 拓扑 |
+| 三道闸真实链路 | 双模式：默认 mock（闸门必过，响应明示 tools_mode）；`TOOLS_BACKEND=mcp` 走真实 MCP server。**containerlab 仿真闸全链已实测**（`backend/scripts/verify_containerlab_real.py` 6/6：真实部署 2 节点拓扑 + 节点内 exec + 销毁清理，sidecar 配方见 CHANGELOG）；协议链路 + 失败传播实测（`verify_mcp_chain.py` 6/6，真实失败正确挡闸）。Batfish 校验闸与 napalm 下发闸待真实服务/设备 | 起容器化 batfish（dev compose 已含）验证校验闸；真实设备验证下发闸 |
 | RAG hit_rate | 语料仅 3 份华为手册（543 行 / 54 chunks），全量 33.9%；语料内 99.4%，瓶颈是语料覆盖非检索算法 | 厂商手册全量 ingest（需版权授权）+ RFC 全文 |
 | RDMA 真实验证 | OpenSM/RdmAgent 默认 mock 模式，2 节点硬编码数据 | IB 硬件测试床 + perftest |
 | OpenSM 法务 | 工程隔离已做（不链接/不分发/不修改），法务 memo 未出具 | 法务团队签字 |

@@ -4,6 +4,30 @@
 
 ## [Unreleased]
 
+### v0.5.0 阶段2 补充 2 · containerlab 仿真闸真实链路打通 + CI DB 门禁
+
+**containerlab 真实拓扑部署实测（诚实清单最后一项：仿真闸真实链路）**
+- `backend/scripts/verify_containerlab_real.py` **6/6 通过**：真实部署 2 节点 alpine 拓扑
+  （宿主 Docker 独立佐证容器存在）→ inspect 返回真实节点（含管理网 IP）→
+  `exec_on_node` 节点内真实 ping（busybox 输出）→ destroy 真实销毁且无残留
+- **containerlab-mcp 适配 containerlab 0.82 CLI**（真实调试发现）：`destroy --label` /
+  `inspect -c --label` 旗标已在 0.6x+ 移除——改用 `destroy --name` 与
+  `inspect --all --format json`（顺带把脆弱的表格文本解析换成 JSON 解析）
+- 新增 `mcp-servers/containerlab-mcp/run_http.py`：streamable-http 启动入口
+  （sidecar 部署，v2.0 二十六章 26.3 落地）
+- **clab-in-docker sidecar 配方**（Windows Docker Desktop 实测）：
+  `docker run -d --privileged --pid=host -v //var/run/docker.sock:/var/run/docker.sock
+  -p 19002:9001 debian:bookworm-slim` + 容器内安装 docker.io/python3-pip +
+  containerlab(.deb) + fastmcp/structlog，docker cp 源码后
+  `PYTHONPATH=shared:containerlab-mcp python3 run_http.py`。
+  关键点：`--privileged`（写 /proc/sys rp_filter）与 `--pid=host`（访问节点 netns）
+  缺一不可；`--pid=host` 缺失时 deploy 报 "namespace path not available"
+
+**CI 新增 db-integration job（PG 模式进门禁防回归）**
+- `.github/workflows/test.yml`：pgvector/pg16 service + `alembic upgrade head` +
+  `tests/integration/test_db_mode.py` + `test_rag_integration.py`——DB 模式
+  （变更落库/审计链/快照共享/RAG）从"仅本地手跑"升级为 CI 阻断门禁
+
 ### v0.5.0 阶段2 · 系统评审修复（三道闸接线 / 审计落库 / 报表去编造）
 
 > 修复第三方评审认定的三项核心差距（P0）：三道闸生产路由 mock 硬编码、
