@@ -2,6 +2,42 @@
 
 本项目遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [v0.6.0] - 2026-10-26
+
+### 真实网元下发闭环 + 闭环验证真实化 + 指标落库
+
+**真实网元下发闭环（诚实清单最后一项；`backend/scripts/verify_real_deploy.py` 10/10）**
+- Nokia SR Linux（真实 NOS 容器，gNMI 管理面）全链实测：**get_config 基线（25KB 真实配置）
+  → apply_candidate 真实下发（gNMI Set + commit）→ 变更落盘验证（running config 命中）
+  → checkpoint 回滚还原（marker 消失）**——napalm 对真实网元的 commit 首次验证通过
+- napalm-mcp 新增 `nokia_srlinux` 厂商（napalm-srl 驱动，gNMI 57400）+ `rollback` 工具
+- 三层补丁桥接 napalm-srl 上游缺陷（均实测发现、带文档注释）：
+  ① TemporaryFile(mode='w') 上 json.load → SpooledTemporaryFile('w+') 补丁；
+  ② standalone SR Linux 的 JSON-RPC server 不监听 → `_jsonrpcRunCli` 桥接到
+  netmiko SSH（checkpoint/rollback/discard 全部可用）；
+  ③ 驱动自建 checkpoint 计数是连接级状态 → apply 前建确定性命名 checkpoint
+  `NSV-PRE`，rollback 按名回退
+- 环境实测笔记沉淀进脚本 docstring：clab-in-docker postdeploy 文件写入怪癖、
+  Windows TUN 代理劫持容器网段直连（必须走端口发布）、Hyper-V 保留端口段、
+  SR Linux 嵌套 netns IPv6 继承、gNMI TLS 需手工证书 + system tls profile
+
+**闭环验证真实化（closed_loop）**
+- `_verify` 从"配置非空即过"改为真实 batfish lint；Batfish 不可达时降级并
+  显式标注 `verify_mode=fallback_config_nonempty`（API 响应暴露），不再伪装
+
+**LLM 降级显式化（审查 P2 收尾）**
+- LLM 失败静默回落占位配置 → 显式 `render_fallback{llm_error, note}` 字段 +
+  占位配置 lint 强制 fail（不可下发的显式暴露）
+
+**指标事件落库（migration 0009）**
+- `metric_events` 表 + MetricSink 双实现（DB/内存）：合规扫描得分、RCA top1
+  概率、闭环自动化率全部落库——报表从 `no_data` 变真实聚合
+  （compliance.avg_score / rca.total / closed_loop.avg_automation_rate）
+
+**其他**
+- napalm-mcp compare_config 降级为可选（上游 bug，diff 缺失不阻断下发）
+- 测试口径：321 unit functions / 539 unit cases / 18 e2e；ruff + mypy strict 双 0
+
 ## [v0.5.1] - 2026-10-25
 
 ### 校验闸真实化 + ACL 去示例化 + 审计物理只读（三闸真实化收尾）

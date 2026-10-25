@@ -107,18 +107,30 @@ async def config_render(state: dict, tools: ToolRegistry, llm: Any | None = None
         state["references"] = result["references"]
         state["render_source"] = "llm_template"
     except Exception as e:
-        logger.info("render_fallback_placeholder", scenario=scenario, error=str(e)[:120])
+        # v0.6（审查 P2 修复）：LLM 失败降级到占位模板必须显式——
+        # 此前仅 render_source 字段暗示，用户拿到看似成功的假配置
         state["config_diff"] = _render_placeholder(scenario, intent_text)
         state["rollback_config"] = _render_rollback(scenario)
         state["render_source"] = "placeholder"
+        state["render_fallback"] = {
+            "llm_error": str(e)[:200],
+            "note": "LLM 生成失败，以下为占位模板，不可直接下发",
+        }
+        logger.warning("render_fallback_placeholder_explicit", scenario=scenario, error=str(e)[:120])
     return state
 
 
 async def config_lint(state: dict, tools: ToolRegistry, llm: Any | None = None) -> dict:
-    """Batfish 语法 lint（安全闸 2 前置）。"""
+    """Batfish 语法 lint（安全闸 2 前置）。
+
+    v0.6：占位降级配置 lint 恒 fail（占位模板不可下发，显式暴露）。
+    """
     config = state.get("config_diff", "")
     result = await tools.invoke("batfish.lint_config", config_text=config, vendor="cisco")
     state["lint_passed"] = result.get("passed", True) if isinstance(result, dict) else True
+    if state.get("render_source") == "placeholder":
+        state["lint_passed"] = False
+        state["lint_note"] = "占位降级配置（LLM 失败），lint 强制不通过——不可直接下发"
     return state
 
 

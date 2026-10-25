@@ -23,8 +23,11 @@ def test_reports_overview():
     assert "devices" in d and "changes" in d and "compliance" in d
     # 真实数据源标注（不再返回编造的演示数字）
     assert d["meta"]["demo"] is False
-    assert d["meta"]["change_storage"] in ("memory", "db")
-    assert d["rca"]["hit_rate"] is None and "no_data" in d["rca"]
+    assert d["meta"]["metrics_storage"] in ("memory", "db")
+    # v0.6：合规/RCA/闭环历史从 metric_events 真实聚合（无历史时 total=0/avg=null）
+    assert "avg_score" in d["compliance"] and "scans" in d["compliance"]
+    assert "total" in d["rca"] and "avg_top1_prob" in d["rca"]
+    assert "total_runs" in d["closed_loop"] and "avg_automation_rate" in d["closed_loop"]
 
 
 def test_reports_dashboard():

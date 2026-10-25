@@ -5,6 +5,7 @@ from app.models.change import Approval, ChangeRequest, ChangeStep, ConfigSnapsho
 from app.models.design import NetworkDesign, RdmaFabric
 from app.models.device import Credential, Device
 from app.models.kb import KbChunk
+from app.models.metrics import MetricEvent
 from app.models.security import BaselineRule, ComplianceReport
 from app.models.tenant import Tenant
 
@@ -15,6 +16,7 @@ __all__ = [
     "NetworkDesign", "RdmaFabric",
     "Credential", "Device",
     "KbChunk",
+    "MetricEvent",
     "BaselineRule", "ComplianceReport",
     "Tenant",
 ]

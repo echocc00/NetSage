@@ -35,11 +35,20 @@ async def scan_baseline(
     req: ScanRequest,
     user: CurrentUser = Depends(require_permission("troubleshoot")),
 ) -> Envelope[ScanResponse]:
-    """基线扫描（SecurityAuditor，≥30 条规则）。"""
+    """基线扫描（SecurityAuditor，≥30 条规则）。v0.6：得分落指标事件。"""
+    from app.core.logging import get_logger
     from app.services.baseline_scanner import BaselineScanner
+    from app.services.metrics import KIND_COMPLIANCE, get_metric_sink
 
     scanner = BaselineScanner()
     result = await scanner.scan(req.config, req.vendor)
+    try:
+        await get_metric_sink().record(
+            KIND_COMPLIANCE, float(result.score),
+            {"vendor": req.vendor, "total": result.total, "failed": result.failed},
+        )
+    except Exception as e:  # 指标落库不阻断扫描主流程
+        get_logger("api_compliance").warning("metric_record_failed", error=str(e))
     return Envelope.ok(ScanResponse(
         vendor=result.vendor, total=result.total, passed=result.passed,
         failed=result.failed, score=result.score,

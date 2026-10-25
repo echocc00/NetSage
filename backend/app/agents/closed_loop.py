@@ -17,6 +17,13 @@ logger = get_logger("closed_loop")
 TOTAL_STEPS = 6  # diagnose/fix/verify/approve/deploy/observe
 
 
+def _default_tools() -> Any:
+    """取启动装配的全局 ToolRegistry（未装配时演示 mock）。"""
+    from app.agents.registry import get_tools
+
+    return get_tools()
+
+
 @dataclass
 class StepResult:
     name: str
@@ -46,6 +53,8 @@ class ClosedLoopOrchestrator:
     def __init__(self, runner: Any | None = None, tools: Any = None) -> None:
         self._runner = runner
         self._tools = tools
+        # verify 环节的真实性标注（batfish_lint / fallback_config_nonempty）
+        self.verify_mode = "unknown"
 
     async def run(self, symptom: str, vendor: str = "huawei_vrp",
                   auto_approve: bool = False) -> ClosedLoopResult:
@@ -124,8 +133,24 @@ class ClosedLoopOrchestrator:
         }
 
     async def _verify(self, fix: dict) -> bool:
-        """验证：Batfish + Containerlab 仿真（简化：配置非空即通过）。"""
-        return bool(fix.get("config"))
+        """验证：Batfish lint 修复配置（v0.6 真实化）。
+
+        Batfish 可达 → 真实语法检查（parse warning 即 fail）；
+        不可达 → 降级为"配置非空"并打 verify_mode=fallback 标注，
+        不再把降级结果伪装成真实校验（审查修复：配置非空即过曾伪装成仿真验证）。
+        """
+        config = fix.get("config", "")
+        if not config:
+            return False
+        tools = self._tools if self._tools is not None else _default_tools()
+        try:
+            lint = await tools.invoke("batfish.lint_config", config_text=config, vendor="cisco")
+            self.verify_mode = "batfish_lint"
+            return bool(lint.get("passed", False)) if isinstance(lint, dict) else bool(lint)
+        except Exception as e:
+            logger.warning("verify_fallback_no_batfish", error=str(e))
+            self.verify_mode = "fallback_config_nonempty"
+            return True
 
     async def _request_approval(self, fix: dict, verified: bool) -> bool:
         """审批门禁：人工确认（Phase 3 决策：仅 approve 人工）。"""

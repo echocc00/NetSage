@@ -443,3 +443,107 @@ async def test_acl_analyzer_real_rows_extraction():
     assert report.error is None
     assert report.reachability and report.reachability[0]["action"] == "permit"
     assert report.unused == [{"acl": "ACL_LEGACY", "reason": "未在任何接口引用"}]
+
+
+# ===== v0.6：closed_loop 验证真实化 / LLM 显式降级 / 指标事件 =====
+
+
+@pytest.mark.asyncio
+async def test_closed_loop_verify_real_batfish():
+    """闭环验证走真实 batfish lint：有 parse warning 即 fail。"""
+    from app.agents.closed_loop import ClosedLoopOrchestrator
+
+    class _LintTools:
+        def __init__(self, passed: bool) -> None:
+            self.passed = passed
+
+        async def invoke(self, name: str, **kw):
+            assert name == "batfish.lint_config"
+            return {"passed": self.passed, "warnings": []}
+
+    orch = ClosedLoopOrchestrator(tools=_LintTools(passed=False))
+    assert await orch._verify({"config": "router bgp 65001\n nonsense line"}) is False
+    assert orch.verify_mode == "batfish_lint"
+
+    orch2 = ClosedLoopOrchestrator(tools=_LintTools(passed=True))
+    assert await orch2._verify({"config": "router bgp 65001"}) is True
+    assert orch2.verify_mode == "batfish_lint"
+
+
+@pytest.mark.asyncio
+async def test_closed_loop_verify_fallback_labeled():
+    """batfish 不可达 → 降级为配置非空 + verify_mode 显式标注（不伪装）。"""
+    from app.agents.closed_loop import ClosedLoopOrchestrator
+
+    class _BrokenTools:
+        async def invoke(self, name: str, **kw):
+            raise RuntimeError("batfish offline")
+
+    orch = ClosedLoopOrchestrator(tools=_BrokenTools())
+    assert await orch._verify({"config": "router bgp 65001"}) is True
+    assert orch.verify_mode == "fallback_config_nonempty"
+    # 空配置恒 fail（连降级都不给过）
+    assert await orch._verify({"config": ""}) is False
+
+
+@pytest.mark.asyncio
+async def test_config_lint_placeholder_forced_fail():
+    """LLM 降级占位配置 → lint 强制 fail（不可下发的显式暴露）。"""
+    from app.agents import handlers as h
+    from app.tools.registry import MockToolRegistry
+
+    tools = MockToolRegistry()
+    state = {"config_diff": "router bgp 65001", "render_source": "placeholder"}
+    out = await h.config_lint(state, tools)
+    assert out["lint_passed"] is False
+    assert "占位" in out["lint_note"]
+
+    # LLM 正常产物不受影响
+    state2 = {"config_diff": "router bgp 65001", "render_source": "llm_template"}
+    out2 = await h.config_lint(state2, tools)
+    assert out2["lint_passed"] is True  # mock lint 默认 passed
+
+
+def test_render_fallback_explicit_fields():
+    """LLM 失败降级必须写入 render_fallback（含原因），不只是暗示字段。"""
+    import asyncio
+
+    from app.agents import handlers as h
+
+    class _BrokenRenderer:
+        async def generate(self, **kw):
+            raise RuntimeError("no api key")
+
+    class _T:
+        async def invoke(self, *a, **k):
+            return {}
+
+    original = h._get_renderer
+    h._get_renderer = lambda: _BrokenRenderer()
+    try:
+        out = asyncio.run(
+            h.config_render({"query": "bgp", "vendor": "huawei", "scenario": "bgp"}, _T())
+        )
+    finally:
+        h._get_renderer = original
+    assert out["render_source"] == "placeholder"
+    assert "no api key" in out["render_fallback"]["llm_error"]
+    assert "不可直接下发" in out["render_fallback"]["note"]
+
+
+@pytest.mark.asyncio
+async def test_metric_sink_memory_record_and_aggregate():
+    from app.services.metrics import (
+        KIND_CLOSED_LOOP,
+        KIND_COMPLIANCE,
+        MemoryMetricSink,
+    )
+
+    sink = MemoryMetricSink()
+    await sink.record(KIND_COMPLIANCE, 85.0, {"vendor": "huawei_vrp"})
+    await sink.record(KIND_COMPLIANCE, 95.0, {"vendor": "cisco_iosxe"})
+    await sink.record(KIND_CLOSED_LOOP, 0.8333, {"symptom": "bgp"})
+    agg = await sink.aggregate(KIND_COMPLIANCE)
+    assert agg["total"] == 2 and agg["avg_value"] == 90.0 and agg["latest_at"]
+    empty = await sink.aggregate("nonexistent")
+    assert empty["total"] == 0 and empty["avg_value"] is None

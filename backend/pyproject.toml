@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "netsage-backend"
-version = "0.5.1"
+version = "0.6.0"
 description = "NetSage AI 网络工程师智能平台后端"
 requires-python = ">=3.12"
 readme = "README.md"

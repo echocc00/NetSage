@@ -63,19 +63,23 @@ async def _configure_stores(settings: Settings, database_url: str) -> None:
     if await _db_reachable(database_url):
         from app.audit.service import DbAuditSink, configure_audit_sink
         from app.services.change_store import DbChangeStore, configure_change_store
+        from app.services.metrics import DbMetricSink, configure_metric_sink
 
         configure_change_store(DbChangeStore())
         configure_audit_sink(DbAuditSink())
-        logger.info("stores_configured", change_store="db", audit="db")
+        configure_metric_sink(DbMetricSink())
+        logger.info("stores_configured", change_store="db", audit="db", metrics="db")
     else:
         from app.audit.service import MemoryAuditSink, configure_audit_sink
         from app.services.change_store import MemoryChangeStore, configure_change_store
+        from app.services.metrics import MemoryMetricSink, configure_metric_sink
 
         configure_change_store(MemoryChangeStore())
         configure_audit_sink(MemoryAuditSink())
+        configure_metric_sink(MemoryMetricSink())
         logger.warning(
             "stores_memory_fallback",
-            hint="DB 不可达，变更单/审计为进程内存态（重启即失）；检查 DATABASE_URL 或起 docker compose dev",
+            hint="DB 不可达，变更单/审计/指标为进程内存态（重启即失）；检查 DATABASE_URL 或起 docker compose dev",
         )
 
 

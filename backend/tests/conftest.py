@@ -14,8 +14,8 @@ if str(PROJECT_ROOT) not in sys.path:
 
 # 三层口径声明（唯一事实来源；变更时同步 CHANGELOG）
 INVENTORY = {
-    "unit_functions": 316,
-    "unit_cases": 534,
+    "unit_functions": 321,
+    "unit_cases": 539,
     "e2e_scenarios": 18,
 }
 

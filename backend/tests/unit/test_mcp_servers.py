@@ -27,7 +27,7 @@ def _load(server_name: str):
     [
         ("containerlab-mcp", {"deploy_topology", "destroy_topology", "inspect_topology", "exec_on_node", "save_topology"}),
         ("batfish-mcp", {"load_snapshot", "assert_reachability", "assert_acl", "assert_routing", "lint_config", "search_filters", "interface_properties", "filter_tables"}),
-        ("napalm-mcp", {"get_facts", "get_config", "load_merge_candidate", "compare_config", "commit", "discard", "apply_candidate"}),
+        ("napalm-mcp", {"get_facts", "get_config", "load_merge_candidate", "compare_config", "commit", "discard", "apply_candidate", "rollback"}),
     ],
 )
 def test_mcp_server_tools_registered(server_name: str, expected_tools: set[str]) -> None:

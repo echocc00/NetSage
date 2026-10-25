@@ -21,6 +21,12 @@ from fastapi import APIRouter, Depends
 from app.core.deps import CurrentUser, get_current_user
 from app.schemas.common import Envelope
 from app.services.change_store import get_change_store
+from app.services.metrics import (
+    KIND_CLOSED_LOOP,
+    KIND_COMPLIANCE,
+    KIND_RCA,
+    get_metric_sink,
+)
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -67,19 +73,34 @@ async def _list_ssot_devices() -> tuple[list, str]:
 async def overview(
     user: CurrentUser = Depends(get_current_user),
 ) -> Envelope[dict]:
-    """运营总览（真实数据；无历史数据的指标显式 null，不编造）。"""
+    """运营总览（v0.6：合规/RCA/闭环历史从 metric_events 真实聚合）。"""
     changes = await _change_summary()
     devices = await _device_summary()
+    compliance = await get_metric_sink().aggregate(KIND_COMPLIANCE)
+    rca = await get_metric_sink().aggregate(KIND_RCA)
+    closed_loop = await get_metric_sink().aggregate(KIND_CLOSED_LOOP)
     return Envelope.ok({
         "devices": devices,
         "changes": changes,
-        # 合规/RCA 历史尚未落库（v0.5.0 已知限制），如实标注
-        "compliance": {"avg_score": None, "scans": 0, "no_data": "合规扫描历史未持久化"},
-        "rca": {"total": 0, "top1_hit": None, "hit_rate": None, "no_data": "RCA 命中统计未持久化"},
-        "agents": {"total_runs": 0, "by_agent": {}, "no_data": "Agent 运行历史未持久化"},
+        "compliance": {
+            "avg_score": compliance["avg_value"],
+            "scans": compliance["total"],
+            "latest_at": compliance["latest_at"],
+        },
+        "rca": {
+            "total": rca["total"],
+            "avg_top1_prob": rca["avg_value"],
+            "latest_at": rca["latest_at"],
+        },
+        "closed_loop": {
+            "total_runs": closed_loop["total"],
+            "avg_automation_rate": closed_loop["avg_value"],
+            "latest_at": closed_loop["latest_at"],
+        },
         "meta": {
             "generated_at": datetime.now(UTC).isoformat(),
             "change_storage": get_change_store().mode,
+            "metrics_storage": get_metric_sink().mode,
             "demo": False,
         },
     })

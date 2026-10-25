@@ -166,6 +166,8 @@ async def run_config_engineer(
         "config_diff": result.get("config_diff", ""),
         "rollback": result.get("rollback_config", ""),
         "lint_passed": result.get("lint_passed", False),
+        "render_source": result.get("render_source", ""),
+        "render_fallback": result.get("render_fallback"),  # LLM 失败降级时非空（含原因）
     })
 
 
@@ -279,6 +281,19 @@ async def run_troubleshooter(
         "context": ctx,
     }
     result = await runner.run("troubleshooter", state, session_id=session_id)
+    # v0.6：RCA 运行落指标事件（top1 概率作为主指标）
+    try:
+        from app.services.metrics import KIND_RCA, get_metric_sink
+
+        causes = result.get("root_causes", [])
+        top_prob = float(causes[0].get("probability", 0)) if causes else None
+        await get_metric_sink().record(
+            KIND_RCA, top_prob,
+            {"symptom": symptom, "vendor": req.vendor,
+             "causes": len(causes), "can_auto_fix": result.get("can_auto_fix", False)},
+        )
+    except Exception as e:
+        logger.warning("metric_record_failed", error=str(e))
     return Envelope.ok({
         "root_causes": result.get("root_causes", []),
         "evidence": result.get("evidence", []),
@@ -320,6 +335,7 @@ async def run_closed_loop(
     orch = ClosedLoopOrchestrator(runner=runner)
     result = await orch.run(req.symptom, req.vendor, auto_approve=auto_approve)
     from app.audit.service import get_audit_sink
+    from app.services.metrics import KIND_CLOSED_LOOP, get_metric_sink
 
     await get_audit_sink().append(
         user_id=user.id,
@@ -332,6 +348,15 @@ async def run_closed_loop(
             ensure_ascii=False,
         ),
     )
+    # v0.6：闭环运行落指标事件（自动化率从定义式变可测量）
+    try:
+        await get_metric_sink().record(
+            KIND_CLOSED_LOOP, round(result.automation_rate, 4),
+            {"symptom": req.symptom, "vendor": req.vendor, "approved": result.approved,
+             "verify_mode": orch.verify_mode},
+        )
+    except Exception as e:
+        logger.warning("metric_record_failed", error=str(e))
     return Envelope.ok({
         "symptom": result.symptom,
         "steps": [
@@ -343,6 +368,7 @@ async def run_closed_loop(
         "fix": result.fix,
         "deployed": result.deployed,
         "approved": result.approved,
+        "verify_mode": orch.verify_mode,  # batfish_lint=真实校验 / fallback_config_nonempty=降级
         "automation_rate": round(result.automation_rate, 2),
         "meets_target": result.automation_rate >= 0.3,
     })
