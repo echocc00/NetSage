@@ -1,7 +1,14 @@
 """Layer 1: 静态字典脱敏（确定性）。
 
 正则 + 字典 → 占位符替换（v2.0 20.2）。
-Phase 1 必做，覆盖 8 类 PII：IPV4/IPV6/MAC/ASN/密码/SNMP community/邮箱/内部主机名。
+覆盖 8 类 PII：IPV4/IPV6/MAC/ASN/密码/SNMP community/邮箱/内部主机名。
+
+v0.5.0 加固（审查 P1）：
+- 密码/secret 原正则只吞关键字后 1 个 token——`secret 5 $1$salt$hash`
+  的真实哈希会原样外发。现改为「关键字后整行值」替换（过度脱敏方向）。
+- 内部主机名后缀扩充（.lan/.localdomain/.priv/.home 等）。
+- IPv4 严格 0-255 段校验（减少占位符噪声）。
+- 去掉魔法索引（PATTERNS[6]/[7]），改命名分组，新增规则不再静默错位。
 """
 from __future__ import annotations
 
@@ -11,16 +18,30 @@ from typing import Any
 
 from .mapping import MappingTable
 
-# (key, compiled_pattern)
+# 关键字保留型（值整行替换为 [REDACTED]，过度脱敏方向——安全优先）
+# pre 组：行首到关键字（含关键字）；其后到行尾的值全部替换。
+KEYWORD_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
+    ("PASS", re.compile(
+        r"(?im)^(?P<pre>[^\r\n]*?\b(?:password|passwd|pwd|secret)\b)[ \t]+\S[^\r\n]*$"
+    )),
+    ("SNMP", re.compile(
+        r"(?im)^(?P<pre>[^\r\n]*?\bcommunity\b)[ \t]+\S[^\r\n]*$"
+    )),
+]
+
+# 编号占位符型（保留可还原性）
 # 顺序敏感：
 # - 邮箱优先于主机名（含 @）
 # - MAC 必须在 IPv6 前（6 段 2 位会被 IPv6 正则吞掉）
 # - 主机名在 IPv4 前（避免域名里的 IP 段被先替换）
-PATTERNS: list[tuple[str, re.Pattern[str]]] = [
+PLACEHOLDER_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     # 邮箱优先
     ("EMAIL", re.compile(r"\b[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}\b")),
-    # 内部主机名
-    ("HOST", re.compile(r"\b[\w-]+\.(corp|internal|local|intranet)\b", re.IGNORECASE)),
+    # 内部主机名（v0.5.0 扩充后缀）
+    ("HOST", re.compile(
+        r"\b[\w-]+\.(corp|internal|local|intranet|lan|localdomain|priv|home)\b",
+        re.IGNORECASE,
+    )),
     # MAC（在 IPv6 前，避免被 IPv6 正则误匹配）
     ("MAC", re.compile(r"\b[0-9a-fA-F]{2}(?::[0-9a-fA-F]{2}){5}\b")),
     # IPv6（支持 :: 缩写：fe80::1 / 2001:db8::1 / 完整 8 段）
@@ -29,15 +50,16 @@ PATTERNS: list[tuple[str, re.Pattern[str]]] = [
         r"|\b(?:[0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{0,4}\b"                     # 前缀含 ::
         r"|\b[0-9a-fA-F]{0,4}(?::[0-9a-fA-F]{1,4}){1,6}:[0-9a-fA-F]{0,4}\b"     # 中间/尾部含 ::
     )),
-    # IPv4
-    ("IPV4", re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")),
+    # IPv4（严格 0-255 段，v0.5.0）
+    ("IPV4", re.compile(
+        r"\b(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}\b"
+    )),
     # ASN
     ("ASN", re.compile(r"\bAS\s?\d{2,6}\b", re.IGNORECASE)),
-    # 密码（关键字后跟非空白）
-    ("PASS", re.compile(r"(password|passwd|pwd|secret)\s+\S+", re.IGNORECASE)),
-    # SNMP community
-    ("SNMP", re.compile(r"community\s+\S+", re.IGNORECASE)),
 ]
+
+# 向后兼容（外部引用旧名）
+PATTERNS: list[tuple[str, re.Pattern[str]]] = PLACEHOLDER_PATTERNS + KEYWORD_PATTERNS
 
 
 def _keyword_repl(mapping: MappingTable, key: str) -> Callable[[re.Match[str]], str]:
@@ -62,12 +84,12 @@ class Layer1Redactor:
         if not text:
             return text
 
-        # 密码/community 整段替换为 REDACTED（不保留原值特征）
-        text = PATTERNS[6][1].sub(_keyword_repl(mapping, "PASS"), text)
-        text = PATTERNS[7][1].sub(_keyword_repl(mapping, "SNMP"), text)
+        # 密码/community：关键字保留 + 值整行替换 [REDACTED]（不保留原值特征）
+        for key, pat in KEYWORD_PATTERNS:
+            text = pat.sub(_keyword_repl(mapping, key), text)
 
         # 其余类别替换为带编号占位符（保留可还原性）
-        for key, pat in PATTERNS[:6]:
+        for key, pat in PLACEHOLDER_PATTERNS:
             text = pat.sub(_placeholder_repl(mapping, key), text)
         return text
 
@@ -75,8 +97,8 @@ class Layer1Redactor:
     def _redact_keyword(match: re.Match[str], mapping: MappingTable, key: str) -> str:
         """password/community 行：关键字保留，值替换为 [REDACTED]。"""
         full = match.group(0)
-        m = re.match(r"(\w+)", full)
-        keyword = m.group(1) if m else full
+        pre = match.group("pre") if "pre" in match.groupdict() else full
+        keyword = pre.strip()
         mapping.add(key, full)  # 仍记录映射供审计
         return f"{keyword} [REDACTED]"
 

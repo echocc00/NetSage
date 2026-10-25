@@ -8,11 +8,15 @@ from typing import Any
 
 from app.core.logging import get_logger
 
+from .detector import detect_content_type
 from .layer1_dict import Layer1Redactor
 from .layer3_router import ContentTier, Layer3Router, Route
 from .mapping import MappingTable
 
 logger = get_logger("redact_interceptor")
+
+# tier 敏感度排序（只升不降）
+_TIER_RANK = {ContentTier.WHITE: 0, ContentTier.GREY: 1, ContentTier.BLACK: 2}
 
 
 class RedactingInterceptor:
@@ -28,8 +32,25 @@ class RedactingInterceptor:
         content_type: str,
         mapping: MappingTable,
     ) -> list[dict[str, str]]:
-        """LLM 调用前：路由判定 + 脱敏。"""
+        """LLM 调用前：路由判定 + 脱敏。
+
+        v0.5.0（审查 P1）：内容特征自动分级——caller 声明 general_qa
+        但内容像 running-config/日志时，tier 只升不降（黑盒阻断/灰盒
+        强制脱敏），不再信任调用方字符串。
+        """
         tier = self.l3.classify(content_type)
+
+        detected = detect_content_type(messages)
+        if detected:
+            detected_tier = self.l3.classify(detected)
+            if _TIER_RANK[detected_tier] > _TIER_RANK[tier]:
+                logger.warning(
+                    "redact_tier_escalated_by_content",
+                    declared=content_type, detected=detected,
+                    tier_from=tier, tier_to=detected_tier,
+                )
+                content_type = detected
+                tier = detected_tier
 
         # 黑盒直接拦截
         if tier == ContentTier.BLACK:

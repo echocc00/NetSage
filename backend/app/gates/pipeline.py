@@ -12,7 +12,7 @@ from app.core.logging import get_logger
 from app.gates.approval import ApprovalGate
 from app.gates.models import ChangeStatus, assert_transition
 from app.gates.simulation import SimulationGate
-from app.gates.snapshot import SnapshotService
+from app.gates.snapshot import SnapshotObjectStore, SnapshotService
 from app.gates.validation import ValidationGate
 from app.tools.registry import ToolRegistry
 
@@ -35,9 +35,11 @@ class PipelineContext:
 class GatePipeline:
     """三道闸编排器。"""
 
-    def __init__(self, tools: ToolRegistry) -> None:
+    def __init__(
+        self, tools: ToolRegistry, snapshot_store: SnapshotObjectStore | None = None
+    ) -> None:
         self.tools = tools
-        self.snapshot = SnapshotService(tools)
+        self.snapshot = SnapshotService(tools, snapshot_store)
         self.simulation = SimulationGate(tools)
         self.validation = ValidationGate(tools)
         self.approval = ApprovalGate()
@@ -46,13 +48,21 @@ class GatePipeline:
         """按状态机推进。每个闸根据当前状态决定是否执行。"""
         result: dict[str, Any] = {"request_id": ctx.request_id, "steps": []}
 
-        # ① 变更前快照（所有设备）
+        # ① 变更前快照（所有设备）。工具失败（如 mcp 模式 server 不可达/
+        #    设备不可登录）显式失败为 snapshot_failed，不让异常裸穿到路由。
         if status == ChangeStatus.SIM_PENDING:
-            for dev in ctx.devices:
-                snap = await self.snapshot.capture(
-                    dev["id"], dev["vendor"], dev["host"], dev["username"], dev["password"], dev.get("port", 22)
-                )
-                ctx.snapshots.append(snap)
+            try:
+                for dev in ctx.devices:
+                    snap = await self.snapshot.capture(
+                        dev["id"], dev["vendor"], dev["host"],
+                        dev["username"], dev["password"], dev.get("port", 22)
+                    )
+                    ctx.snapshots.append(snap)
+            except Exception as e:
+                logger.error("gate_snapshot_failed", request_id=ctx.request_id, error=str(e))
+                result["status"] = ChangeStatus.SNAPSHOT_FAILED
+                result["error"] = f"变更前快照失败：{e}"
+                return result
             result["steps"].append({"gate": "snapshot", "captured": len(ctx.snapshots)})
 
         # ② 仿真闸
@@ -93,19 +103,14 @@ class GatePipeline:
 
         for i, dev in enumerate(ctx.devices):
             try:
-                # 加载候选 + commit
+                # 原子复合工具：单连接内 load_merge_candidate + commit
+                # （审查 H2：两次独立 invoke 在 MCP per-call 连接下 candidate 必丢）
                 config = ctx.configs.get(dev["name"], dev.get("config", ""))
                 await self.tools.invoke(
-                    "napalm.load_merge_candidate",
+                    "napalm.apply_candidate",
                     vendor=dev["vendor"], host=dev["host"],
                     username=dev["username"], password=dev["password"],
                     config=config, port=dev.get("port", 22),
-                )
-                await self.tools.invoke(
-                    "napalm.commit",
-                    vendor=dev["vendor"], host=dev["host"],
-                    username=dev["username"], password=dev["password"],
-                    port=dev.get("port", 22),
                 )
                 result["steps"].append({"device": dev["name"], "status": "committed"})
                 logger.info("deploy_step_ok", request_id=ctx.request_id, device=dev["name"], step=i)

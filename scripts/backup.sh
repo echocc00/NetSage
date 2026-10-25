@@ -5,7 +5,7 @@
 # RPO=24h（每日备份），RTO=2h（恢复 runbook 见 doc/NetSage-DR-Runbook-v1.0.md）
 #
 # 用法：bash scripts/backup.sh [backup_dir]
-# 恢复：bash scripts/restore.sh <backup_file>
+# 恢复：bash scripts/restore.sh <backup_dir>（产物是目录，非 tar.gz）
 
 set -euo pipefail
 
@@ -52,10 +52,15 @@ cp .env.example "${DEST}/" 2>/dev/null || true
 cp -r infra "${DEST}/infra" 2>/dev/null || true
 echo "  ✓ 配置"
 
-# 校验
+# 校验清单：递归逐文件 sha256 落盘（restore.sh 恢复前用 sha256sum -c 校验）
+# 注意：清单写在备份目录内，随备份一起保存；条目用相对路径，恢复端从备份目录内执行校验
+( cd "${DEST}" \
+  && find . -type f ! -name SHA256SUMS | sed 's|^\./||' | LC_ALL=C sort \
+  | while IFS= read -r f; do sha256sum "$f"; done > SHA256SUMS )
+
 echo ""
 echo "=== 备份完成 ==="
 ls -lh "${DEST}/"
 echo ""
-echo "校验和: $(sha256sum ${DEST}/* | awk '{print $1}' | sha256sum | cut -c1-16)"
-echo "恢复: bash scripts/restore.sh ${DEST}/netsage-${TS}.tar.gz"
+echo "校验清单: ${DEST}/SHA256SUMS（$(wc -l < "${DEST}/SHA256SUMS") 个文件）"
+echo "恢复: bash scripts/restore.sh ${DEST}"

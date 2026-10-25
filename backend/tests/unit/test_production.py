@@ -13,7 +13,7 @@ def _auth(role: Role = Role.ADMIN) -> dict[str, str]:
     return {"Authorization": f"Bearer {encode_token(CurrentUser(id=1, name='test', role=role))}"}
 
 
-# ===== 报表 =====
+# ===== 报表（v0.5.0 审查修复：真实数据源，无数据指标显式 no_data/null）=====
 
 
 def test_reports_overview():
@@ -21,32 +21,48 @@ def test_reports_overview():
     assert r.status_code == 200
     d = r.json()["data"]
     assert "devices" in d and "changes" in d and "compliance" in d
+    # 真实数据源标注（不再返回编造的演示数字）
+    assert d["meta"]["demo"] is False
+    assert d["meta"]["change_storage"] in ("memory", "db")
+    assert d["rca"]["hit_rate"] is None and "no_data" in d["rca"]
 
 
 def test_reports_dashboard():
     r = client.get("/api/v1/reports/dashboard", headers=_auth())
     assert r.status_code == 200
     d = r.json()["data"]
-    assert d["summary"]["devices"] == 5
-    assert d["device_health"]["healthy"] == 4
+    # devices 来自 SSoT（未配置时 0 且标注来源），不再硬编码 5
+    assert isinstance(d["summary"]["devices"], int)
+    assert d["meta"]["demo"] is False
+    assert "change_pipeline" in d
 
 
 def test_reports_devices():
     r = client.get("/api/v1/reports/devices", headers=_auth())
     assert r.status_code == 200
-    assert len(r.json()["data"]["by_vendor"]) == 4
+    d = r.json()["data"]
+    assert isinstance(d["total"], int)
+    assert "source" in d  # NullSSoT / NetBoxAdapter / ...（不可达标注 unreachable）
 
 
 def test_reports_changes():
     r = client.get("/api/v1/reports/changes", headers=_auth())
     assert r.status_code == 200
-    assert r.json()["data"]["automation_rate"] == 0.83
+    d = r.json()["data"]
+    # 自动化率不再硬编码 0.83：无闭环运行历史时显式 None + 口径说明
+    assert d["automation_rate"] is None
+    assert "automation_rate_note" in d
+    assert isinstance(d["total"], int) and d["total"] >= 0
 
 
 def test_reports_compliance():
     r = client.get("/api/v1/reports/compliance", headers=_auth())
     assert r.status_code == 200
-    assert r.json()["data"]["avg_score"] == 72
+    d = r.json()["data"]
+    # 合规历史未持久化：显式 no_data，不编造 avg_score=72
+    assert d["avg_score"] is None
+    assert "no_data" in d
+    assert d["trend"] == []
 
 
 def test_reports_llm_usage():

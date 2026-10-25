@@ -26,6 +26,19 @@ CHANGE_RE = re.compile(rf"{re.escape(TEST_BACKEND)}/api/v1/changes/[^/]+/run")
 
 HEALTH_BODY = {"status": "ok", "version": "0.4.2", "env": "dev"}
 
+REPORT_URL = f"{TEST_BACKEND}/api/v1/reports/overview"
+
+# /reports/overview 示例 Envelope（code + data，data 三块：changes/devices/meta）
+OVERVIEW_JSON = {
+    "code": 0,
+    "data": {
+        "changes": {"total": 12, "approved": 8, "deployed": 6, "rolled_back": 1},
+        "devices": {"total": 5, "by_vendor": {"huawei": 2, "cisco": 2, "h3c": 1},
+                    "source": "nautobot_mock"},
+        "meta": {"data_sources": {"nautobot": "mock"}, "generated_at": "2026-10-25T08:00:00Z"},
+    },
+}
+
 
 def _session_json(sid: str = "sess-1", intent: str = "config", scenario: str = "bgp") -> dict:
     return {"data": {
@@ -210,12 +223,38 @@ def test_simulate_change_failure_exits_1(runner):
 # ===== report =====
 
 
-def test_report_renders_markdown(runner):
-    r = runner.invoke(main.app, ["report", "sess-abc"])
+def test_report_renders_backend_overview(runner):
+    with respx.mock:
+        respx.get(REPORT_URL).mock(return_value=httpx.Response(200, json=OVERVIEW_JSON))
+        r = runner.invoke(main.app, ["report"])
     assert r.exit_code == 0
-    assert "NetSage 变更报告" in r.output
-    assert "sess-abc" in r.output
+    assert "NetSage 运营总览" in r.output
+    # 渲染的是后端真实数据，不是本地编造
+    assert "12" in r.output                      # changes.total
+    assert "huawei=2" in r.output                # devices.by_vendor
+    assert "nautobot=mock" in r.output           # meta.data_sources
+    assert "2026-10-25T08:00:00Z" in r.output    # meta.generated_at
     assert f"v{__version__}" in r.output
+
+
+def test_report_tolerates_missing_fields(runner):
+    # data 为空 dict（后端字段缺失/降级）时渲染 '-' 而不是崩溃
+    with respx.mock:
+        respx.get(REPORT_URL).mock(return_value=httpx.Response(200, json={"code": 0, "data": {}}))
+        r = runner.invoke(main.app, ["report"])
+    assert r.exit_code == 0
+    assert "NetSage 运营总览" in r.output
+    assert "-" in r.output
+
+
+def test_report_backend_unreachable_exits_1(runner):
+    with respx.mock:
+        respx.get(REPORT_URL).mock(side_effect=httpx.ConnectError("down"))
+        r = runner.invoke(main.app, ["report"])
+    assert r.exit_code == 1
+    assert "获取报表数据失败" in r.output
+    # 不可达时只报错，不再输出编造的校验结论
+    assert "Batfish" not in r.output
 
 
 # ===== NSCClient 路径与 payload =====
@@ -267,3 +306,14 @@ def test_client_run_validate_path():
         route = respx.post(VALIDATE_RE).mock(return_value=httpx.Response(200, json={"data": {}}))
         NSCClient(backend=TEST_BACKEND).run_validate("s2")
         assert "sessions/s2/validate" in route.calls.last.request.url.path
+
+
+def test_client_report_overview_path():
+    from nsc.client import NSCClient
+
+    with respx.mock:
+        route = respx.get(REPORT_URL).mock(return_value=httpx.Response(200, json=OVERVIEW_JSON))
+        data = NSCClient(backend=TEST_BACKEND).report_overview()
+        assert "reports/overview" in route.calls.last.request.url.path
+        assert data["changes"]["total"] == 12
+        assert data["devices"]["source"] == "nautobot_mock"

@@ -125,5 +125,28 @@ async def discard(vendor: str, host: str, username: str, password: str, port: in
         device.close()
 
 
+@mcp.tool()
+async def apply_candidate(
+    vendor: str, host: str, username: str, password: str, config: str, port: int = 22
+) -> dict:
+    """原子下发：单连接内 load_merge_candidate + commit_config（写操作）。
+
+    审查 H2 修复：本 server 每次工具调用新建连接，客户端分两次调
+    load_merge_candidate / commit 时 candidate 会话必丢（commit 空提交）。
+    下发/回滚必须走此复合工具。必须经三道闸 + 审批（v2.0 十章）。
+    """
+    device = _connect(vendor, host, username, password, port)
+    try:
+        device.load_merge_candidate(config=config)
+        diff = device.compare_config()
+        device.commit_config()
+        log.info("napalm_apply_candidate", host=host, diff_len=len(diff))
+        return {"host": host, "status": "committed", "diff": diff}
+    except Exception as e:
+        raise MCPError("apply_failed", f"apply_candidate 失败: {e}") from e
+    finally:
+        device.close()
+
+
 if __name__ == "__main__":
     mcp.run(transport="stdio")

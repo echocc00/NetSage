@@ -1,46 +1,127 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Card, Space, Table, Tag, Typography } from 'antd'
-import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
-import { health } from '../../services/api'
+import { Alert, Button, Card, Col, Row, Statistic, Table, Tag, Typography } from 'antd'
+import type { TableColumnsType } from 'antd'
+import { ReloadOutlined } from '@ant-design/icons'
+import { api, errorMessage, unwrap } from '../../services/api'
 
 const { Title } = Typography
 
+// GET /reports/devices 信封 data（SUZIEQ/NetBox 维度聚合，多数字段可能为 null）
+interface DeviceReport {
+  total: number | null
+  by_vendor: { vendor: string; count: number }[] | null
+  by_role: { role: string; count: number }[] | null
+  by_site: { site: string; count: number }[] | null
+  health: { no_data?: string } | null
+  source: string | null
+}
+
+const vendorCols: TableColumnsType<{ vendor: string; count: number }> = [
+  { title: '厂商', dataIndex: 'vendor' },
+  { title: '数量', dataIndex: 'count', width: 72, align: 'right' },
+]
+
+const roleCols: TableColumnsType<{ role: string; count: number }> = [
+  { title: '角色', dataIndex: 'role' },
+  { title: '数量', dataIndex: 'count', width: 72, align: 'right' },
+]
+
+const siteCols: TableColumnsType<{ site: string; count: number }> = [
+  { title: '站点', dataIndex: 'site' },
+  { title: '数量', dataIndex: 'count', width: 72, align: 'right' },
+]
+
 const DevicesPage: React.FC = () => {
-  const [backend, setBackend] = useState<string>('checking...')
+  const [data, setData] = useState<DeviceReport | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const load = async () => {
+    setLoading(true)
+    try {
+      const resp = await api.get('/reports/devices')
+      const d = await unwrap<DeviceReport>(resp)
+      setData(d)
+      setError(null)
+    } catch (e) {
+      setError(errorMessage(e))
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    // /health 为裸响应（探活端点，v2.0 统一信封不适用）
-    health()
-      .then((r) => setBackend(`${r.data.status} (v${r.data.version})`))
-      .catch(() => setBackend('不可达'))
+    load()
   }, [])
 
-  const columns = [
-    { title: '名称', dataIndex: 'name' },
-    { title: '厂商', dataIndex: 'vendor', render: (v: string) => <Tag>{v}</Tag> },
-    { title: '型号', dataIndex: 'model' },
-    { title: '角色', dataIndex: 'role' },
-    { title: '管理 IP', dataIndex: 'mgmt_ip' },
-  ]
-
   return (
-    <Space direction="vertical" style={{ width: '100%' }} size="middle">
-      <Title level={4}>设备管理</Title>
-      <Card size="small">
-        后端连接：<Tag color={backend === '不可达' ? 'red' : 'green'}>{backend}</Tag>
+    <>
+      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
+        <Title level={4} style={{ margin: 0 }}>设备管理</Title>
+        <Button icon={<ReloadOutlined />} onClick={load} loading={loading}>刷新</Button>
+      </Row>
+      {error && <Alert type="error" message={error} showIcon closable onClose={() => setError(null)} style={{ marginBottom: 16 }} />}
+      <Card title="设备总览">
+        <Row gutter={16}>
+          <Col span={6}>
+            <Statistic title="设备总数" value={data?.total ?? '-'} />
+          </Col>
+          <Col span={6} style={{ display: 'flex', alignItems: 'center' }}>
+            <Statistic
+              title="数据来源"
+              valueRender={() => (data?.source ? <Tag color={data.source === 'demo' ? 'orange' : 'geekblue'}>{data.source}</Tag> : <span>—</span>)}
+            />
+          </Col>
+        </Row>
+        {data?.health?.no_data && (
+          <Alert
+            type="info"
+            showIcon
+            style={{ marginTop: 16 }}
+            message="设备健康数据需 SUZIEQ 接入"
+            description={data.health.no_data}
+          />
+        )}
       </Card>
-      <Card
-        title="设备列表"
-        extra={
-          <Space>
-            <Button icon={<ReloadOutlined />}>刷新</Button>
-            <Button type="primary" icon={<PlusOutlined />}>添加设备</Button>
-          </Space>
-        }
-      >
-        <Table rowKey="id" columns={columns} dataSource={[]} locale={{ emptyText: 'Phase 2 接入 NetBox/Nautobot SSoT 后显示' }} />
-      </Card>
-    </Space>
+      <Row gutter={16} style={{ marginTop: 16 }}>
+        <Col span={8}>
+          <Card title="按厂商" size="small">
+            <Table
+              rowKey="vendor"
+              size="small"
+              pagination={false}
+              columns={vendorCols}
+              dataSource={data?.by_vendor ?? []}
+              locale={{ emptyText: '暂无数据' }}
+            />
+          </Card>
+        </Col>
+        <Col span={8}>
+          <Card title="按角色" size="small">
+            <Table
+              rowKey="role"
+              size="small"
+              pagination={false}
+              columns={roleCols}
+              dataSource={data?.by_role ?? []}
+              locale={{ emptyText: '暂无数据' }}
+            />
+          </Card>
+        </Col>
+        <Col span={8}>
+          <Card title="按站点" size="small">
+            <Table
+              rowKey="site"
+              size="small"
+              pagination={false}
+              columns={siteCols}
+              dataSource={data?.by_site ?? []}
+              locale={{ emptyText: '暂无数据' }}
+            />
+          </Card>
+        </Col>
+      </Row>
+    </>
   )
 }
 

@@ -55,10 +55,12 @@ services:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       NETBOX_URL: ${NETBOX_URL:-}
       NETBOX_TOKEN: ${NETBOX_TOKEN:-}
-      NAUTOBOT_MOCK: "true"
+      # Nautobot mock 可用环境变量覆盖（.env 里 NAUTOBOT_MOCK=false 接真实数据源）
+      NAUTOBOT_MOCK: ${NAUTOBOT_MOCK:-true}
       CORS_ORIGINS: '["${CORS_ORIGIN:-https://netsage.example.com}"]'
     ports:
-      - "8000:8000"
+      # 默认仅绑定本机回环；需外部直连时在 .env 设 BACKEND_BIND=0.0.0.0
+      - "${BACKEND_BIND:-127.0.0.1}:8000:8000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s

@@ -26,6 +26,7 @@ def tools() -> MockToolRegistry:
     registry = MockToolRegistry()
     # 预设所有 MCP 工具的 mock 响应
     registry.stub("napalm.get_config", lambda **kw: {"config": "interface GE0/0\n ip address 10.1.2.3 255.255.255.0"})
+    registry.stub("napalm.apply_candidate", lambda **kw: {"status": "committed"})
     registry.stub("napalm.load_merge_candidate", lambda **kw: {"status": "candidate_loaded"})
     registry.stub("napalm.commit", lambda **kw: {"status": "committed"})
     registry.stub("containerlab.deploy_topology", lambda **kw: {"status": "deployed", "nodes": [{"name": "leaf01"}]})
@@ -158,16 +159,16 @@ async def test_deploy_failure_triggers_rollback(pipeline: GatePipeline, ctx: Pip
     )
     ctx.snapshots.append(snap)
 
-    # 第二台设备 commit 失败
+    # 第二台设备 apply_candidate 失败（v0.5.0：原子复合工具替代 load+commit 两段式）
     call_count = {"n": 0}
 
-    def flaky_commit(**kw):
+    def flaky_apply(**kw):
         call_count["n"] += 1
         if call_count["n"] >= 2:
             raise RuntimeError("commit timeout")
         return {"status": "committed"}
 
-    tools.stub("napalm.commit", flaky_commit)
+    tools.stub("napalm.apply_candidate", flaky_apply)
     # 两台设备（第二台无快照，跳过回滚但不影响第一台回滚验证）
     ctx.devices.append(
         {"id": 2, "name": "leaf02", "vendor": "cisco_iosxe", "host": "10.1.2.4",
@@ -191,3 +192,23 @@ def test_gate_result_ok():
 def test_gate_result_fail():
     r = GateResult.fail("validation", "断言失败")
     assert not r.passed and r.error == "断言失败"
+
+
+@pytest.mark.asyncio
+async def test_snapshot_failure_fails_gracefully(tools: MockToolRegistry):
+    """快照抓取失败（mcp 模式 server 不可达等）→ snapshot_failed，不裸穿 500。"""
+    def broken(**kw):
+        raise RuntimeError("MCP server unreachable")
+
+    tools.stub("napalm.get_config", broken)
+    pipeline = GatePipeline(tools)
+    ctx = PipelineContext(
+        request_id=99, nim={}, devices=[
+            {"id": 1, "name": "d1", "vendor": "cisco_iosxe", "host": "h",
+             "username": "u", "password": "p", "port": 22}],
+        configs={}, assertions=[], tools=tools,
+    )
+    result = await pipeline.run(ctx)
+    assert result["status"] == ChangeStatus.SNAPSHOT_FAILED
+    assert "快照失败" in result["error"]
+    assert result["steps"] == []  # 未进入任何闸

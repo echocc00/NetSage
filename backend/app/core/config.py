@@ -53,7 +53,12 @@ class Settings(BaseSettings):
     mcp_containerlab_url: str = "http://localhost:9001"
     mcp_batfish_url: str = "http://localhost:9002"
     mcp_napalm_url: str = "http://localhost:9003"
+    mcp_netbox_url: str = "http://localhost:9004"
+    mcp_suzieq_url: str = "http://localhost:9005"
     mcp_opensm_url: str = "http://localhost:9006"
+    mcp_nautobot_url: str = "http://localhost:9007"
+    # 工具后端：mock（演示预设，闸门必过）| mcp（真实 MCP server，审查 P0 修复）
+    tools_backend: str = "mock"
 
     # 仿真
     containerlab_host: str = ""

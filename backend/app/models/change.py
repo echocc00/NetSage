@@ -1,4 +1,9 @@
-"""变更请求 ORM（v2.0 八章 + 开发计划十三章）。"""
+"""变更请求 ORM（v2.0 八章 + 开发计划十三章）。
+
+v0.5.0 修复（审查 M-2/P1）：变更单此前只存进程内 dict——重启即失、
+多 worker 不可见。现补齐落库路径：devices/configs/assertions/impact/
+pipeline_result 以 JSON 文本列存储，project_id 可空（无项目上下文时）。
+"""
 from __future__ import annotations
 
 from sqlalchemy import ForeignKey, Integer, String, Text
@@ -11,9 +16,16 @@ class ChangeRequest(Base, TimestampMixin):
     __tablename__ = "change_requests"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"))
+    project_id: Mapped[int | None] = mapped_column(
+        ForeignKey("projects.id"), nullable=True
+    )
     title: Mapped[str] = mapped_column(String(256))
-    intent: Mapped[dict] = mapped_column(Text)  # NIM 片段 JSON
+    intent: Mapped[str] = mapped_column(Text)  # NIM 片段 JSON
+    devices: Mapped[str] = mapped_column(Text, default="[]")  # 设备清单 JSON
+    configs: Mapped[str] = mapped_column(Text, default="{}")  # 设备名→配置 JSON
+    assertions: Mapped[str] = mapped_column(Text, default="[]")  # 断言列表 JSON
+    impact: Mapped[str] = mapped_column(Text, default="{}")  # 影响推演 JSON
+    pipeline_result: Mapped[str] = mapped_column(Text, default="")  # 最近一次闸门结果 JSON
     status: Mapped[str] = mapped_column(String(32), default="draft")
     created_by: Mapped[int] = mapped_column(Integer)
     # status 流转见 app.gates.models.ChangeStatus
@@ -53,6 +65,8 @@ class ConfigSnapshot(Base, TimestampMixin):
     change_request_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     object_key: Mapped[str] = mapped_column(String(256))  # MinIO 对象 key
     config_hash: Mapped[str] = mapped_column(String(64))  # sha256
+    # v0.5.0：无 MinIO 时快照正文落库（trust boundary 内；MinIO 接入后置空）
+    content: Mapped[str] = mapped_column(Text, default="")
     restored: Mapped[bool] = mapped_column(default=False)
 
 

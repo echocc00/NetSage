@@ -63,3 +63,9 @@ class NSCClient:
         r = self.client.post(f"/api/v1/changes/{change_id}/run")
         r.raise_for_status()
         return r.json()["data"]
+
+    def report_overview(self) -> dict:
+        """运营总览报表数据：GET /api/v1/reports/overview（Envelope.data）。"""
+        r = self.client.get("/api/v1/reports/overview")
+        r.raise_for_status()
+        return r.json()["data"]

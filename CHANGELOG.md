@@ -4,6 +4,72 @@
 
 ## [Unreleased]
 
+### v0.5.0 阶段2 · 系统评审修复（三道闸接线 / 审计落库 / 报表去编造）
+
+> 修复第三方评审认定的三项核心差距（P0）：三道闸生产路由 mock 硬编码、
+> 审计哈希链零调用、运营报表编造数字；以及一批 P1/P2（auto_approve 可跳审批、
+> 变更单内存态、快照多 worker 失效、脱敏可绕过、SSE 路由 404 等）。
+
+**三道闸真实工具链（P0）**
+- 新增 `HttpToolRegistry`（`app/tools/http_registry.py`）：按 `<server>.<tool>` 前缀经 fastmcp 客户端调真实 MCP server；`app/tools/wiring.py` 双模式装配——`TOOLS_BACKEND=mcp` 走真实 server，默认 mock（演示预设必过，启动 WARNING + API 响应 `tools_mode` 字段明示）
+- `changes.py` 三道闸/下发路由不再就地 `new MockToolRegistry()`，改用 main.py lifespan 装配的全局注册表（`configure_tools` 此前零调用）
+- napalm-mcp 新增 `apply_candidate` 原子复合工具（单连接 load+compare+commit，修复 per-call 连接下 candidate 会话必丢的 H2 bug）；`GatePipeline.deploy`/`SnapshotService.rollback` 改用
+- 工具名对齐：pipeline 此前调 `napalm.apply_candidate` 但 server 侧不存在——现已实现闭环
+
+**审计哈希链接线（P0）**
+- `AuditService` 此前全库零调用：现 `DbAuditSink`/`MemoryAuditSink` 双实现 + 启动 DB 探测装配；变更单 create/run_gates/approve/deploy 与闭环运行写入审计链（**fail-closed：审计写失败操作 503 中止**）
+- `verify_chain` 重算 sha256（此前只比对链式相等，改写记录内容不被发现）；payload 补 ts（改时间戳不影响哈希的漏洞）；migration 0007 加 `audit_logs.prev_hash` 唯一约束 + IntegrityError 重试（并发分叉链防护）
+
+**运营报表去编造（P0）**
+- `reports.py` 5 端点硬编码演示数字（devices=5 / automation_rate=0.83 / rca_hit_rate=0.75）全部移除：变更统计来自 ChangeStore 实时计数、设备来自 SSoT（不可达如实标注 `unreachable`）、无历史数据的指标显式 `null + no_data` 说明，`meta.demo=false` 标注数据源
+
+**安全修复（P0/P1）**
+- `auto_approve` 服务端强制：非 dev 环境恒为 False（此前为纯请求参数，任何人传 true 跳过人工审批直达下发）+ 生产强制日志
+- agents deploy 路由：生产必须携带 `change_id` 且对应变更单状态为 approved（此前路由自写 `change_status="approved"` 绕过审批校验）
+- 脱敏内容自动分级（`redact/detector.py`）：声明白盒但内容含 running-config/日志特征时 tier 只升不降（配置强特征→黑盒阻断，片段→灰盒强制脱敏），不再信任调用方字符串
+- 脱敏正则加固：`secret 5 $1$salt$hash` 整行值清除（此前真实哈希外发）、主机名后缀扩充（.lan/.localdomain/.priv/.home）、IPv4 严格 0-255 段、去魔法索引
+- 模板参数消毒（`validate_param_values`）：参数值含换行/控制字符拒绝渲染（LLM 生成值注入任意配置行的通路封死）
+
+**数据层落地（P1）**
+- migration 0007：补齐 models 定义但从未迁移的 7 张表（projects/credentials/devices/change_requests/change_steps/approvals/config_snapshots）
+- 变更单从进程内 dict 改为 `ChangeStore` 双实现（DB 落库 / 内存回退，启动探测自动选择 + 日志明示）；`GET /changes` 列表路由（前端审批页此前 405）
+- 快照正文经 `SnapshotObjectStore` 落 config_snapshots 表（多 worker 下 /run 与 /deploy 落不同 worker 快照读空的问题修复）
+- napalm/netmiko/scrapli 适配层依赖声明（pyproject optional `[vendors]`）
+
+**前端/CLI 断链修复**
+- `GET /agents/sessions/{id}/stream` SSE 路由落地（此前 docstring 宣称但未实现，前端 EventSource 404）；一次性 ticket 鉴权（120s TTL 单次使用，避免 JWT 进 URL）
+- 前端 changes/devices/dashboard/troubleshoot 四页接真实 API（审批/驳回按钮、SSE ticket、报表 null 健壮渲染、移除死按钮与死依赖）
+- CLI `report` 改调真实 `GET /reports/overview`（此前本地硬编码字符串拼接假报告）
+
+**基础设施**
+- backend Dockerfile：修 builder 阶段 editable 空壳 bug（源码未拷入先 install -e）、新增 `.dockerignore`（.venv/tests 不再打进镜像）、非 root 用户运行
+- prod compose：`NAUTOBOT_MOCK`/backend 端口绑定改环境变量驱动（默认 `127.0.0.1:8000`，`.env.example` 补说明）
+- backup/restore 脚本：恢复提示指向真实产物、SHA256SUMS 落盘且 restore 前校验、venv 路径自动探测（Windows/Linux）
+
+**质量护栏**
+- `test_inventory` 从无断言硬编码（且作为 conftest 函数根本不被 pytest 收集）改为收集钩子精确计数 + 按目录域强校验（`tests/unit/test_inventory_sync.py`）：测试数漂移即红
+- baseline_scanner `absent/present` 行级否定语义修复（`no ip http server` 不再被误判违规）
+- 测试口径更新：314 unit functions / 532 unit cases / 18 e2e（+25 项 v0.5.0 修复回归测试 + 快照失败防护）；ruff + mypy strict 双 0
+
+### v0.5.0 阶段2 补充 · Docker 环境实测（DB 模式 + MCP 真实链路）
+
+> 前置：docker compose dev（PG/pgvector）。此前所有验证均在无 DB/无 MCP server 环境下进行。
+
+**DB 模式实测（真实 PostgreSQL，`alembic upgrade head` 0001→0007 全链执行成功）**
+- `tests/integration/test_db_mode.py` 4 测试全过：DbChangeStore 全流程（CRUD/审批/快照/统计落 PG）；**审计链篡改检测**（owner UPDATE 记录后 verify_chain=False，还原后 True——重算哈希防线生效）；跨存储实例快照共享（多 worker 场景）；HTTP 生命周期落库（change_requests status=done + 审计 ≥4 条 + 快照正文落库 + 全链 verify 通过）
+- 此前一直 skip 的 PG 相关测试随 PG 在线全部执行通过（unit 531 → 全绿）
+
+**MCP 真实链路实测（`backend/scripts/verify_mcp_chain.py`，6/6 通过）**
+- HttpToolRegistry → fastmcp streamable-http 真实协议调用（initialize/tools/call/DELETE 完整会话）
+- `TOOLS_BACKEND=mcp` + 真实 uvicorn：三道闸四闸（快照/仿真/校验/审批）结果全部来自真实 MCP HTTP 响应（非 mock stub），下发经 `apply_candidate` → done
+- **真实失败传播**：切真实 containerlab-mcp（宿主机无 containerlab CLI）→ 仿真闸 sim_failed，错误为真实 `[WinError 2]`——闸门不再无条件放行
+- 遗留：真实 containerlab 拓扑的**成功路径**（部署真节点跑仿真检查）需 Linux 容器环境，未验证
+
+**实测暴露并修复的问题**
+- 快照抓取失败裸穿 500 → 状态机新增 `snapshot_failed`（SIM_PENDING 可达，可重试），优雅失败 + 单测
+- dev 环境 SQLAlchemy engine 改 NullPool：修复 asyncpg 池化连接跨 event loop 复用（TestClient/多 loop）触发的 "Event loop is closed"
+- `DbChangeStore.load_snapshot` 同 object_key 多版本（变更重跑）取最新一条
+
 ### v0.5.0 阶段1 · RAG 语料覆盖分析 + RFC 补语料管线（波2）
 
 - **覆盖缺口量化**：513 题按 references 分三类——175 题已被现有 huawei 手册覆盖、**338 题缺语料**、其中 **50 题纯引公开 RFC（NDA-free）**、~160 题引 cisco/h3c/juniper/arista 厂商 URL（需版权/NDA）

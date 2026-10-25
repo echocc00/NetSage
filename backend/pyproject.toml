@@ -28,6 +28,7 @@ dependencies = [
     "langgraph>=0.2",
     # MCP
     "mcp>=1.0",
+    "fastmcp>=2.0",
     # HTTP
     "httpx>=0.27",
     # 认证
@@ -40,6 +41,13 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# 多厂商设备接入适配层（app/access/*：Netmiko/NAPALM/Scrapli adapter）
+vendors = [
+    "napalm>=4.0",
+    "netmiko>=4.0",
+    "scrapli>=2024.0",
+    "napalm-huawei>=0.3",   # 华为 VRP driver（napalm 第三方包）
+]
 dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.23",

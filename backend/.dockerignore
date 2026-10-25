@@ -1,0 +1,23 @@
+# NetSage 后端构建上下文裁剪（缩小镜像层 + 防本地杂物/敏感文件进镜像）
+# 虚拟环境（本地开发环境，镜像内自装）
+.venv/
+venv/
+# 测试与缓存（CI 专用，不属于运行镜像）
+tests/
+__pycache__/
+**/__pycache__/
+*.pyc
+**/*.pyc
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+htmlcov/
+.coverage
+coverage.xml
+# 本地构建产物
+*.egg-info/
+# 密钥文件严禁进镜像（.env.example 占位符也不需要）
+.env*
+# 构建配置本身
+Dockerfile
+.dockerignore

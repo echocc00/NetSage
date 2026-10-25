@@ -5,28 +5,83 @@ GET /reports/devices     设备统计（按厂商/角色/站点）
 GET /reports/changes     变更统计（按状态/时间）
 GET /reports/compliance  合规得分趋势
 GET /reports/dashboard   大屏聚合数据
+
+v0.5.0 修复（审查 P0）：此前 5 个端点全部返回硬编码演示数字
+（devices=5 / automation_rate=0.83 / rca_hit_rate=0.75 均为编造）。
+现改为真实数据源：变更统计来自 ChangeStore（内存或 DB，响应标注
+storage）、设备来自 SSoT（未配置 NetBox 时为 0 并标注来源）、
+RCA/自动化率无历史数据时显式返回 null + no_data 原因，不再编造。
 """
 from __future__ import annotations
+
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends
 
 from app.core.deps import CurrentUser, get_current_user
 from app.schemas.common import Envelope
+from app.services.change_store import get_change_store
 
 router = APIRouter(prefix="/reports", tags=["reports"])
+
+
+async def _change_summary() -> dict:
+    stats = await get_change_store().stats()
+    by = stats.get("by_status", {})
+    return {
+        "total": stats.get("total", 0),
+        "approved": by.get("approved", 0) + by.get("done", 0) + by.get("deployed", 0),
+        "deployed": by.get("done", 0) + by.get("deployed", 0),
+        "rolled_back": by.get("rolled_back", 0),
+    }
+
+
+async def _device_summary() -> dict:
+    """设备统计来自 SSoT（NetBox 可用时真实清单；不可达/未配置时如实标注）。"""
+    from app.access.source_of_truth import get_source_of_truth
+
+    ssot = get_source_of_truth()
+    source = type(ssot).__name__
+    try:
+        devices = await ssot.list_devices(None)
+        by_vendor: dict[str, int] = {}
+        for d in devices:
+            by_vendor[d.vendor] = by_vendor.get(d.vendor, 0) + 1
+        return {"total": len(devices), "by_vendor": by_vendor, "source": source}
+    except Exception:
+        return {"total": 0, "by_vendor": {}, "source": f"{source}(unreachable)"}
+
+
+async def _list_ssot_devices() -> tuple[list, str]:
+    from app.access.source_of_truth import get_source_of_truth
+
+    ssot = get_source_of_truth()
+    source = type(ssot).__name__
+    try:
+        return await ssot.list_devices(None), source
+    except Exception:
+        return [], f"{source}(unreachable)"
 
 
 @router.get("/overview", response_model=Envelope[dict])
 async def overview(
     user: CurrentUser = Depends(get_current_user),
 ) -> Envelope[dict]:
-    """运营总览。"""
+    """运营总览（真实数据；无历史数据的指标显式 null，不编造）。"""
+    changes = await _change_summary()
+    devices = await _device_summary()
     return Envelope.ok({
-        "devices": {"total": 5, "by_vendor": {"huawei": 2, "cisco": 1, "h3c": 1, "arista": 1}},
-        "changes": {"total": 12, "approved": 8, "deployed": 6, "rolled_back": 1},
-        "compliance": {"avg_score": 72, "scans": 15},
-        "rca": {"total": 8, "top1_hit": 6, "hit_rate": 0.75},
-        "agents": {"total_runs": 45, "by_agent": {"troubleshooter": 12, "deploy": 8, "compliance": 5}},
+        "devices": devices,
+        "changes": changes,
+        # 合规/RCA 历史尚未落库（v0.5.0 已知限制），如实标注
+        "compliance": {"avg_score": None, "scans": 0, "no_data": "合规扫描历史未持久化"},
+        "rca": {"total": 0, "top1_hit": None, "hit_rate": None, "no_data": "RCA 命中统计未持久化"},
+        "agents": {"total_runs": 0, "by_agent": {}, "no_data": "Agent 运行历史未持久化"},
+        "meta": {
+            "generated_at": datetime.now(UTC).isoformat(),
+            "change_storage": get_change_store().mode,
+            "demo": False,
+        },
     })
 
 
@@ -34,13 +89,22 @@ async def overview(
 async def device_stats(
     user: CurrentUser = Depends(get_current_user),
 ) -> Envelope[dict]:
-    """设备统计（按厂商/角色/站点）。"""
+    """设备统计（SSoT 真实清单；未配置/不可达时返回空并标注来源）。"""
+    devices, source = await _list_ssot_devices()
+    by_vendor: dict[str, int] = {}
+    by_role: dict[str, int] = {}
+    by_site: dict[str, int] = {}
+    for d in devices:
+        by_vendor[d.vendor] = by_vendor.get(d.vendor, 0) + 1
+        by_role[d.role or "unknown"] = by_role.get(d.role or "unknown", 0) + 1
+        by_site[d.site or "unknown"] = by_site.get(d.site or "unknown", 0) + 1
     return Envelope.ok({
-        "by_vendor": [{"vendor": "huawei", "count": 2}, {"vendor": "cisco", "count": 1},
-                      {"vendor": "h3c", "count": 1}, {"vendor": "arista", "count": 1}],
-        "by_role": [{"role": "spine", "count": 2}, {"role": "leaf", "count": 3}],
-        "by_site": [{"site": "shanghai", "count": 3}, {"site": "beijing", "count": 2}],
-        "health": {"healthy": 4, "warning": 1, "critical": 0, "unknown": 0},
+        "total": len(devices),
+        "by_vendor": [{"vendor": k, "count": v} for k, v in sorted(by_vendor.items())],
+        "by_role": [{"role": k, "count": v} for k, v in sorted(by_role.items())],
+        "by_site": [{"site": k, "count": v} for k, v in sorted(by_site.items())],
+        "health": {"no_data": "设备健康需 SUZIEQ 可观测接入（TOOLS_BACKEND=mcp）"},
+        "source": source,
     })
 
 
@@ -48,22 +112,19 @@ async def device_stats(
 async def change_stats(
     user: CurrentUser = Depends(get_current_user),
 ) -> Envelope[dict]:
-    """变更统计。"""
+    """变更统计（ChangeStore 真实计数）。"""
+    stats = await get_change_store().stats()
+    by_status = stats.get("by_status", {})
     return Envelope.ok({
+        "total": stats.get("total", 0),
         "by_status": [
-            {"status": "draft", "count": 2},
-            {"status": "approved", "count": 3},
-            {"status": "deployed", "count": 6},
-            {"status": "rolled_back", "count": 1},
+            {"status": k, "count": v} for k, v in sorted(by_status.items())
         ],
-        "by_action": [
-            {"action": "deploy", "count": 8},
-            {"action": "rollback", "count": 2},
-            {"action": "audit", "count": 2},
-        ],
-        "automation_rate": 0.83,
-        "trend": [{"day": "2026-08-20", "count": 3}, {"day": "2026-08-21", "count": 5},
-                  {"day": "2026-08-22", "count": 2}, {"day": "2026-08-23", "count": 2}],
+        # 自动化率是闭环编排的步骤口径指标（(6-1)/6），不是运营实测；
+        # 历史运行未持久化前不做数字宣称（审查 P0 修复）
+        "automation_rate": None,
+        "automation_rate_note": "自动化率需闭环运行历史（未持久化）；口径见 doc/NetSage-Phase3-规划 11.2",
+        "storage": get_change_store().mode,
     })
 
 
@@ -71,16 +132,13 @@ async def change_stats(
 async def compliance_stats(
     user: CurrentUser = Depends(get_current_user),
 ) -> Envelope[dict]:
-    """合规得分趋势。"""
+    """合规得分趋势（历史未持久化：显式 no_data，不编造趋势）。"""
     return Envelope.ok({
-        "avg_score": 72,
-        "trend": [{"day": "2026-08-20", "score": 65}, {"day": "2026-08-21", "score": 70},
-                  {"day": "2026-08-22", "score": 68}, {"day": "2026-08-23", "score": 72}],
-        "top_findings": [
-            {"rule_id": "HUAWEI-AUTH-02", "severity": "critical", "count": 3, "description": "Telnet 未禁用"},
-            {"rule_id": "CISCO-MGMT-01", "severity": "high", "count": 2, "description": "SNMP v1/v2c"},
-            {"rule_id": "HUAWEI-ACL-01", "severity": "high", "count": 2, "description": "HTTP 服务启用"},
-        ],
+        "avg_score": None,
+        "scans": 0,
+        "trend": [],
+        "top_findings": [],
+        "no_data": "合规扫描历史未持久化；单次扫描走 POST /compliance/scan",
     })
 
 
@@ -88,19 +146,38 @@ async def compliance_stats(
 async def dashboard(
     user: CurrentUser = Depends(get_current_user),
 ) -> Envelope[dict]:
-    """大屏聚合数据（一屏展示所有关键指标）。"""
+    """大屏聚合数据（真实来源；无数据指标显式 null/no_data）。"""
+    changes = await _change_summary()
+    devices = await _device_summary()
+    stats = await get_change_store().stats()
+    by_status = stats.get("by_status", {})
+    from app.core.config import get_settings
+
     return Envelope.ok({
         "summary": {
-            "devices": 5, "changes_today": 2, "compliance_score": 72,
-            "automation_rate": 0.83, "alerts": 1, "agents_run_today": 8,
+            "devices": devices["total"],
+            "changes_total": changes["total"],
+            "automation_rate": None,
+            "alerts": 0,
+            "agents_run": 0,
         },
-        "device_health": {"healthy": 4, "warning": 1, "critical": 0},
-        "change_pipeline": {"draft": 2, "approved": 3, "deployed": 6, "rolled_back": 1},
-        "rca_hit_rate": 0.75,
-        "top_alerts": [
-            {"severity": "warning", "device": "leaf02", "message": "CRC 错误率上升"},
-        ],
-        "version": "v0.4.2",
+        "device_health": {"no_data": "需 SUZIEQ 接入"},
+        "change_pipeline": {
+            "draft": by_status.get("draft", 0),
+            "approval": by_status.get("approval", 0),
+            "approved": by_status.get("approved", 0),
+            "deployed": by_status.get("done", 0) + by_status.get("deployed", 0),
+            "rolled_back": by_status.get("rolled_back", 0),
+        },
+        "rca_hit_rate": None,
+        "top_alerts": [],
+        "meta": {
+            "generated_at": datetime.now(UTC).isoformat(),
+            "change_storage": get_change_store().mode,
+            "device_source": devices["source"],
+            "demo": False,
+        },
+        "version": get_settings().version,
     })
 
 

@@ -26,11 +26,35 @@ export async function unwrap<T>(resp: { data: Envelope<T> }): Promise<T> {
   return resp.data.data
 }
 
-// SSE 流式 DAG 进度（v2.0 十二章）
-export function streamSession(sessionId: string, onEvent: (e: unknown) => void): () => void {
-  const es = new EventSource(`/api/v1/agents/sessions/${sessionId}/stream`)
+// 创建排障会话响应（POST /agents/sessions，stream_ticket 为一次性票据 120s）
+export interface AgentSession {
+  session_id: string
+  intent: string
+  scenario: string
+  primary_agent: string
+  stream_ticket: string
+}
+
+// SSE 流事件载荷（默认 message 事件，data 为 JSON）
+export interface AgentStreamEvent {
+  event: 'start' | 'step' | 'state' | 'done' | 'error'
+  node?: string
+  error?: string
+  [key: string]: unknown
+}
+
+// SSE 流式 DAG 进度（v2.0 十二章）；EventSource 无法带 Authorization 头，改走 ?ticket= 一次性票据
+export function streamSession(sessionId: string, ticket: string, onEvent: (e: AgentStreamEvent) => void): () => void {
+  const es = new EventSource(`/api/v1/agents/sessions/${sessionId}/stream?ticket=${encodeURIComponent(ticket)}`)
   es.onmessage = (e) => onEvent(JSON.parse(e.data))
   return () => es.close()
+}
+
+// 统一错误文案提取：信封 error 优先，兼容非 2xx 的 AxiosError（FastAPI detail）
+export function errorMessage(e: unknown): string {
+  const err = e as { response?: { data?: { error?: string; detail?: string } }; message?: string }
+  const d = err?.response?.data
+  return d?.error ?? d?.detail ?? err?.message ?? '请求失败'
 }
 
 // 健康检查（探活端点裸响应，不走信封——v2.0 patterns 例外）

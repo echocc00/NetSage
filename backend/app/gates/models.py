@@ -26,15 +26,17 @@ class ChangeStatus(StrEnum):
     DONE = "done"
     FAILED = "failed"
     ROLLED_BACK = "rolled_back"
+    SNAPSHOT_FAILED = "snapshot_failed"
     CLOSED = "closed"
 
 
 # 合法状态流转（状态机约束）
 VALID_TRANSITIONS: dict[ChangeStatus, set[ChangeStatus]] = {
     ChangeStatus.DRAFT: {ChangeStatus.SIM_PENDING},
-    ChangeStatus.SIM_PENDING: {ChangeStatus.SIM_PASSED, ChangeStatus.SIM_FAILED},
+    ChangeStatus.SIM_PENDING: {ChangeStatus.SIM_PASSED, ChangeStatus.SIM_FAILED, ChangeStatus.SNAPSHOT_FAILED},
     ChangeStatus.SIM_PASSED: {ChangeStatus.VAL_PENDING},
     ChangeStatus.SIM_FAILED: {ChangeStatus.DRAFT, ChangeStatus.CLOSED},  # 回炉或关闭
+    ChangeStatus.SNAPSHOT_FAILED: {ChangeStatus.SIM_PENDING, ChangeStatus.CLOSED},  # 重试快照或关闭
     ChangeStatus.VAL_PENDING: {ChangeStatus.VAL_PASSED, ChangeStatus.VAL_FAILED},
     ChangeStatus.VAL_PASSED: {ChangeStatus.APPROVAL},
     ChangeStatus.VAL_FAILED: {ChangeStatus.DRAFT, ChangeStatus.CLOSED},

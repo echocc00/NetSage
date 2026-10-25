@@ -33,17 +33,17 @@
 | 模块 | 状态 | 说明 |
 |---|---|---|
 | Agent 编排 | ✅ | 10 Agent：planner / config_engineer / validator / troubleshooter / deploy / observer / security_auditor / compliance / rdm_agent / wireless_agent |
-| 三道闸引擎 | ✅ | Containerlab 仿真 → Batfish 校验 → 人工审批 + 快照回滚 |
-| 多厂商接入 | ✅ | 华为 VRP / Cisco IOS-XE / H3C / Juniper / Arista（NAPALM + netmiko + scrapli），86 配置模板 |
+| 三道闸引擎 | 🟡 | 编排+状态机完整；默认 **mock 工具模式（闸门必过演示）**，`TOOLS_BACKEND=mcp` 经 HttpToolRegistry 走真实 MCP server（协议链路+失败传播已实测 6/6；真实 containerlab 拓扑成功路径待验证） |
+| 多厂商接入 | 🟡 | 华为 VRP / Cisco IOS-XE / H3C / Juniper / Arista（NAPALM + netmiko + scrapli），86 配置模板。适配层就绪、napalm-mcp 真实现；厂商方言未全量实测 |
 | SourceOfTruth 双适配器 | ✅ | NetBox（真实 REST）+ Nautobot（Adapter，mock 模式默认）+ 自研 App v0.1 |
-| 安全合规 | ✅ | SecurityAuditor + 30 条基线规则（CIS + 厂商加固）+ ACL 分析（Cisco + 华为） |
-| 故障排障 | ✅ | RCA 引擎（26 条规则 + 概率排序）+ Troubleshooter Agent |
-| 自动化闭环 | ✅ | 诊断→修复→验证→审批→下发→监控，自动化率 83%（生产，仅 approve 人工） |
-| 数据脱敏 | ✅ | Layer1/3 四层模型，**已接入 LLM 网关**（黑盒阻断 + 灰盒强制脱敏 + 响应还原） |
-| 审计合规 | ✅ | sha256 哈希链 + INSERT ONLY + 五级 RBAC（等保三权分立） |
-| 生产化 | ✅ | 运营大屏 + DR/备份（RPO 24h/RTO 2h）+ LLM 缓存 + 生产 Docker + OpenAPI |
-| React 前端 | ✅ | 9 页面：大屏 / 设备 / 设计工坊 / 排障 / 审批 / 审计 / RDMA / 无线 / 登录 |
-| CLI nsc | ✅ | 8 命令：login / status / health / version / ask / gen / simulate / report（typer，23 测试） |
+| 安全合规 | ✅ | SecurityAuditor + 30 条基线规则（CIS + 厂商加固，行级否定语义）+ ACL 分析（报告结构演示，Batfish 真实集成待接线） |
+| 故障排障 | ✅ | RCA 引擎（11 条 BGP/OSPF/VXLAN 规则 + 7 条 RDMA 规则，关键词加权排序）+ Troubleshooter Agent |
+| 自动化闭环 | ✅ | 诊断→修复→验证→审批→下发→监控。自动化率口径 (6-1)/6≈83%（步骤计数法），非实测运营值；生产 auto_approve 服务端强制 False |
+| 数据脱敏 | ✅ | Layer1/3 双层 + 内容特征自动分级（谎报白盒送配置会被升级拦截）+ 已接入 LLM 网关（黑盒阻断 + 灰盒强制脱敏 + 响应还原） |
+| 审计合规 | ✅ | sha256 哈希链（payload 含 ts，verify 重算防改写）+ INSERT ONLY + 五级 RBAC（等保三权分立）。变更/闭环生命周期已接线（fail-closed） |
+| 生产化 | 🟡 | 运营报表**真实数据源**（变更来自存储层、设备来自 SSoT、无历史指标显式 no_data 不编造）+ DR/备份 + LLM 缓存 + 生产 Docker + OpenAPI；DB 不可达自动降级内存态 |
+| React 前端 | ✅ | 9 页面：大屏 / 设备 / 设计工坊 / 排障（SSE 流式）/ 审批 / 审计 / RDMA / 无线 / 登录 |
+| CLI nsc | ✅ | 8 命令：login / status / health / version / ask / gen / simulate / report（typer，26 测试；report 调真实 /reports/overview） |
 | RDMA 专项 | 🟡 | RdmAgent（PFC/ECN/DCQCN 配置诊断）+ OpenSM 容器化。**默认 mock 模式，真实 IB 硬件未验证** |
 | 无线专项 | 🟡 | WirelessAgent（AP 布放 + 信道规划 + 漫游域 + 安全策略）。**WLC API 未接入** |
 | 多租户 + SSO | ✅ | Tenant model + OIDC（PKCE + nonce + state + JWKS 验签）。**已接真实 Keycloak 22 E2E**（headless 全链路，8 测试） |
@@ -213,18 +213,25 @@ flowchart TB
 - ✅ **Phase 4**（M7-M12）：RDMA + 无线 + 多租户 + SSO + 生产化（v0.4.0）
 - ✅ **审计修复**（P7-1~P7-8）：脱敏接入 LLM 网关 + OIDC 补齐 + CI 门禁 + Agent 深度 + E2E + hit_rate 实测（v0.4.1）
 - ✅ **v0.4.2 收尾**：CLI nsc 落地 + frontend Dockerfile + mypy 真阻断 + 测试数透明化 + AGENTS.md（v0.4.2）
+- ✅ **v0.5.0 阶段2 · 系统评审修复**：三道闸 mock 硬编码/审计链零接线/报表编造数字三项核心差距修复 + 工具链双模式（HttpToolRegistry）+ 变更单/快照落库 + SSE 流式路由 + 脱敏内容自动分级 + auto_approve 服务端强制
 
-### v0.4.2 已知限制（诚实清单）
+### v0.5.0 已知限制（诚实清单）
+
+> v0.5.0 审查修复：三道闸 mock 硬编码、审计链零接线、报表编造数字三项核心差距已修复
+> （见 CHANGELOG v0.5.0 阶段2）；下表为修复后仍存在的真实限制。
 
 | 项 | 现状 | 解锁条件 |
 |---|---|---|
+| 三道闸真实链路 | 双模式：默认 mock（闸门必过，响应明示 tools_mode）；`TOOLS_BACKEND=mcp` 走真实 MCP server。**协议链路 + 失败传播已实测**（`backend/scripts/verify_mcp_chain.py` 6/6：四闸结果来自真实 MCP 响应；真实失败会正确挡闸 sim_failed）。真实 containerlab 拓扑**部署成功路径**未验证 | Linux 容器环境跑真实 containerlab 拓扑 |
 | RAG hit_rate | 语料仅 3 份华为手册（543 行 / 54 chunks），全量 33.9%；语料内 99.4%，瓶颈是语料覆盖非检索算法 | 厂商手册全量 ingest（需版权授权）+ RFC 全文 |
 | RDMA 真实验证 | OpenSM/RdmAgent 默认 mock 模式，2 节点硬编码数据 | IB 硬件测试床 + perftest |
 | OpenSM 法务 | 工程隔离已做（不链接/不分发/不修改），法务 memo 未出具 | 法务团队签字 |
 | Nautobot | Adapter 完整但默认 mock，未部署真实 Nautobot 服务 | 部署 Nautobot v2 |
-| OIDC/SSO | 已接真实 Keycloak 22 E2E（auth-code + PKCE 全链路 headless 验证，8 测试：发现/JWKS/登录/验签/防重放）；per-tenant IdP 配置与生产 HTTPS/secure-cookie 待 v0.5.0 多租户阶段 | 生产部署 + 多租户 IdP 映射 |
+| OIDC/SSO | 已接真实 Keycloak 22 E2E（auth-code + PKCE 全链路 headless 验证，8 测试：发现/JWKS/登录/验签/防重放）；生产 HTTPS/secure-cookie 待多租户阶段 | 生产部署 |
 | 评测集质量 | 513 题 schema 100% 通过；复审 v1：0 真重复、200 对编号系列变体、root_causes 已全部补齐 ≥3（工具 `eval/runner/review_dataset.py`）；脚本生成 402 题仍待逐题人工复核 | 按 `source` 分层人工复审 |
 | WLC API | WirelessAgent 生成配置，未接厂商 WLC 控制器 API | 厂商 API 凭据 |
+| ACL 分析 | `/compliance/scan-acl` 返回示例数据（报告结构演示），Batfish 真实集成未接线 | acl_analyzer 接 batfish-mcp |
+| 运营指标历史 | 合规得分/RCA 命中/Agent 运行历史未持久化，报表对应指标显式 no_data | 指标事件落库 + 看板 |
 
 ## 许可证
 

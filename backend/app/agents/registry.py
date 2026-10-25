@@ -13,19 +13,41 @@ from app.runtime.sequential_backend import SequentialBackend
 
 # Agent 工具集注入：handlers 需要 ToolRegistry
 _tools: Any = None
+_tools_mode: str = "mock"
 
 
-def configure_tools(tools: Any) -> None:
-    """注入全局 ToolRegistry（应用启动时调）。"""
-    global _tools
+def configure_tools(tools: Any, mode: str = "mock") -> None:
+    """注入全局 ToolRegistry（应用启动时调，mode 见 app.tools.wiring）。"""
+    global _tools, _tools_mode
     _tools = tools
+    _tools_mode = mode
+
+
+def tools_mode() -> str:
+    """当前工具模式（mock=演示预设 / mcp=真实 MCP server）。"""
+    return _tools_mode
 
 
 def _tools_get() -> Any:
     if _tools is None:
+        # 未装配（单测/无 lifespan 场景）→ 演示预设 mock（闸门必过，与
+        # app.tools.wiring mock 模式一致；生产由 main.py lifespan 装配覆盖）
         from app.tools.registry import MockToolRegistry
-        return MockToolRegistry()
+        from app.tools.wiring import install_demo_stubs
+
+        fallback = MockToolRegistry()
+        install_demo_stubs(fallback)
+        return fallback
     return _tools
+
+
+def get_tools() -> Any:
+    """生产路由用：取启动时装配的全局注册表。
+
+    未装配时（单测直接调 handler 的场景）回落裸 MockToolRegistry，
+    与历史行为一致；应用运行时始终由 main.py lifespan 装配。
+    """
+    return _tools_get()
 
 
 # ===== Agent 定义（W5 起 YAML 化，Phase 1 先用代码定义跑通）=====

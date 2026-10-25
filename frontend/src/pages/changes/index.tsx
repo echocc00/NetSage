@@ -1,14 +1,29 @@
-import React, { useState } from 'react'
-import { Badge, Button, Card, Descriptions, Space, Table, Tag, Typography } from 'antd'
-import { api } from '../../services/api'
+import React, { useEffect, useState } from 'react'
+import { Alert, Badge, Button, Card, Descriptions, Popconfirm, Space, Table, Tag, Typography, message } from 'antd'
+import type { TableColumnsType } from 'antd'
+import { api, errorMessage, unwrap } from '../../services/api'
 
-const { Title } = Typography
+const { Title, Text } = Typography
 
-interface Change {
+// GET /changes 信封 data（v2.0 变更工单列表）
+interface ChangeListData {
+  count: number
+  storage: string
+  items: ChangeItem[]
+}
+
+interface ChangeItem {
   id: number
   title: string
   status: string
-  impact: { risk_level?: string; affected_devices?: string[]; suggested_window?: string } | null
+  impact_confirmed: boolean | null
+}
+
+// POST /changes/{id}/approve 信封 data
+interface ApproveResult {
+  change_id: number
+  status: string
+  approver: string
 }
 
 const STATUS_COLOR: Record<string, 'default' | 'success' | 'processing' | 'error' | 'warning'> = {
@@ -20,54 +35,122 @@ const STATUS_COLOR: Record<string, 'default' | 'success' | 'processing' | 'error
   rolled_back: 'warning',
 }
 
+const STATUS_TEXT: Record<string, string> = {
+  draft: '草稿',
+  approval: '审批中',
+  approved: '已批准',
+  rejected: '已驳回',
+  deployed: '已部署',
+  rolled_back: '已回滚',
+}
+
 const ChangesPage: React.FC = () => {
-  const [changes, setChanges] = useState<Change[]>([])
+  const [data, setData] = useState<ChangeListData | null>(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [approvingId, setApprovingId] = useState<number | null>(null)
 
   const load = async () => {
     setLoading(true)
     try {
-      await api.get('/changes')
-      setChanges([])
+      const resp = await api.get('/changes')
+      const d = await unwrap<ChangeListData>(resp)
+      setData(d)
+      setError(null)
+    } catch (e) {
+      setError(errorMessage(e))
     } finally {
       setLoading(false)
     }
   }
 
-  const columns = [
-    { title: 'ID', dataIndex: 'id', width: 60 },
+  useEffect(() => {
+    load()
+  }, [])
+
+  // POST /changes/{id}/approve?decision=...（仅 approval 状态可审批，需 admin 角色，否则 409/403）
+  const approve = async (id: number, decision: 'approved' | 'rejected') => {
+    setApprovingId(id)
+    try {
+      const resp = await api.post(`/changes/${id}/approve`, null, { params: { decision } })
+      const d = await unwrap<ApproveResult>(resp)
+      message.success(`变更 #${d.change_id} 已${decision === 'approved' ? '批准' : '驳回'}（状态：${STATUS_TEXT[d.status] ?? d.status}）`)
+      await load()
+    } catch (e) {
+      message.error(errorMessage(e))
+    } finally {
+      setApprovingId(null)
+    }
+  }
+
+  const columns: TableColumnsType<ChangeItem> = [
+    { title: 'ID', dataIndex: 'id', width: 70 },
     { title: '标题', dataIndex: 'title' },
-    {
-      title: '风险等级',
-      dataIndex: ['impact', 'risk_level'],
-      render: (v: string) => {
-        const color = v === 'critical' ? 'red' : v === 'high' ? 'orange' : v === 'medium' ? 'gold' : 'green'
-        return v ? <Tag color={color}>{v}</Tag> : '—'
-      },
-    },
     {
       title: '状态',
       dataIndex: 'status',
-      render: (v: string) => <Badge status={STATUS_COLOR[v] ?? 'default'} text={v} />,
+      width: 110,
+      render: (v: string) => <Badge status={STATUS_COLOR[v] ?? 'default'} text={STATUS_TEXT[v] ?? v} />,
     },
     {
-      title: '变更窗口',
-      dataIndex: ['impact', 'suggested_window'],
-      render: (v: string) => v ?? '—',
+      title: '影响已确认',
+      dataIndex: 'impact_confirmed',
+      width: 110,
+      render: (v: boolean | null) =>
+        v === true ? <Tag color="green">已确认</Tag> : v === false ? <Tag>未确认</Tag> : '—',
+    },
+    {
+      title: '操作',
+      key: 'action',
+      width: 170,
+      render: (_, r) =>
+        r.status === 'approval' ? (
+          <Space>
+            <Popconfirm title="确认批准该变更？" onConfirm={() => approve(r.id, 'approved')}>
+              <Button size="small" type="primary" loading={approvingId === r.id}>
+                批准
+              </Button>
+            </Popconfirm>
+            <Popconfirm title="确认驳回该变更？" onConfirm={() => approve(r.id, 'rejected')}>
+              <Button size="small" danger disabled={approvingId === r.id}>
+                驳回
+              </Button>
+            </Popconfirm>
+          </Space>
+        ) : null,
     },
   ]
 
   return (
     <Space direction="vertical" style={{ width: '100%' }} size="middle">
       <Title level={4}>变更审批（三道闸工作台）</Title>
+      {error && <Alert type="error" message={error} showIcon closable onClose={() => setError(null)} />}
       <Card
-        title="变更单"
-        extra={<Button type="primary" onClick={load} loading={loading}>刷新</Button>}
+        title={`变更单${data ? `（共 ${data.count} 条）` : ''}`}
+        extra={
+          <Space>
+            {data && (
+              <Space size={6}>
+                <Tag color={data.storage === 'db' ? 'geekblue' : 'orange'}>存储：{data.storage}</Tag>
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  {data.storage === 'db' ? '数据库持久化' : '进程内存态（后端重启后丢失）'}
+                </Text>
+              </Space>
+            )}
+            <Button onClick={load} loading={loading}>刷新</Button>
+          </Space>
+        }
       >
-        <Table<Change> rowKey="id" columns={columns} dataSource={changes} pagination={false} />
+        <Table<ChangeItem>
+          rowKey="id"
+          columns={columns}
+          dataSource={data?.items ?? []}
+          loading={loading}
+          pagination={false}
+        />
         <Descriptions size="small" style={{ marginTop: 12 }}>
           <Descriptions.Item label="审批流">
-            仿真（①）→ Batfish 校验（②）→ 人工审批（③）→ 快照回滚（v2.0 十章）
+            仿真（①）→ Batfish 校验（②）→ 人工审批（③）→ 快照回滚（v2.0 十章）；审批需 admin 角色登录
           </Descriptions.Item>
         </Descriptions>
       </Card>

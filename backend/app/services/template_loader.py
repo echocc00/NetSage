@@ -38,6 +38,22 @@ class TemplateError(Exception):
     """模板加载/校验/渲染错误。"""
 
 
+# 参数值禁止的字符（v0.5.0 审查 P1：LLM 生成的参数值带换行即可注入
+# 任意配置行到 config_diff——"写命令只走模板"的边界须消毒渲染输入）
+_FORBIDDEN_PARAM_CHARS = re.compile(r"[\r\n\x00-\x08\x0b\x0c\x0e-\x1f]")
+
+
+def validate_param_values(template_id: str, params: dict) -> None:
+    """校验参数值：字符串（含数组元素）不允许换行/控制字符。"""
+    for name, value in params.items():
+        values = value if isinstance(value, list) else [value]
+        for v in values:
+            if isinstance(v, str) and _FORBIDDEN_PARAM_CHARS.search(v):
+                raise TemplateError(
+                    f"模板 [{template_id}] 参数 {name} 含换行/控制字符，拒绝渲染（防配置行注入）"
+                )
+
+
 @lru_cache(maxsize=1)
 def _env() -> Environment:
     return Environment(
@@ -90,12 +106,16 @@ def load_template(template_id: str) -> tuple[str, dict]:
 
 
 def render(template_id: str, params: dict) -> str:
-    """按参数渲染模板。必填缺参报错；可选未传按类型注入默认值（防 StrictUndefined 误报）。"""
+    """按参数渲染模板。必填缺参报错；可选未传按类型注入默认值（防 StrictUndefined 误报）。
+
+    v0.5.0：渲染前消毒参数值（validate_param_values，防配置行注入）。
+    """
     rel, meta = load_template(template_id)
     required = [f["name"] for f in meta["input_schema"] if f.get("required")]
     missing = [r for r in required if r not in params]
     if missing:
         raise TemplateError(f"模板 [{template_id}] 缺必传入参: {missing}")
+    validate_param_values(template_id, params)
     # 可选参数未传 → 按类型注入默认值（让模板 {% if x %} 可正常求值）
     full = {}
     for f in meta["input_schema"]:

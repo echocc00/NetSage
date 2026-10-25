@@ -159,10 +159,23 @@ class BaselineScanner:
         )
 
     def _match(self, config: str, check_type: str, expr: str) -> bool:
-        if check_type == "present":
-            return expr in config
-        if check_type == "absent":
-            return expr not in config
+        """行级命令匹配（v0.5.0 审查 P2 修复）。
+
+        原实现为纯子串判断——`no ip http server` 含子串 `ip http server`，
+        已加固的正确配置被判违规。现按配置行精确匹配：行去首尾空白后
+        等于表达式、或以"表达式 + 空格 + 参数"开头才算存在；`no/undo X`
+        行不构成 X 存在。expr 支持 | 分隔多候选。
+        """
         if check_type == "regex":
             return bool(re.search(expr, config))
+        lines = [ln.strip() for ln in config.splitlines()]
+        present = any(
+            ln == alt or ln.startswith(alt + " ")
+            for alt in (a.strip() for a in expr.split("|"))
+            for ln in lines
+        )
+        if check_type == "present":
+            return present
+        if check_type == "absent":
+            return not present
         return False

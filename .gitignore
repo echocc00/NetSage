@@ -54,3 +54,7 @@ Thumbs.db
 
 # 公开 RFC 全文（体积大，本地 ingest 用，不入仓库）
 doc/rfcs/
+
+# 前端构建产物（v0.5.0：tsbuildinfo 此前被误跟踪）
+frontend/tsconfig.tsbuildinfo
+frontend/dist/
